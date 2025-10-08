@@ -1,0 +1,73 @@
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual Environment
+myenv/
+venv/
+.env/
+.venv/
+env/
+ENV/
+env.bak/
+
+# ==========================
+# Environment & Config
+# ==========================
+.env
+.env.local
+.env.*.local
+.env.example  # keep this if you want to track example file, remove if not
+
+# ==========================
+# Build & Packaging
+# ==========================
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ==========================
+# Logs & Databases
+# ==========================
+*.log
+*.sqlite3
+*.db
+db.sqlite3
+
+# ==========================
+# VS Code / IDE
+# ==========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ==========================
+# OS Specific
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Misc
+# ==========================
+*.tmp
+*.bak
+*.swp
+*.lock
