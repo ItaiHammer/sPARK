@@ -12,20 +12,21 @@ import { supabase } from "@/app/lib/supabase/supabase";
 export async function GET(req, { params }) {
   const reqParams = await params;
   const { location_id } = validateRoute(reqParams, locationIDSchema);
-  const { data, error } = await supabase
-    .from("lots")
-    .select("*")
-    .eq("location_id", location_id.toLowerCase());
-
+  const { data, error } = await supabase.rpc("get_latest_lot_occupancy", {
+    location: location_id.toLowerCase(),
+  });
   if (error) {
     return NextResponse.json(errorHandler(error, errorCodes.SUPABASE_ERROR), {
       status: 500,
     });
   }
 
-  if (!data || data?.data?.length === 0) {
+  if (!data) {
     return NextResponse.json(
-      errorHandler("No garages found", errorCodes.GARAGES_NOT_FOUND),
+      errorHandler(
+        "No occupancy data found for this location: " + location_id,
+        errorCodes.GARAGES_NOT_FOUND
+      ),
       {
         status: 404,
       }
