@@ -5,6 +5,7 @@ import {
   errorHandler,
   successHandler,
   errorCodes,
+  authValidator,
 } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
 import { supabase } from "@/lib/supabase/supabase";
@@ -13,6 +14,13 @@ import { scrapeData } from "@/lib/helpers/scraper";
 export async function GET(req, { params }) {
   const reqParams = await params;
   const { location_id } = validateRoute(reqParams, locationIDSchema);
+  const authError = authValidator(req);
+  if (authError) {
+    return NextResponse.json(errorHandler(authError.message, authError.code), {
+      status: 401,
+    });
+  }
+
   const { data: locationData, error: locationError } = await supabase
     .from("locations")
     .select("*")
