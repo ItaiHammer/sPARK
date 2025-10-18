@@ -5,9 +5,9 @@ import {
   errorHandler,
   successHandler,
   errorCodes,
-} from "@/app/lib/responseHandler";
+} from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { supabase } from "@/app/lib/supabase/supabase";
+import { supabase } from "@/lib/supabase/supabase";
 
 export async function GET(req, { params }) {
   const reqParams = await params;
