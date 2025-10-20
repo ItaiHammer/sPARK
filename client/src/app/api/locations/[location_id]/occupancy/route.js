@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 import { NextResponse } from "next/server";
 import {
   errorHandler,
@@ -9,6 +7,8 @@ import {
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
 import { supabase } from "@/lib/supabase/supabase";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
+import { getOccupancyKey } from "@/lib/redis/redis.keys";
+import { redis } from "@/lib/redis/redis";
 
 export async function GET(req, { params }) {
   // Arcjet Protection
@@ -22,10 +22,18 @@ export async function GET(req, { params }) {
   // Validate Request Parameters
   const reqParams = await params;
   const { location_id } = validateRoute(reqParams, locationIDSchema);
+  const formattedLocationId = location_id.toLowerCase();
+
+  // Check if data is in Redis
+  const { key, interval } = getOccupancyKey(formattedLocationId);
+  const cachedData = await redis.get(key);
+  if (cachedData) {
+    return NextResponse.json(successHandler(JSON.parse(cachedData)));
+  }
 
   // Fetch Occupancy Data
   const { data, error } = await supabase.rpc("get_latest_lot_occupancy", {
-    p_location_id: location_id.toLowerCase(),
+    p_location_id: formattedLocationId,
   });
   if (error) {
     return NextResponse.json(errorHandler(error, errorCodes.SUPABASE_ERROR), {
@@ -36,7 +44,7 @@ export async function GET(req, { params }) {
   if (!data) {
     return NextResponse.json(
       errorHandler(
-        "No occupancy data found for this location: " + location_id,
+        "No occupancy data found for this location: " + formattedLocationId,
         errorCodes.OCCUPANCY_NOT_FOUND
       ),
       {
@@ -44,6 +52,9 @@ export async function GET(req, { params }) {
       }
     );
   }
+
+  // Cache Data
+  await redis.set(key, JSON.stringify(data), "EX", interval);
 
   return NextResponse.json(successHandler(data));
 }
