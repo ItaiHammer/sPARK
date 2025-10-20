@@ -8,6 +8,9 @@ export const errorCodes = {
   LOCATION_NOT_FOUND: "location-not-found",
   API_KEY_REQUIRED: "api-key-required",
   API_KEY_INVALID: "api-key-invalid",
+  TOO_MANY_REQUESTS: "too-many-requests",
+  BOTS_DETECTED: "bots-detected",
+  ACCESS_DENIED: "access-denied",
 };
 
 export const errorHandler = (error, code) => {
@@ -25,7 +28,7 @@ export const successHandler = (data) => {
 };
 
 // Return an error if the API key is invalid
-export const authValidator = (req) => {
+export const authValidator = (req, internalAPIKey) => {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return {
@@ -42,7 +45,7 @@ export const authValidator = (req) => {
     };
   }
 
-  if (apiKey !== process.env.API_KEY) {
+  if (apiKey !== internalAPIKey) {
     return {
       message: "Invalid API key.",
       code: errorCodes.API_KEY_INVALID,

@@ -23,10 +23,12 @@ export async function GET(req, { params }) {
   const reqParams = await params;
   const { location_id } = validateRoute(reqParams, locationIDSchema);
 
-  // Fetch Occupancy Data
-  const { data, error } = await supabase.rpc("get_latest_lot_occupancy", {
-    p_location_id: location_id.toLowerCase(),
-  });
+  // Fetch Location Data
+  const { data, error } = await supabase
+    .from("locations")
+    .select("*")
+    .eq("location_id", location_id.toLowerCase());
+
   if (error) {
     return NextResponse.json(errorHandler(error, errorCodes.SUPABASE_ERROR), {
       status: 500,
@@ -35,15 +37,12 @@ export async function GET(req, { params }) {
 
   if (!data) {
     return NextResponse.json(
-      errorHandler(
-        "No occupancy data found for this location: " + location_id,
-        errorCodes.OCCUPANCY_NOT_FOUND
-      ),
+      errorHandler("No location found", errorCodes.LOCATION_NOT_FOUND),
       {
         status: 404,
       }
     );
   }
 
-  return NextResponse.json(successHandler(data));
+  return NextResponse.json(successHandler(data[0]));
 }

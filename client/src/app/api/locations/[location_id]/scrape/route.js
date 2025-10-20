@@ -12,15 +12,19 @@ import { supabase } from "@/lib/supabase/supabase";
 import { scrapeData } from "@/lib/helpers/scraper";
 
 export async function GET(req, { params }) {
-  const reqParams = await params;
-  const { location_id } = validateRoute(reqParams, locationIDSchema);
-  const authError = authValidator(req);
+  // Validate API Key
+  const authError = authValidator(req, process.env.SCRAPING_API_KEY);
   if (authError) {
     return NextResponse.json(errorHandler(authError.message, authError.code), {
       status: 401,
     });
   }
 
+  // Validate Request Parameters
+  const reqParams = await params;
+  const { location_id } = validateRoute(reqParams, locationIDSchema);
+
+  // Fetch Location Data
   const { data: locationData, error: locationError } = await supabase
     .from("locations")
     .select("*")
