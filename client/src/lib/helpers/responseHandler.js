@@ -4,6 +4,7 @@ export const errorCodes = {
   ZOD_ERROR: "zod-error",
   REDIS_ERROR: "redis-error",
   OPENCAGE_ERROR: "opencage-error",
+  OPENROUTESERVICE_ERROR: "openrouteservice-error",
 
   // Arcjet
   TOO_MANY_REQUESTS: "too-many-requests",

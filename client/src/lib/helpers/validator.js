@@ -1,4 +1,5 @@
 import { errorCodes } from "@/lib/helpers/responseHandler";
+import { transportationTypes } from "@/lib/openroute/openroute";
 import { z } from "zod";
 
 export const validateRoute = (data, schema) => {
@@ -36,4 +37,5 @@ export const userLocationSchema = z.object({
     .string()
     .min(3, "Address must be at least 3 characters")
     .max(255, "Address must be less than 255 characters"),
+  transportation: z.enum(Object.values(transportationTypes)),
 });

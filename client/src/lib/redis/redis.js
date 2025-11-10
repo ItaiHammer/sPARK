@@ -15,6 +15,14 @@ export const redis = new Redis(
   }
 );
 
+redis.on("error", (error) => {
+  console.error("Redis Error:", error);
+});
+
+redis.on("connect", () => {
+  console.log("Redis Connected");
+});
+
 const IS_DEV = process.env.NODE_ENV === "development";
 const redisErrorHandler = (error, key) => {
   console.error("Error getting Redis:", error);
