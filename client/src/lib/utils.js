@@ -1,3 +1,4 @@
+// ---- Math Functions ----
 export const roundToTwoDecimalPlaces = (value) => {
   return Math.round(value * 100) / 100;
 };
@@ -10,3 +11,8 @@ export const convertToHours = (seconds) =>
 export const convertToKM = (meters) => roundToTwoDecimalPlaces(meters / 1000);
 export const convertToMiles = (meters) =>
   roundToTwoDecimalPlaces(meters / 1609.34);
+
+// ---- Formatting Functions ----
+export const formatAddress = (address) => {
+  return address.toLowerCase().replace(/ |,/g, "-");
+};

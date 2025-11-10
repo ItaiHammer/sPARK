@@ -1,3 +1,6 @@
+import { formatAddress } from "../utils";
+
+// ---- Keys ----
 export const getLotsKey = (location_id) => {
   return {
     key: `LOCATION-LOTS:LOCATION_ID:${location_id}`,
@@ -8,7 +11,7 @@ export const getLotsKey = (location_id) => {
 export const getLocationKey = (location_id) => {
   return {
     key: `LOCATION-INFO:LOCATION_ID:${location_id}`,
-    interval: 60 * 60 * 24,
+    interval: 60 * 60 * 24 * 7,
   }; // 24 hours
 };
 
@@ -19,11 +22,18 @@ export const getOccupancyKey = (location_id) => {
   }; // 20 minutes
 };
 
-export const getSuggestionsKey = (location_id, address, transportation) => {
+export const getGeocodeKey = (address) => {
   return {
-    key: `LOCATION-SUGGESTIONS:LOCATION_ID:${location_id}&USER_ADDRESS:${address
-      .toLowerCase()
-      .replace(/ /g, "-")}&TRANSPORTATION:${transportation}`,
+    key: `GEOCODE:ADDRESS:${formatAddress(address)}`,
+    interval: 60 * 60 * 24 * 7,
+  }; // 7 days
+};
+
+export const getCalculateKey = (location_id, address, transportation) => {
+  return {
+    key: `CALCULATE:LOCATION_ID:${location_id}:ADDRESS:${formatAddress(
+      address
+    )}:TRANSPORTATION:${transportation}`,
     interval: 60 * 60 * 24,
   }; // 24 hours
 };

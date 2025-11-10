@@ -37,5 +37,16 @@ export const userLocationSchema = z.object({
     .string()
     .min(3, "Address must be at least 3 characters")
     .max(255, "Address must be less than 255 characters"),
+});
+
+export const coorindatesSchema = z.object({
+  address: z
+    .string()
+    .min(3, "Address must be at least 3 characters")
+    .max(255, "Address must be less than 255 characters"),
+  coordinates: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }),
   transportation: z.enum(Object.values(transportationTypes)),
 });
