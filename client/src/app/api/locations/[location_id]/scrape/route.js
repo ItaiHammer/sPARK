@@ -31,7 +31,7 @@ export async function GET(req, { params }) {
     .eq("location_id", location_id.toLowerCase());
   if (locationError) {
     return NextResponse.json(
-      errorHandler(locationError, errorCodes.SUPABASE_ERROR),
+      errorHandler(locationError.message, errorCodes.SUPABASE_ERROR),
       {
         status: 500,
       }
@@ -67,7 +67,7 @@ export async function GET(req, { params }) {
   // Insert data to supabase
   const { error } = await supabase.from("lot_occupancy").insert(data);
   if (error) {
-    return NextResponse.json(errorHandler(error, errorCodes.SUPABASE_ERROR), {
+    return NextResponse.json(errorHandler(error.message, errorCodes.SUPABASE_ERROR), {
       status: 500,
     });
   }

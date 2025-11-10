@@ -6,19 +6,10 @@ import {
 } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
 import { supabase } from "@/lib/supabase/supabase";
-import { decisionHandler } from "@/lib/arcjet/arcjet";
 import { getLocationKey } from "@/lib/redis/redis.keys";
-import { redis } from "@/lib/redis/redis";
+import { getCache, setCache } from "@/lib/redis/redis";
 
 export async function GET(req, { params }) {
-  // Arcjet Protection
-  const decision = await decisionHandler(req);
-  if (decision.isDenied()) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
-    });
-  }
-
   // Validate Request Parameters
   const reqParams = await params;
   const { location_id } = validateRoute(reqParams, locationIDSchema);
@@ -26,7 +17,16 @@ export async function GET(req, { params }) {
 
   // Check if data is in Redis
   const { key, interval } = getLocationKey(formattedLocationId);
-  const cachedData = await redis.get(key);
+  const { error: getCacheError, data: cachedData } = await getCache(key);
+  if (getCacheError) {
+    return NextResponse.json(
+      errorHandler(getCacheError.message, getCacheError.code),
+      {
+        status: 500,
+      }
+    );
+  }
+
   if (cachedData) {
     return NextResponse.json(successHandler(JSON.parse(cachedData)));
   }
@@ -38,9 +38,12 @@ export async function GET(req, { params }) {
     .eq("location_id", formattedLocationId);
 
   if (error) {
-    return NextResponse.json(errorHandler(error, errorCodes.SUPABASE_ERROR), {
-      status: 500,
-    });
+    return NextResponse.json(
+      errorHandler(error.message, errorCodes.SUPABASE_ERROR),
+      {
+        status: 500,
+      }
+    );
   }
 
   if (!data) {
@@ -54,7 +57,19 @@ export async function GET(req, { params }) {
 
   // Cache Data
   const locationData = data[0];
-  await redis.set(key, JSON.stringify(locationData), "EX", interval);
+  const { error: setCacheError } = await setCache(
+    key,
+    JSON.stringify(locationData),
+    interval
+  );
+  if (setCacheError) {
+    return NextResponse.json(
+      errorHandler(setCacheError.message, setCacheError.code),
+      {
+        status: 500,
+      }
+    );
+  }
 
   return NextResponse.json(successHandler(locationData));
 }

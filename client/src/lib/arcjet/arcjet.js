@@ -1,5 +1,6 @@
 import arcjet, { shield, detectBot, tokenBucket } from "@arcjet/next";
 import { isSpoofedBot } from "@arcjet/inspect";
+import { errorCodes } from "@/lib/helpers/responseHandler";
 
 export const aj = arcjet({
   key: process.env.ARCJET_KEY,
@@ -8,10 +9,7 @@ export const aj = arcjet({
     shield({ mode: "LIVE" }),
     detectBot({
       mode: "LIVE",
-      allow:
-        process.env.NODE_ENV === "development"
-          ? ["CATEGORY:SEARCH_ENGINE", "POSTMAN"]
-          : ["CATEGORY:SEARCH_ENGINE"],
+      allow: process.env.NODE_ENV === "development" ? ["POSTMAN"] : [],
     }),
     tokenBucket({
       mode: "LIVE",
@@ -32,14 +30,14 @@ export const decisionHandler = async (req) => {
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {
       return {
-        ...decision,
+        isDenied: true,
         message: "Too many requests have been sent. Please try again later.",
         code: errorCodes.TOO_MANY_REQUESTS,
         status: 429,
       };
     } else if (decision.reason.isBot()) {
       return {
-        ...decision,
+        isDenied: true,
         message:
           "Bots Detected. Please refrain from using bots to access our API.",
         code: errorCodes.BOTS_DETECTED,
@@ -47,7 +45,7 @@ export const decisionHandler = async (req) => {
       };
     } else {
       return {
-        ...decision,
+        isDenied: true,
         message: "Your access has been denied.",
         code: errorCodes.ACCESS_DENIED,
         status: 403,
@@ -55,12 +53,17 @@ export const decisionHandler = async (req) => {
     }
   } else if (decision.results.some(isSpoofedBot)) {
     return {
-      ...decision,
+      isDenied: true,
       message: "Your access has been denied.",
       code: errorCodes.ACCESS_DENIED,
       status: 403,
     };
   }
 
-  return decision;
+  return {
+    isDenied: false,
+    message: null,
+    code: null,
+    status: null,
+  };
 };
