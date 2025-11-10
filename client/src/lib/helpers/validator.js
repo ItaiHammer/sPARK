@@ -50,3 +50,16 @@ export const coorindatesSchema = z.object({
   }),
   transportation: z.enum(Object.values(transportationTypes)),
 });
+
+export const suggestionsSchema = z.object({
+  address: z
+    .string()
+    .min(3, "Address must be at least 3 characters")
+    .max(255, "Address must be less than 255 characters"),
+  lots: z.array(
+    z.object({
+      lot_id: z.string(),
+      duration: z.number(),
+    })
+  ),
+});

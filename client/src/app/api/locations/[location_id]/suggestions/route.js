@@ -6,8 +6,8 @@ import {
 } from "@/lib/helpers/responseHandler";
 import {
   validateRoute,
-  userLocationSchema,
   locationIDSchema,
+  suggestionsSchema,
 } from "@/lib/helpers/validator";
 import { getLotsKey, getSuggestionsKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
@@ -17,13 +17,6 @@ import {
   transportationTypes,
 } from "@/lib/openroute/openroute";
 import { getLots } from "@/lib/supabase/supabase";
-import {
-  convertToHours,
-  convertToKM,
-  convertToMinutes,
-  convertToMiles,
-  roundToTwoDecimalPlaces,
-} from "@/lib/utils";
 
 export async function POST(req, { params }) {
   // Validate Request Parameters
@@ -44,5 +37,21 @@ export async function POST(req, { params }) {
   const { location_id } = validatedLocationID;
   const formattedLocationID = location_id.toLowerCase();
 
-  return NextResponse.json(successHandler(data));
+  // Validate Request Body
+  const body = await req.json();
+  const { data: validatedData, error: validationError } = validateRoute(
+    body,
+    suggestionsSchema
+  );
+  if (validationError || !validatedData) {
+    return NextResponse.json(
+      errorHandler(validationError.message, validationError.code),
+      {
+        status: 400,
+      }
+    );
+  }
+  const { address, coordinates, transportation, lots } = validatedData;
+
+  return NextResponse.json(successHandler({}));
 }
