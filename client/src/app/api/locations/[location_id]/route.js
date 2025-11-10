@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import {
-  errorHandler,
-  successHandler,
-  errorCodes,
-} from "@/lib/helpers/responseHandler";
+import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { supabase } from "@/lib/supabase/supabase";
+import { getLocationByID } from "@/lib/supabase/supabase";
 import { getLocationKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 
@@ -44,25 +40,14 @@ export async function GET(req, { params }) {
   }
 
   // Fetch Location Data
-  const { data, error } = await supabase
-    .from("locations")
-    .select("*")
-    .eq("location_id", formattedLocationId);
-
-  if (error) {
+  const { error: getLocationByIDError, data } = await getLocationByID(
+    formattedLocationId
+  );
+  if (getLocationByIDError) {
     return NextResponse.json(
-      errorHandler(error.message, errorCodes.SUPABASE_ERROR),
+      errorHandler(getLocationByIDError.message, getLocationByIDError.code),
       {
         status: 500,
-      }
-    );
-  }
-
-  if (!data || data.length === 0) {
-    return NextResponse.json(
-      errorHandler("No location found", errorCodes.LOCATION_NOT_FOUND),
-      {
-        status: 404,
       }
     );
   }

@@ -4,11 +4,10 @@ import https from "https";
 import {
   errorHandler,
   successHandler,
-  errorCodes,
   authValidator,
 } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { supabase } from "@/lib/supabase/supabase";
+import { getLocationByID, insertLotOccupancy } from "@/lib/supabase/supabase";
 import { scrapeData } from "@/lib/helpers/scraper";
 
 export async function GET(req, { params }) {
@@ -38,27 +37,13 @@ export async function GET(req, { params }) {
   const formattedLocationId = location_id.toLowerCase();
 
   // Fetch Location Data
-  const { data: locationData, error: locationError } = await supabase
-    .from("locations")
-    .select("*")
-    .eq("location_id", formattedLocationId);
-  if (locationError) {
+  const { error: getLocationByIDError, data: locationData } =
+    await getLocationByID(formattedLocationId);
+  if (getLocationByIDError) {
     return NextResponse.json(
-      errorHandler(locationError.message, errorCodes.SUPABASE_ERROR),
+      errorHandler(getLocationByIDError.message, getLocationByIDError.code),
       {
         status: 500,
-      }
-    );
-  }
-
-  if (!locationData) {
-    return NextResponse.json(
-      errorHandler(
-        "No location found with this ID: " + formattedLocationId,
-        errorCodes.LOCATION_NOT_FOUND
-      ),
-      {
-        status: 404,
       }
     );
   }
@@ -78,10 +63,13 @@ export async function GET(req, { params }) {
   const data = scrapeData(html);
 
   // Insert data to supabase
-  const { error } = await supabase.from("lot_occupancy").insert(data);
-  if (error) {
+  const { error: insertLotOccupancyError } = await insertLotOccupancy(data);
+  if (insertLotOccupancyError) {
     return NextResponse.json(
-      errorHandler(error.message, errorCodes.SUPABASE_ERROR),
+      errorHandler(
+        insertLotOccupancyError.message,
+        insertLotOccupancyError.code
+      ),
       {
         status: 500,
       }

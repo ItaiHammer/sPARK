@@ -1,19 +1,25 @@
 export const errorCodes = {
+  // 3rd Party Errors
   SUPABASE_ERROR: "supabase-error",
   ZOD_ERROR: "zod-error",
   REDIS_ERROR: "redis-error",
+  OPENCAGE_ERROR: "opencage-error",
 
-  // Custom Errors
-  SERVER_ERROR: "server-error",
-  GARAGES_NOT_FOUND: "garages-not-found",
-  OCCUPANCY_NOT_FOUND: "occupancy-not-found",
-  LOCATION_NOT_FOUND: "location-not-found",
-  API_KEY_REQUIRED: "api-key-required",
-  API_KEY_INVALID: "api-key-invalid",
+  // Arcjet
   TOO_MANY_REQUESTS: "too-many-requests",
   BOTS_DETECTED: "bots-detected",
   ACCESS_DENIED: "access-denied",
+
+  // Server
+  SERVER_ERROR: "server-error",
   UNAUTHORIZED: "unauthorized",
+  API_KEY_REQUIRED: "api-key-required",
+  API_KEY_INVALID: "api-key-invalid",
+
+  // Custom Errors
+  LOTS_NOT_FOUND: "lots-not-found",
+  OCCUPANCY_NOT_FOUND: "occupancy-not-found",
+  LOCATION_NOT_FOUND: "location-not-found",
 };
 
 export const errorHandler = (message, code) => {

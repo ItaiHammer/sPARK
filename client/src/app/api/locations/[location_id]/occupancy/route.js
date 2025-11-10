@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import {
-  errorHandler,
-  successHandler,
-  errorCodes,
-} from "@/lib/helpers/responseHandler";
+import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { supabase } from "@/lib/supabase/supabase";
+import { getLatestLotOccupancy } from "@/lib/supabase/supabase";
 import { getOccupancyKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 
@@ -44,26 +40,16 @@ export async function GET(req, { params }) {
   }
 
   // Fetch Occupancy Data
-  const { data, error } = await supabase.rpc("get_latest_lot_occupancy", {
-    p_location_id: formattedLocationId,
-  });
-  if (error) {
-    return NextResponse.json(
-      errorHandler(error.message, errorCodes.SUPABASE_ERROR),
-      {
-        status: 500,
-      }
-    );
-  }
-
-  if (!data) {
+  const { error: getLatestLotOccupancyError, data } =
+    await getLatestLotOccupancy(formattedLocationId);
+  if (getLatestLotOccupancyError) {
     return NextResponse.json(
       errorHandler(
-        "No occupancy data found for this location: " + formattedLocationId,
-        errorCodes.OCCUPANCY_NOT_FOUND
+        getLatestLotOccupancyError.message,
+        getLatestLotOccupancyError.code
       ),
       {
-        status: 404,
+        status: 500,
       }
     );
   }

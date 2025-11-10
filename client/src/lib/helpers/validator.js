@@ -22,10 +22,18 @@ export const validateRoute = (data, schema) => {
   return { data: result.data, error: null };
 };
 
-// Schemas
+// ---- Params Schemas ----
 export const locationIDSchema = z.object({
   location_id: z
     .string()
     .min(3, "Location ID must be at least 3 characters")
     .max(25, "Location ID must be less than 25 characters"),
+});
+
+// ---- Body Schemas ----
+export const userLocationSchema = z.object({
+  address: z
+    .string()
+    .min(3, "Address must be at least 3 characters")
+    .max(255, "Address must be less than 255 characters"),
 });

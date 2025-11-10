@@ -38,7 +38,7 @@ export const setCache = async (key, value, interval) => {
   }
 
   try {
-    await redis.set(formattedKey, value, "EX", interval);
+    await redis.set(formattedKey, value, "EX", IS_DEV ? 60 * 10 : interval);
 
     return {
       error: null,
