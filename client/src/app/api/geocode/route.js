@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  errorHandler,
-  successHandler,
-  errorCodes,
-} from "@/lib/helpers/responseHandler";
+import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, userLocationSchema } from "@/lib/helpers/validator";
 import { getGeocodeKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";

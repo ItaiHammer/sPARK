@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 // ---- Math Functions ----
 export const roundToTwoDecimalPlaces = (value) => {
   return Math.round(value * 100) / 100;
@@ -13,6 +15,10 @@ export const convertToMiles = (meters) =>
   roundToTwoDecimalPlaces(meters / 1609.34);
 
 // ---- Formatting Functions ----
-export const formatAddress = (address) => {
-  return address.toLowerCase().replace(/ |,/g, "-");
+export const hashAddress = (address) => {
+  return crypto
+    .createHash("sha256")
+    .update(address.toLowerCase())
+    .digest("hex")
+    .slice(0, 8);
 };

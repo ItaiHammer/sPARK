@@ -1,4 +1,4 @@
-import { formatAddress } from "../utils";
+import { hashAddress } from "../utils";
 
 // ---- Keys ----
 export const getLotsKey = (location_id) => {
@@ -24,14 +24,14 @@ export const getOccupancyKey = (location_id) => {
 
 export const getGeocodeKey = (address) => {
   return {
-    key: `GEOCODE:ADDRESS:${formatAddress(address)}`,
+    key: `GEOCODE:ADDRESS:${hashAddress(address)}`,
     interval: 60 * 60 * 24 * 7,
   }; // 7 days
 };
 
 export const getCalculateKey = (location_id, address, transportation) => {
   return {
-    key: `CALCULATE:LOCATION_ID:${location_id}:ADDRESS:${formatAddress(
+    key: `CALCULATE:LOCATION_ID:${location_id}:ADDRESS:${hashAddress(
       address
     )}:TRANSPORTATION:${transportation}`,
     interval: 60 * 60 * 24,
