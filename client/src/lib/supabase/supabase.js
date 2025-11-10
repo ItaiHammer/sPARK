@@ -1,13 +1,25 @@
 import { createClient } from "@supabase/supabase-js";
 import { errorCodes } from "../helpers/responseHandler";
 
-export const supabase = createClient(
-  process.env.SUPABASE_PROJECT_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+let supabase;
+export const getSupabase = () => {
+  if (global.supabase) {
+    return global.supabase;
+  }
+  supabase = createClient(
+    process.env.SUPABASE_PROJECT_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+
+  console.log("Supabase Connected");
+
+  global.supabase = supabase;
+  return supabase;
+};
 
 // Locations
 export const getLocationByID = async (locationID) => {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("locations")
     .select("*")
@@ -34,6 +46,7 @@ export const getLocationByID = async (locationID) => {
 };
 
 export const insertLotOccupancy = async (lotOccupancy) => {
+  const supabase = getSupabase();
   const { error } = await supabase.from("lot_occupancy").insert(lotOccupancy);
   if (error) {
     return {
@@ -44,6 +57,7 @@ export const insertLotOccupancy = async (lotOccupancy) => {
 };
 
 export const getLatestLotOccupancy = async (locationID) => {
+  const supabase = getSupabase();
   const { data, error } = await supabase.rpc("get_latest_lot_occupancy", {
     p_location_id: locationID,
   });
@@ -69,6 +83,7 @@ export const getLatestLotOccupancy = async (locationID) => {
 };
 
 export const getLots = async (locationID) => {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("lots")
     .select("*")

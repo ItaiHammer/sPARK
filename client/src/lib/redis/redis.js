@@ -1,27 +1,38 @@
 import Redis from "ioredis";
+import { errorCodes } from "../helpers/responseHandler";
 
-export const redis = new Redis(
-  {
-    host: process.env.REDIS_URL,
-    port: process.env.REDIS_PORT,
-    password: process.env.REDIS_PASSWORD,
-  },
-  {
-    maxRetriesPerRequest: 3,
-    retryStrategy(times) {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
-    },
+let redis;
+export const getRedis = () => {
+  if (global.redis) {
+    return global.redis;
   }
-);
 
-redis.on("error", (error) => {
-  console.error("Redis Error:", error);
-});
+  redis = new Redis(
+    {
+      host: process.env.REDIS_URL,
+      port: process.env.REDIS_PORT,
+      password: process.env.REDIS_PASSWORD,
+    },
+    {
+      maxRetriesPerRequest: 3,
+      retryStrategy(times) {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+    }
+  );
 
-redis.on("connect", () => {
-  console.log("Redis Connected");
-});
+  redis.on("error", (error) => {
+    console.error("Redis Error:", error);
+  });
+
+  redis.on("connect", () => {
+    console.log("Redis Connected");
+  });
+
+  global.redis = redis;
+  return redis;
+};
 
 const IS_DEV = process.env.NODE_ENV === "development";
 const redisErrorHandler = (error, key) => {
@@ -46,6 +57,7 @@ export const setCache = async (key, value, interval) => {
   }
 
   try {
+    const redis = getRedis();
     await redis.set(formattedKey, value, "EX", IS_DEV ? 60 * 10 : interval);
 
     return {
@@ -64,6 +76,7 @@ export const getCache = async (key) => {
   }
 
   try {
+    const redis = getRedis();
     const data = await redis.get(formattedKey);
 
     return {
