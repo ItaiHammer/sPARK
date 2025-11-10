@@ -12,7 +12,19 @@ import { getCache, setCache } from "@/lib/redis/redis";
 export async function GET(req, { params }) {
   // Validate Request Parameters
   const reqParams = await params;
-  const { location_id } = validateRoute(reqParams, locationIDSchema);
+  const { data: validatedData, error: validationError } = validateRoute(
+    reqParams,
+    locationIDSchema
+  );
+  if (validationError || !validatedData) {
+    return NextResponse.json(
+      errorHandler(validationError.message, validationError.code),
+      {
+        status: 400,
+      }
+    );
+  }
+  const { location_id } = validatedData;
   const formattedLocationId = location_id.toLowerCase();
 
   // Check if data is in Redis
@@ -46,7 +58,7 @@ export async function GET(req, { params }) {
     );
   }
 
-  if (!data) {
+  if (!data || data.length === 0) {
     return NextResponse.json(
       errorHandler("No location found", errorCodes.LOCATION_NOT_FOUND),
       {

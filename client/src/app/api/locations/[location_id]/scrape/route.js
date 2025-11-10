@@ -22,13 +22,26 @@ export async function GET(req, { params }) {
 
   // Validate Request Parameters
   const reqParams = await params;
-  const { location_id } = validateRoute(reqParams, locationIDSchema);
+  const { data: validatedData, error: validationError } = validateRoute(
+    reqParams,
+    locationIDSchema
+  );
+  if (validationError || !validatedData) {
+    return NextResponse.json(
+      errorHandler(validationError.message, validationError.code),
+      {
+        status: 400,
+      }
+    );
+  }
+  const { location_id } = validatedData;
+  const formattedLocationId = location_id.toLowerCase();
 
   // Fetch Location Data
   const { data: locationData, error: locationError } = await supabase
     .from("locations")
     .select("*")
-    .eq("location_id", location_id.toLowerCase());
+    .eq("location_id", formattedLocationId);
   if (locationError) {
     return NextResponse.json(
       errorHandler(locationError.message, errorCodes.SUPABASE_ERROR),
@@ -41,7 +54,7 @@ export async function GET(req, { params }) {
   if (!locationData) {
     return NextResponse.json(
       errorHandler(
-        "No location found with this ID: " + location_id,
+        "No location found with this ID: " + formattedLocationId,
         errorCodes.LOCATION_NOT_FOUND
       ),
       {
@@ -57,7 +70,7 @@ export async function GET(req, { params }) {
       rejectUnauthorized: false, // Bypass SSL certificate verification
     }),
     headers: {
-      "User-Agent": "sPARKs-Bot",
+      "User-Agent": process.env.SCRAPER_USER_AGENT,
     },
     timeout: 1000 * 60, // 60 secs
   });
@@ -67,9 +80,12 @@ export async function GET(req, { params }) {
   // Insert data to supabase
   const { error } = await supabase.from("lot_occupancy").insert(data);
   if (error) {
-    return NextResponse.json(errorHandler(error.message, errorCodes.SUPABASE_ERROR), {
-      status: 500,
-    });
+    return NextResponse.json(
+      errorHandler(error.message, errorCodes.SUPABASE_ERROR),
+      {
+        status: 500,
+      }
+    );
   }
 
   return NextResponse.json(successHandler(data));
