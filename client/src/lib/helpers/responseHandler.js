@@ -1,18 +1,38 @@
 export const errorCodes = {
+  // 3rd Party Errors
   SUPABASE_ERROR: "supabase-error",
   ZOD_ERROR: "zod-error",
+  REDIS_ERROR: "redis-error",
+  OPENCAGE_ERROR: "opencage-error",
+  OPENROUTESERVICE_ERROR: "openrouteservice-error",
 
-  // Custom Errors
-  GARAGES_NOT_FOUND: "garages-not-found",
-  OCCUPANCY_NOT_FOUND: "occupancy-not-found",
-  LOCATION_NOT_FOUND: "location-not-found",
+  // Arcjet
+  TOO_MANY_REQUESTS: "too-many-requests",
+  BOTS_DETECTED: "bots-detected",
+  ACCESS_DENIED: "access-denied",
+
+  // Server
+  SERVER_ERROR: "server-error",
+  UNAUTHORIZED: "unauthorized",
   API_KEY_REQUIRED: "api-key-required",
   API_KEY_INVALID: "api-key-invalid",
+
+  // Custom Errors
+  LOTS_NOT_FOUND: "lots-not-found",
+  OCCUPANCY_NOT_FOUND: "occupancy-not-found",
+  LOCATION_NOT_FOUND: "location-not-found",
 };
 
-export const errorHandler = (error, code) => {
+export const errorHandler = (message, code) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log("Error:", message, code);
+  }
+
   return {
-    error: { message: error.message, code: code },
+    error: {
+      message: message || "An unknown error occurred.",
+      code: code || errorCodes.SERVER_ERROR,
+    },
     data: null,
   };
 };
@@ -25,7 +45,7 @@ export const successHandler = (data) => {
 };
 
 // Return an error if the API key is invalid
-export const authValidator = (req) => {
+export const authValidator = (req, internalAPIKey) => {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return {
@@ -42,7 +62,7 @@ export const authValidator = (req) => {
     };
   }
 
-  if (apiKey !== process.env.API_KEY) {
+  if (apiKey !== internalAPIKey) {
     return {
       message: "Invalid API key.",
       code: errorCodes.API_KEY_INVALID,

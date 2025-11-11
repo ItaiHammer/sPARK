@@ -4,44 +4,46 @@ import https from "https";
 import {
   errorHandler,
   successHandler,
-  errorCodes,
   authValidator,
 } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { supabase } from "@/lib/supabase/supabase";
+import { getLocationByID, insertLotOccupancy } from "@/lib/supabase/supabase";
 import { scrapeData } from "@/lib/helpers/scraper";
 
 export async function GET(req, { params }) {
-  const reqParams = await params;
-  const { location_id } = validateRoute(reqParams, locationIDSchema);
-  const authError = authValidator(req);
+  // Validate API Key
+  const authError = authValidator(req, process.env.SCRAPING_API_KEY);
   if (authError) {
     return NextResponse.json(errorHandler(authError.message, authError.code), {
       status: 401,
     });
   }
 
-  const { data: locationData, error: locationError } = await supabase
-    .from("locations")
-    .select("*")
-    .eq("location_id", location_id.toLowerCase());
-  if (locationError) {
+  // Validate Request Parameters
+  const reqParams = await params;
+  const { data: validatedData, error: validationError } = validateRoute(
+    reqParams,
+    locationIDSchema
+  );
+  if (validationError || !validatedData) {
     return NextResponse.json(
-      errorHandler(locationError, errorCodes.SUPABASE_ERROR),
+      errorHandler(validationError.message, validationError.code),
       {
-        status: 500,
+        status: 400,
       }
     );
   }
+  const { location_id } = validatedData;
+  const formattedLocationId = location_id.toLowerCase();
 
-  if (!locationData) {
+  // Fetch Location Data
+  const { error: getLocationByIDError, data: locationData } =
+    await getLocationByID(formattedLocationId);
+  if (getLocationByIDError) {
     return NextResponse.json(
-      errorHandler(
-        "No location found with this ID: " + location_id,
-        errorCodes.LOCATION_NOT_FOUND
-      ),
+      errorHandler(getLocationByIDError.message, getLocationByIDError.code),
       {
-        status: 404,
+        status: 500,
       }
     );
   }
@@ -53,7 +55,7 @@ export async function GET(req, { params }) {
       rejectUnauthorized: false, // Bypass SSL certificate verification
     }),
     headers: {
-      "User-Agent": "sPARKs-Bot",
+      "User-Agent": process.env.SCRAPER_USER_AGENT,
     },
     timeout: 1000 * 60, // 60 secs
   });
@@ -61,11 +63,17 @@ export async function GET(req, { params }) {
   const data = scrapeData(html);
 
   // Insert data to supabase
-  const { error } = await supabase.from("lot_occupancy").insert(data);
-  if (error) {
-    return NextResponse.json(errorHandler(error, errorCodes.SUPABASE_ERROR), {
-      status: 500,
-    });
+  const { error: insertLotOccupancyError } = await insertLotOccupancy(data);
+  if (insertLotOccupancyError) {
+    return NextResponse.json(
+      errorHandler(
+        insertLotOccupancyError.message,
+        insertLotOccupancyError.code
+      ),
+      {
+        status: 500,
+      }
+    );
   }
 
   return NextResponse.json(successHandler(data));

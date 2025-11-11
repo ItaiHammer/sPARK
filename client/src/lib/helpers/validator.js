@@ -1,20 +1,65 @@
-import { NextResponse } from "next/server";
-import { errorHandler, errorCodes } from "@/lib/helpers/responseHandler";
+import { errorCodes } from "@/lib/helpers/responseHandler";
+import { transportationTypes } from "@/lib/openroute/openroute";
 import { z } from "zod";
 
 export const validateRoute = (data, schema) => {
   const result = schema.safeParse(data);
   if (!result.success) {
-    return NextResponse.json(
-      errorHandler(result.error.errors[0].message, errorCodes.ZOD_ERROR),
-      { status: 400 }
-    );
+    const errorMessages = {};
+
+    result.error?.issues.forEach((error) => {
+      errorMessages[error.path[0]] = error.message;
+    });
+
+    return {
+      error: {
+        message: errorMessages,
+        code: errorCodes.ZOD_ERROR,
+      },
+      data: null,
+    };
   }
 
-  return result.data;
+  return { data: result.data, error: null };
 };
 
-// Schemas
+// ---- Params Schemas ----
 export const locationIDSchema = z.object({
-  location_id: z.string().min(1).max(25),
+  location_id: z
+    .string()
+    .min(3, "Location ID must be at least 3 characters")
+    .max(25, "Location ID must be less than 25 characters"),
+});
+
+// ---- Body Schemas ----
+export const userLocationSchema = z.object({
+  address: z
+    .string()
+    .min(3, "Address must be at least 3 characters")
+    .max(255, "Address must be less than 255 characters"),
+});
+
+export const coorindatesSchema = z.object({
+  address: z
+    .string()
+    .min(3, "Address must be at least 3 characters")
+    .max(255, "Address must be less than 255 characters"),
+  coordinates: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }),
+  transportation: z.enum(Object.values(transportationTypes)),
+});
+
+export const suggestionsSchema = z.object({
+  address: z
+    .string()
+    .min(3, "Address must be at least 3 characters")
+    .max(255, "Address must be less than 255 characters"),
+  lots: z.array(
+    z.object({
+      lot_id: z.string(),
+      duration: z.number(),
+    })
+  ),
 });

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { getLots } from "@/lib/supabase/supabase";
-import { getLotsKey } from "@/lib/redis/redis.keys";
+import { getLocationByID } from "@/lib/supabase/supabase";
+import { getLocationKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 
 export async function GET(req, { params }) {
@@ -24,7 +24,7 @@ export async function GET(req, { params }) {
   const formattedLocationId = location_id.toLowerCase();
 
   // Check if data is in Redis
-  const { key, interval } = getLotsKey(formattedLocationId);
+  const { key, interval } = getLocationKey(formattedLocationId);
   const { error: getCacheError, data: cachedData } = await getCache(key);
   if (getCacheError) {
     return NextResponse.json(
@@ -39,11 +39,13 @@ export async function GET(req, { params }) {
     return NextResponse.json(successHandler(JSON.parse(cachedData)));
   }
 
-  // Fetch Lots Data
-  const { error: getLotsError, data } = await getLots(formattedLocationId);
-  if (getLotsError) {
+  // Fetch Location Data
+  const { error: getLocationByIDError, data } = await getLocationByID(
+    formattedLocationId
+  );
+  if (getLocationByIDError) {
     return NextResponse.json(
-      errorHandler(getLotsError.message, getLotsError.code),
+      errorHandler(getLocationByIDError.message, getLocationByIDError.code),
       {
         status: 500,
       }
@@ -51,9 +53,10 @@ export async function GET(req, { params }) {
   }
 
   // Cache Data
+  const locationData = data[0];
   const { error: setCacheError } = await setCache(
     key,
-    JSON.stringify(data),
+    JSON.stringify(locationData),
     interval
   );
   if (setCacheError) {
@@ -65,5 +68,5 @@ export async function GET(req, { params }) {
     );
   }
 
-  return NextResponse.json(successHandler(data));
+  return NextResponse.json(successHandler(locationData));
 }
