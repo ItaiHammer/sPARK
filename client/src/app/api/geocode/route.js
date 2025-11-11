@@ -4,8 +4,17 @@ import { validateRoute, userLocationSchema } from "@/lib/helpers/validator";
 import { getGeocodeKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 import { getCoordinates } from "@/lib/opencage/opencage";
+import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function POST(req) {
+  // Arcjet Protection
+  const decision = await decisionHandler(req);
+  if (decision.isDenied) {
+    return NextResponse.json(errorHandler(decision.message, decision.code), {
+      status: decision.status,
+    });
+  }
+
   // Validate Request Body
   const body = await req.json();
   const { data: validatedData, error: validationError } = validateRoute(
