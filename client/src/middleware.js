@@ -1,17 +1,8 @@
 import { NextResponse } from "next/server";
-import { decisionHandler } from "@/lib/arcjet/arcjet";
 import { errorHandler, errorCodes } from "@/lib/helpers/responseHandler";
 
 export async function middleware(req) {
   const url = req.nextUrl;
-
-  // Arcjet Protection
-  const decision = await decisionHandler(req);
-  if (decision.isDenied) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
-    });
-  }
 
   // Only protect API routes
   if (url.pathname.startsWith("/api")) {

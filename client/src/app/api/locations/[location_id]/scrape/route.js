@@ -9,8 +9,17 @@ import {
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
 import { getLocationByID, insertLotOccupancy } from "@/lib/supabase/supabase";
 import { scrapeData } from "@/lib/helpers/scraper";
+import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function GET(req, { params }) {
+  // Arcjet Protection
+  const decision = await decisionHandler(req);
+  if (decision.isDenied) {
+    return NextResponse.json(errorHandler(decision.message, decision.code), {
+      status: decision.status,
+    });
+  }
+
   // Validate API Key
   const authError = authValidator(req, process.env.SCRAPING_API_KEY);
   if (authError) {

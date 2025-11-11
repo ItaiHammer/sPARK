@@ -4,8 +4,17 @@ import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
 import { getLocationByID } from "@/lib/supabase/supabase";
 import { getLocationKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
+import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function GET(req, { params }) {
+  // Arcjet Protection
+  const decision = await decisionHandler(req);
+  if (decision.isDenied) {
+    return NextResponse.json(errorHandler(decision.message, decision.code), {
+      status: decision.status,
+    });
+  }
+
   // Validate Request Parameters
   const reqParams = await params;
   const { data: validatedData, error: validationError } = validateRoute(

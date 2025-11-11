@@ -17,8 +17,17 @@ import {
   transportationTypes,
 } from "@/lib/openroute/openroute";
 import { getLots } from "@/lib/supabase/supabase";
+import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function POST(req, { params }) {
+  // Arcjet Protection
+  const decision = await decisionHandler(req);
+  if (decision.isDenied) {
+    return NextResponse.json(errorHandler(decision.message, decision.code), {
+      status: decision.status,
+    });
+  }
+
   // Validate Request Parameters
   const reqParams = await params;
   const { error: locationIDValidationError, data: validatedLocationID } =
