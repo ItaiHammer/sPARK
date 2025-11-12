@@ -42,7 +42,7 @@ export const getLocationByID = async (locationID) => {
     };
   }
 
-  return { error: null, data };
+  return { error: null, data: data[0] };
 };
 
 export const insertLotOccupancy = async (lotOccupancy) => {
@@ -103,4 +103,32 @@ export const getLots = async (locationID) => {
   }
 
   return { error: null, data };
+};
+
+export const getBuildingByID = async (locationID, buildingID) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("buildings")
+    .select("*")
+    .eq("location_id", locationID)
+    .eq("building_id", buildingID);
+
+  if (error) {
+    return {
+      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      error: {
+        message: "Building not found",
+        code: errorCodes.BUILDING_NOT_FOUND,
+      },
+      data: null,
+    };
+  }
+
+  return { error: null, data: data[0] };
 };

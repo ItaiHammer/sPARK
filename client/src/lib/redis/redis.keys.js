@@ -15,6 +15,13 @@ export const getLocationKey = (location_id) => {
   }; // 24 hours
 };
 
+export const getBuildingKey = (location_id, building_id) => {
+  return {
+    key: `BUILDING-INFO:LOCATION_ID:${location_id}:BUILDING_ID:${building_id}`,
+    interval: 60 * 60 * 24 * 7,
+  }; // 7 days
+};
+
 export const getOccupancyKey = (location_id) => {
   return {
     key: `LOCATION-OCCUPANCY:LOCATION_ID:${location_id}`,

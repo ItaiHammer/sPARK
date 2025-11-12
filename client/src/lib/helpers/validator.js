@@ -31,6 +31,17 @@ export const locationIDSchema = z.object({
     .max(25, "Location ID must be less than 25 characters"),
 });
 
+export const buildingIDSchema = z.object({
+  location_id: z
+    .string()
+    .min(3, "Location ID must be at least 3 characters")
+    .max(25, "Location ID must be less than 25 characters"),
+  building_id: z
+    .string()
+    .min(3, "Building ID must be at least 3 characters")
+    .max(25, "Building ID must be less than 25 characters"),
+});
+
 // ---- Body Schemas ----
 export const userLocationSchema = z.object({
   address: z

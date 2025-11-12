@@ -7,7 +7,8 @@ import {
   authValidator,
 } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { getLocationByID, insertLotOccupancy } from "@/lib/supabase/supabase";
+import { insertLotOccupancy } from "@/lib/supabase/supabase";
+import { getLocationData } from "@/lib/helpers/api.helpers";
 import { scrapeData } from "@/lib/helpers/scraper";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 
@@ -43,22 +44,21 @@ export async function GET(req, { params }) {
     );
   }
   const { location_id } = validatedData;
-  const formattedLocationId = location_id.toLowerCase();
 
   // Fetch Location Data
-  const { error: getLocationByIDError, data: locationData } =
-    await getLocationByID(formattedLocationId);
-  if (getLocationByIDError) {
+  const { error: getLocationDataError, data: locationData } =
+    await getLocationData(location_id);
+  if (getLocationDataError) {
     return NextResponse.json(
-      errorHandler(getLocationByIDError.message, getLocationByIDError.code),
+      errorHandler(getLocationDataError.message, getLocationDataError.code),
       {
-        status: 500,
+        status: getLocationDataError.status,
       }
     );
   }
 
   // Fetch Location Site
-  const locationSite = locationData[0].scraping_url;
+  const locationSite = locationData.scraping_url;
   const response = await axios.get(locationSite, {
     httpsAgent: new https.Agent({
       rejectUnauthorized: false, // Bypass SSL certificate verification
