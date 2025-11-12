@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { getLatestLotOccupancy } from "@/lib/supabase/supabase";
-import { getOccupancyKey } from "@/lib/redis/redis.keys";
-import { getCache, setCache } from "@/lib/redis/redis";
+import { getOccupancyData } from "@/lib/helpers/api.helpers";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function GET(req, { params }) {
@@ -30,48 +28,14 @@ export async function GET(req, { params }) {
     );
   }
   const { location_id } = validatedData;
-  const formattedLocationId = location_id.toLowerCase();
 
-  // Check if data is in Redis
-  const { key, interval } = getOccupancyKey(formattedLocationId);
-  const { error: getCacheError, data: cachedData } = await getCache(key);
-  if (getCacheError) {
-    return NextResponse.json(
-      errorHandler(getCacheError.message, getCacheError.code),
-      {
-        status: 500,
-      }
-    );
-  }
-
-  if (cachedData) {
-    return NextResponse.json(successHandler(JSON.parse(cachedData)));
-  }
-
-  // Fetch Occupancy Data
-  const { error: getLatestLotOccupancyError, data } =
-    await getLatestLotOccupancy(formattedLocationId);
-  if (getLatestLotOccupancyError) {
-    return NextResponse.json(
-      errorHandler(
-        getLatestLotOccupancyError.message,
-        getLatestLotOccupancyError.code
-      ),
-      {
-        status: 500,
-      }
-    );
-  }
-
-  // Cache Data
-  const { error: setCacheError } = await setCache(
-    key,
-    JSON.stringify(data),
-    interval
+  //  Get Occupancy Data
+  const { error: getOccupancyError, data } = await getOccupancyData(
+    location_id
   );
-  if (setCacheError) {
+  if (getOccupancyError) {
     return NextResponse.json(
-      errorHandler(setCacheError.message, setCacheError.code),
+      errorHandler(getOccupancyError.message, getOccupancyError.code),
       {
         status: 500,
       }

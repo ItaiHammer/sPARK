@@ -1,6 +1,7 @@
 import { errorCodes } from "@/lib/helpers/responseHandler";
 import { transportationTypes } from "@/lib/openroute/openroute";
-import { z } from "zod";
+import { scoringModels } from "@/lib/helpers/api.helpers";
+import * as z from "zod";
 
 export const validateRoute = (data, schema) => {
   const result = schema.safeParse(data);
@@ -63,11 +64,15 @@ export const coorindatesSchema = z.object({
 });
 
 export const suggestionsSchema = z.object({
-  address: z
-    .string()
-    .min(3, "Address must be at least 3 characters")
-    .max(255, "Address must be less than 255 characters"),
-  lots: z.array(
+  scoring_model: z.enum(Object.values(scoringModels)),
+  arrival_time: z.iso.datetime("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
+  user_to_lots: z.array(
+    z.object({
+      lot_id: z.string(),
+      duration: z.number(),
+    })
+  ),
+  building_to_lots: z.array(
     z.object({
       lot_id: z.string(),
       duration: z.number(),
