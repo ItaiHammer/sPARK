@@ -15,10 +15,10 @@ export const convertToMiles = (meters) =>
   roundToTwoDecimalPlaces(meters / 1609.34);
 
 // ---- Formatting Functions ----
-export const hashAddress = (address) => {
+export const hashValue = (value) => {
   return crypto
     .createHash("sha256")
-    .update(address.toLowerCase())
+    .update(value.toLowerCase())
     .digest("hex")
     .slice(0, 8);
 };

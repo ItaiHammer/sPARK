@@ -11,6 +11,7 @@ import {
 } from "@/lib/helpers/validator";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 import { DateTime } from "luxon";
+import { roundToTwoDecimalPlaces } from "@/lib/utils";
 import {
   getRecommendations,
   calculateNewLeaveTime,
@@ -18,6 +19,8 @@ import {
   scoringModels,
   calculateRecommendationScore,
 } from "@/lib/helpers/api.helpers";
+import { getCache, setCache } from "@/lib/redis/redis";
+import { getRecommendationsKey } from "@/lib/redis/redis.keys";
 
 export async function POST(req, { params }) {
   // Arcjet Protection
@@ -60,6 +63,7 @@ export async function POST(req, { params }) {
   }
   const { user_to_lots, building_to_lots, arrival_time, scoring_model } =
     validatedBody;
+  const didUserProvideLocation = user_to_lots.length > 0;
 
   //  Calculate the time difference between the arrival time and the current time
   const currentTime = DateTime.now({ zone: "UTC" });
@@ -89,6 +93,34 @@ export async function POST(req, { params }) {
     );
   }
 
+  // Check Cache (Only if user did NOT provide a location)
+  const { key: recommendationsKey, interval: recommendationsInterval } =
+    getRecommendationsKey(
+      location_id,
+      building_id,
+      scoring_model,
+      arrivalTimeToBuilding
+    );
+  if (!didUserProvideLocation) {
+    const { error: cacheDataError, data: cachedData } = await getCache(
+      recommendationsKey
+    );
+    if (cacheDataError) {
+      return NextResponse.json(
+        errorHandler(cacheDataError.message, cacheDataError.code),
+        {
+          status: 500,
+        }
+      );
+    }
+    if (cachedData) {
+      return NextResponse.json(successHandler(JSON.parse(cachedData)));
+    }
+  }
+
+  // Lot Recommendations
+  let lotRecommendations = [];
+
   // Calculate the Recommended Arrival Times to each lot (Walking time from lots to building)
   const recommendedArrivalTimesToLots = building_to_lots.map((lot) => {
     const withBufferDiff = arrivalTimeToBuildingWithBuffer
@@ -114,9 +146,10 @@ export async function POST(req, { params }) {
     };
   });
 
-  // Calculate the Recommended Leave Times to each lot (Driving time from user to lots)
-  const recommendedLeaveTimesToUser = recommendedArrivalTimesToLots.map(
-    (lot) => {
+  // If user provided a location
+  if (didUserProvideLocation) {
+    // Calculate the Recommended Leave Times to each lot (Driving time from user to lots)
+    lotRecommendations = recommendedArrivalTimesToLots.map((lot) => {
       const user_to_lot = user_to_lots.find(
         (user_lot) => user_lot.lot_id === lot.lot_id
       ).duration;
@@ -179,8 +212,28 @@ export async function POST(req, { params }) {
         lot_id: lot.lot_id,
         ...data,
       };
+    });
+  } else {
+    // If user did not provide a location, use the recommended arrival times to lots
+    for (const lot of recommendedArrivalTimesToLots) {
+      const travelTimeToBuilding = roundToTwoDecimalPlaces(
+        lot.travel_time_to_building
+      );
+      lotRecommendations.push({
+        lot_id: lot.lot_id,
+        rec_leave_time: null,
+        rec_arrival_time_to_lot: lot.buffer.recommended_arrival_time,
+        expected_arrival_time_to_lot: null,
+        expected_arrival_time_to_building: arrivalTimeToBuilding.toISO({
+          zone: "UTC",
+        }),
+        late_by: 0,
+        travel_time_to_lot: null,
+        travel_time_to_building: travelTimeToBuilding,
+        total_travel_time: travelTimeToBuilding,
+      });
     }
-  );
+  }
 
   // Get Occupancy Data
   const recommendationsWithOccupancy = [];
@@ -197,7 +250,7 @@ export async function POST(req, { params }) {
 
   // Adding Occupancy Data to Recommendations
   let highestTotalTravelTime = 0;
-  for (const recommendation of recommendedLeaveTimesToUser) {
+  for (const recommendation of lotRecommendations) {
     const totalTravelTime = recommendation.total_travel_time;
     if (totalTravelTime > highestTotalTravelTime) {
       highestTotalTravelTime = totalTravelTime;
@@ -259,15 +312,31 @@ export async function POST(req, { params }) {
     (a, b) => b.scoring.recommendation_score - a.scoring.recommendation_score
   );
 
-  return NextResponse.json(
-    successHandler({
-      scoring: {
-        model: scoring_model,
-        duration_weight: durationWeight,
-        occupancy_weight: occupancyWeight,
-      },
-      desired_arrival_time: arrivalTimeToBuilding.toISO({ zone: "UTC" }),
-      recommendations: scoredRecommendations,
-    })
-  );
+  // Cache Data (Only if user did NOT provide a location)
+  const data = {
+    scoring: {
+      model: scoring_model,
+      duration_weight: durationWeight,
+      occupancy_weight: occupancyWeight,
+    },
+    desired_arrival_time: arrivalTimeToBuilding.toISO({ zone: "UTC" }),
+    recommendations: scoredRecommendations,
+  };
+  if (!didUserProvideLocation) {
+    const { error: cacheDataError } = await setCache(
+      recommendationsKey,
+      JSON.stringify(data),
+      recommendationsInterval
+    );
+    if (cacheDataError) {
+      return NextResponse.json(
+        errorHandler(cacheDataError.message, cacheDataError.code),
+        {
+          status: 500,
+        }
+      );
+    }
+  }
+
+  return NextResponse.json(successHandler(data));
 }

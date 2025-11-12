@@ -1,4 +1,5 @@
-import { hashAddress } from "../utils";
+import { hashValue } from "../utils";
+import { DateTime } from "luxon";
 
 // Intervals
 const SEVEN_DAYS = 60 * 60 * 24 * 7;
@@ -48,16 +49,33 @@ export const getOccupancyKey = (location_id) => {
 
 export const getGeocodeKey = (address) => {
   return {
-    key: `GEOCODE:ADDRESS:${hashAddress(address)}`,
+    key: `GEOCODE:ADDRESS:${hashValue(address)}`,
     interval: SEVEN_DAYS,
   }; // 7 days
 };
 
 export const getUserCalculateKey = (location_id, address, transportation) => {
   return {
-    key: `USER_CALCULATE:LOCATION_ID:${location_id}:ADDRESS:${hashAddress(
+    key: `USER_CALCULATE:LOCATION_ID:${location_id}:ADDRESS:${hashValue(
       address
     )}:TRANSPORTATION:${transportation}`,
     interval: SEVEN_DAYS,
   }; // 7 days
+};
+
+export const getRecommendationsKey = (
+  location_id,
+  building_id,
+  scoring_model,
+  arrival_time
+) => {
+  const timeTillArrivalTime =
+    arrival_time.diff(DateTime.now({ zone: "UTC" })).toMillis() / 1000;
+
+  return {
+    key: `LOCATION-RECOMMENDATIONS:LOCATION_ID:${location_id}:BUILDING_ID:${building_id}:SCORING_MODEL:${scoring_model}:ARRIVAL_TIME:${hashValue(
+      arrival_time.toISO({ zone: "UTC" })
+    )}`,
+    interval: Math.round(timeTillArrivalTime + 60 * 5),
+  }; // Last until time of the arrival time + 5 mins
 };
