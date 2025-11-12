@@ -1,6 +1,6 @@
 import { errorCodes } from "@/lib/helpers/responseHandler";
 import { transportationTypes } from "@/lib/openroute/openroute";
-import { scoringModels } from "@/lib/helpers/api.helpers";
+import { scoringModels } from "@/app/api/locations/[location_id]/buildings/[building_id]/recommendations/scoring.helpers";
 import * as z from "zod";
 
 export const validateRoute = (data, schema) => {
