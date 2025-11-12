@@ -16,6 +16,7 @@ import {
   getRecommendations,
   calculateNewLeaveTime,
   getOccupancyData,
+  getBuildingCalculationsData,
   scoringModels,
   calculateRecommendationScore,
 } from "@/lib/helpers/api.helpers";
@@ -61,8 +62,7 @@ export async function POST(req, { params }) {
       }
     );
   }
-  const { user_to_lots, building_to_lots, arrival_time, scoring_model } =
-    validatedBody;
+  const { user_to_lots, arrival_time, scoring_model } = validatedBody;
   const didUserProvideLocation = user_to_lots.length > 0;
 
   //  Calculate the time difference between the arrival time and the current time
@@ -117,6 +117,29 @@ export async function POST(req, { params }) {
       return NextResponse.json(successHandler(JSON.parse(cachedData)));
     }
   }
+
+  // Get Building Calculations Data
+  const {
+    error: getBuildingCalculationsDataError,
+    data: buildingCalculationsData,
+  } = await getBuildingCalculationsData(location_id, building_id);
+  if (getBuildingCalculationsDataError) {
+    return NextResponse.json(
+      errorHandler(
+        getBuildingCalculationsDataError.message,
+        getBuildingCalculationsDataError.code
+      ),
+      {
+        status: getBuildingCalculationsDataError.status,
+      }
+    );
+  }
+
+  // Building to lots
+  const building_to_lots = buildingCalculationsData.lots.map((lot) => ({
+    lot_id: lot.lot_id,
+    duration: lot.duration,
+  }));
 
   // Lot Recommendations
   let lotRecommendations = [];

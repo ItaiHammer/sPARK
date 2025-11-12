@@ -29,18 +29,18 @@ export const locationIDSchema = z.object({
   location_id: z
     .string()
     .min(3, "Location ID must be at least 3 characters")
-    .max(25, "Location ID must be less than 25 characters"),
+    .max(100, "Location ID must be less than 100 characters"),
 });
 
 export const buildingIDSchema = z.object({
   location_id: z
     .string()
     .min(3, "Location ID must be at least 3 characters")
-    .max(25, "Location ID must be less than 25 characters"),
+    .max(100, "Location ID must be less than 100 characters"),
   building_id: z
     .string()
     .min(3, "Building ID must be at least 3 characters")
-    .max(25, "Building ID must be less than 25 characters"),
+    .max(100, "Building ID must be less than 100 characters"),
 });
 
 // ---- Body Schemas ----
@@ -67,12 +67,6 @@ export const suggestionsSchema = z.object({
   scoring_model: z.enum(Object.values(scoringModels)),
   arrival_time: z.iso.datetime("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
   user_to_lots: z.array(
-    z.object({
-      lot_id: z.string(),
-      duration: z.number(),
-    })
-  ),
-  building_to_lots: z.array(
     z.object({
       lot_id: z.string(),
       duration: z.number(),

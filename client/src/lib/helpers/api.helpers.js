@@ -3,6 +3,7 @@ import {
   getLocationKey,
   getBuildingKey,
   getOccupancyKey,
+  getBuildingCalculateKey,
 } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 import {
@@ -10,9 +11,16 @@ import {
   getLocationByID,
   getBuildingByID,
   getLatestLotOccupancy,
+  getBuildingCalculations,
+  insertBuildingCalculations,
 } from "@/lib/supabase/supabase";
 import { roundToTwoDecimalPlaces } from "@/lib/utils";
 import { DateTime } from "luxon";
+import {
+  calculateMatrix,
+  transportationTypes,
+  formatCalculateMatrixData,
+} from "@/lib/openroute/openroute";
 
 // ---- Data Fetching ----
 export const getLotsData = async (location_id) => {
@@ -253,6 +261,173 @@ export const getOccupancyData = async (location_id) => {
       error: {
         message: setCacheError.message,
         code: setCacheError.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  return {
+    error: null,
+    data,
+  };
+};
+
+export const getBuildingCalculationsData = async (location_id, building_id) => {
+  const formattedLocationId = location_id.toLowerCase();
+  const formattedBuildingId = building_id.toLowerCase();
+
+  // Check Cache
+  const { key: buildingCalculateKey, interval: buildingCalculateInterval } =
+    getBuildingCalculateKey(formattedLocationId, formattedBuildingId);
+  const { error: getCacheError, data: cachedData } = await getCache(
+    buildingCalculateKey
+  );
+  if (getCacheError) {
+    return {
+      error: {
+        message: getCacheError.message,
+        code: getCacheError.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  if (cachedData) {
+    return {
+      error: null,
+      data: JSON.parse(cachedData),
+    };
+  }
+
+  // Check if calculations have already been done
+  const {
+    error: checkBuildingCalculationsError,
+    data: buildingCalculationsData,
+  } = await getBuildingCalculations(formattedLocationId, formattedBuildingId);
+  if (checkBuildingCalculationsError) {
+    return {
+      error: {
+        message: checkBuildingCalculationsError.message,
+        code: checkBuildingCalculationsError.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  // Getting Building Data
+  const { error: getBuildingDataError, data: buildingData } =
+    await getBuildingData(formattedLocationId, formattedBuildingId);
+  if (getBuildingDataError) {
+    return {
+      error: {
+        message: getBuildingDataError.message,
+        code: getBuildingDataError.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  // If no calculations have been done, calculate them
+  let buildingCalculations = [];
+  if (!buildingCalculationsData || buildingCalculationsData.length === 0) {
+    // Getting Lots Data
+    const { error: getLotsDataError, data: lotsData } = await getLotsData(
+      formattedLocationId,
+      formattedBuildingId
+    );
+    if (getLotsDataError) {
+      return {
+        error: {
+          message: getLotsDataError.message,
+          code: getLotsDataError.code,
+          status: 500,
+        },
+        data: null,
+      };
+    }
+
+    // Calculate Distance & Duration from Building to Each Parking Lot
+    const locations = [
+      [buildingData.longitude, buildingData.latitude],
+      ...lotsData.map((lot) => [lot.longitude, lot.latitude]),
+    ];
+    const { error: calculateMatrixError, data: calculateMatrixData } =
+      await calculateMatrix(transportationTypes.foot_walking, locations);
+    if (calculateMatrixError) {
+      return {
+        error: {
+          message: calculateMatrixError.message,
+          code: calculateMatrixError.code,
+          status: 500,
+        },
+        data: null,
+      };
+    }
+
+    // Format Data
+    const formattedData = formatCalculateMatrixData(
+      lotsData,
+      calculateMatrixData
+    );
+
+    const formattedLots = formattedData.map((data) => {
+      return {
+        location_id: data.location_id,
+        building_id: formattedBuildingId,
+        lot_id: data.lot_id,
+        duration: data.duration.seconds,
+        distance: data.distance.meters,
+      };
+    });
+
+    // Store in DB
+    const { error: insertBuildingCalculationsError } =
+      await insertBuildingCalculations(formattedLots);
+    if (insertBuildingCalculationsError) {
+      return {
+        error: {
+          message: insertBuildingCalculationsError.message,
+          code: insertBuildingCalculationsError.code,
+          status: 500,
+        },
+        data: null,
+      };
+    }
+
+    buildingCalculations = formattedLots;
+  } else {
+    buildingCalculations = buildingCalculationsData.map((calculation) => {
+      return {
+        location_id: calculation.location_id,
+        building_id: formattedBuildingId,
+        lot_id: calculation.lot_id,
+        duration: calculation.duration,
+        distance: calculation.distance,
+      };
+    });
+  }
+
+  // Cache Data
+  const data = {
+    location_id: formattedLocationId,
+    building_id: formattedBuildingId,
+    building: buildingData,
+    lots: buildingCalculations,
+  };
+  const { error: cacheDataError } = await setCache(
+    buildingCalculateKey,
+    JSON.stringify(data),
+    buildingCalculateInterval
+  );
+  if (cacheDataError) {
+    return {
+      error: {
+        message: cacheDataError.message,
+        code: cacheDataError.code,
         status: 500,
       },
       data: null,

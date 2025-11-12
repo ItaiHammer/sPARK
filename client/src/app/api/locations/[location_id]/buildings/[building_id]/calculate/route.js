@@ -1,19 +1,8 @@
 import { NextResponse } from "next/server";
 import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, buildingIDSchema } from "@/lib/helpers/validator";
-import { getLotsData, getBuildingData } from "@/lib/helpers/api.helpers";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
-import {
-  calculateMatrix,
-  transportationTypes,
-  formatCalculateMatrixData,
-} from "@/lib/openroute/openroute";
-import { getBuildingCalculateKey } from "@/lib/redis/redis.keys";
-import { getCache, setCache } from "@/lib/redis/redis";
-import {
-  insertBuildingCalculations,
-  getBuildingCalculations,
-} from "@/lib/supabase/supabase";
+import { getBuildingCalculationsData } from "@/lib/helpers/api.helpers";
 
 export async function GET(req, { params }) {
   // Arcjet Protection
@@ -39,151 +28,18 @@ export async function GET(req, { params }) {
     );
   }
   const { location_id, building_id } = validatedParams;
-  const formattedLocationId = location_id.toLowerCase();
-  const formattedBuildingId = building_id.toLowerCase();
 
-  // Check Cache
-  const { key: buildingCalculateKey, interval: buildingCalculateInterval } =
-    getBuildingCalculateKey(formattedLocationId, formattedBuildingId);
-  const { error: getCacheError, data: cachedData } = await getCache(
-    buildingCalculateKey
-  );
-  if (getCacheError) {
-    return NextResponse.json(
-      errorHandler(getCacheError.message, getCacheError.code),
-      {
-        status: getCacheError.status,
-      }
-    );
-  }
-
-  if (cachedData) {
-    return NextResponse.json(successHandler(JSON.parse(cachedData)));
-  }
-
-  // Check if calculations have already been done
-  const {
-    error: checkBuildingCalculationsError,
-    data: buildingCalculationsData,
-  } = await getBuildingCalculations(formattedLocationId, formattedBuildingId);
-  if (checkBuildingCalculationsError) {
+  // Getting Building Calculations Data
+  const { error: getBuildingCalculationsDataError, data } =
+    await getBuildingCalculationsData(location_id, building_id);
+  if (getBuildingCalculationsDataError) {
     return NextResponse.json(
       errorHandler(
-        checkBuildingCalculationsError.message,
-        checkBuildingCalculationsError.code
+        getBuildingCalculationsDataError.message,
+        getBuildingCalculationsDataError.code
       ),
       {
-        status: checkBuildingCalculationsError.status,
-      }
-    );
-  }
-
-  // Getting Building Data
-  const { error: getBuildingDataError, data: buildingData } =
-    await getBuildingData(formattedLocationId, formattedBuildingId);
-  if (getBuildingDataError) {
-    return NextResponse.json(
-      errorHandler(getBuildingDataError.message, getBuildingDataError.code),
-      {
-        status: getBuildingDataError.status,
-      }
-    );
-  }
-
-  // If no calculations have been done, calculate them
-  let buildingCalculations = [];
-  if (!buildingCalculationsData || buildingCalculationsData.length === 0) {
-    // Getting Lots Data
-    const { error: getLotsDataError, data: lotsData } = await getLotsData(
-      formattedLocationId,
-      formattedBuildingId
-    );
-    if (getLotsDataError) {
-      return NextResponse.json(
-        errorHandler(getLotsDataError.message, getLotsDataError.code),
-        {
-          status: getLotsDataError.status,
-        }
-      );
-    }
-
-    // Calculate Distance & Duration from Building to Each Parking Lot
-    const locations = [
-      [buildingData.longitude, buildingData.latitude],
-      ...lotsData.map((lot) => [lot.longitude, lot.latitude]),
-    ];
-    const { error: calculateMatrixError, data: calculateMatrixData } =
-      await calculateMatrix(transportationTypes.foot_walking, locations);
-    if (calculateMatrixError) {
-      return NextResponse.json(
-        errorHandler(calculateMatrixError.message, calculateMatrixError.code),
-        {
-          status: 500,
-        }
-      );
-    }
-
-    // Format Data
-    const formattedData = formatCalculateMatrixData(
-      lotsData,
-      calculateMatrixData
-    );
-
-    const formattedLots = formattedData.map((data) => {
-      return {
-        location_id: data.location_id,
-        building_id: formattedBuildingId,
-        lot_id: data.lot_id,
-        duration: data.duration.seconds,
-        distance: data.distance.meters,
-      };
-    });
-
-    // Store in DB
-    const { error: insertBuildingCalculationsError } =
-      await insertBuildingCalculations(formattedLots);
-    if (insertBuildingCalculationsError) {
-      return NextResponse.json(
-        errorHandler(
-          insertBuildingCalculationsError.message,
-          insertBuildingCalculationsError.code
-        ),
-        {
-          status: 500,
-        }
-      );
-    }
-
-    buildingCalculations = formattedLots;
-  } else {
-    buildingCalculations = buildingCalculationsData.map((calculation) => {
-      return {
-        location_id: calculation.location_id,
-        building_id: formattedBuildingId,
-        lot_id: calculation.lot_id,
-        duration: calculation.duration,
-        distance: calculation.distance,
-      };
-    });
-  }
-
-  // Cache Data
-  const data = {
-    location_id: formattedLocationId,
-    building_id: formattedBuildingId,
-    building: buildingData,
-    lots: buildingCalculations,
-  };
-  const { error: cacheDataError } = await setCache(
-    buildingCalculateKey,
-    JSON.stringify(data),
-    buildingCalculateInterval
-  );
-  if (cacheDataError) {
-    return NextResponse.json(
-      errorHandler(cacheDataError.message, cacheDataError.code),
-      {
-        status: 500,
+        status: getBuildingCalculationsDataError.status,
       }
     );
   }
