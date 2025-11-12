@@ -22,6 +22,7 @@ export const errorCodes = {
   OCCUPANCY_NOT_FOUND: "occupancy-not-found",
   LOCATION_NOT_FOUND: "location-not-found",
   BUILDING_NOT_FOUND: "building-not-found",
+  BUILDINGS_NOT_FOUND: "buildings-not-found",
 };
 
 export const errorHandler = (message, code) => {

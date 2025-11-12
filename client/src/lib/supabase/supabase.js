@@ -132,3 +132,29 @@ export const getBuildingByID = async (locationID, buildingID) => {
 
   return { error: null, data: data[0] };
 };
+
+export const getBuildings = async (locationID) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("buildings")
+    .select("*")
+    .eq("location_id", locationID);
+  if (error) {
+    return {
+      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      error: {
+        message: "No buildings found",
+        code: errorCodes.BUILDINGS_NOT_FOUND,
+      },
+      data: null,
+    };
+  }
+
+  return { error: null, data };
+};

@@ -17,14 +17,21 @@ export const getLocationKey = (location_id) => {
 
 export const getBuildingKey = (location_id, building_id) => {
   return {
-    key: `BUILDING-INFO:LOCATION_ID:${location_id}:BUILDING_ID:${building_id}`,
+    key: `LOCATION-BUILDING-INFO:LOCATION_ID:${location_id}:BUILDING_ID:${building_id}`,
     interval: 60 * 60 * 24 * 7,
   }; // 7 days
 };
 
+export const getBuildingsKey = (location_id) => {
+  return {
+    key: `LOCATION-BUILDINGS:LOCATION_ID:${location_id}`,
+    interval: 60 * 60 * 24,
+  }; // 24 hours
+};
+
 export const getOccupancyKey = (location_id) => {
   return {
-    key: `LOCATION-OCCUPANCY:LOCATION_ID:${location_id}`,
+    key: `LOCATION-LOTS-OCCUPANCY:LOCATION_ID:${location_id}`,
     interval: 60 * 20,
   }; // 20 minutes
 };
@@ -38,7 +45,7 @@ export const getGeocodeKey = (address) => {
 
 export const getCalculateKey = (location_id, address, transportation) => {
   return {
-    key: `CALCULATE:LOCATION_ID:${location_id}:ADDRESS:${hashAddress(
+    key: `USER_CALCULATE:LOCATION_ID:${location_id}:ADDRESS:${hashAddress(
       address
     )}:TRANSPORTATION:${transportation}`,
     interval: 60 * 60 * 24,

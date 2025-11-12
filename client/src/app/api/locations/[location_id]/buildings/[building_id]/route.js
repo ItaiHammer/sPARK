@@ -30,8 +30,10 @@ export async function GET(req, { params }) {
   const { location_id, building_id } = validatedParams;
 
   // Getting Building Data
-  const { error: getBuildingDataError, data: buildingData } =
-    await getBuildingData(location_id, building_id);
+  const { error: getBuildingDataError, data } = await getBuildingData(
+    location_id,
+    building_id
+  );
   if (getBuildingDataError) {
     return NextResponse.json(
       errorHandler(getBuildingDataError.message, getBuildingDataError.code),
@@ -41,5 +43,5 @@ export async function GET(req, { params }) {
     );
   }
 
-  return NextResponse.json(successHandler(buildingData));
+  return NextResponse.json(successHandler(data));
 }
