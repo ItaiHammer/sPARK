@@ -5,17 +5,13 @@ import {
   locationIDSchema,
   coorindatesSchema,
 } from "@/lib/helpers/validator";
-import { getLotsKey, getCalculateKey } from "@/lib/redis/redis.keys";
+import { getLotsKey, getUserCalculateKey } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
-import { calculateMatrix } from "@/lib/openroute/openroute";
-import { getLots } from "@/lib/supabase/supabase";
 import {
-  convertToHours,
-  convertToKM,
-  convertToMinutes,
-  convertToMiles,
-  roundToTwoDecimalPlaces,
-} from "@/lib/utils";
+  calculateMatrix,
+  formatCalculateMatrixData,
+} from "@/lib/openroute/openroute";
+import { getLots } from "@/lib/supabase/supabase";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function POST(req, { params }) {
@@ -62,11 +58,8 @@ export async function POST(req, { params }) {
   const { address, coordinates, transportation } = validatedData;
 
   // Check if data is in Cache
-  const { key: calculateKey, interval: calculateInterval } = getCalculateKey(
-    formattedLocationID,
-    address,
-    transportation
-  );
+  const { key: calculateKey, interval: calculateInterval } =
+    getUserCalculateKey(formattedLocationID, address, transportation);
   const { error: getCalculateCacheError, data: cachedCalculateData } =
     await getCache(calculateKey);
   if (getCalculateCacheError) {
@@ -146,33 +139,10 @@ export async function POST(req, { params }) {
   }
 
   // Format Data
-  const formattedData = lotsData.map((lot, index) => {
-    const durationInSeconds = calculateMatrixData.durations[0][index];
-    const distanceInMeters = calculateMatrixData.distances[0][index];
-    const snappedDistance =
-      calculateMatrixData.destinations[index].snapped_distance;
-
-    return {
-      ...lot,
-      latitude: lot.latitude,
-      longitude: lot.longitude,
-      duration: {
-        seconds: roundToTwoDecimalPlaces(durationInSeconds),
-        minutes: convertToMinutes(durationInSeconds),
-        hours: convertToHours(durationInSeconds),
-      },
-      distance: {
-        meters: roundToTwoDecimalPlaces(distanceInMeters),
-        kilometers: convertToKM(distanceInMeters),
-        miles: convertToMiles(distanceInMeters),
-      },
-      snapped_distance: {
-        meters: roundToTwoDecimalPlaces(snappedDistance),
-        kilometers: convertToKM(snappedDistance),
-        miles: convertToMiles(snappedDistance),
-      },
-    };
-  });
+  const formattedData = formatCalculateMatrixData(
+    lotsData,
+    calculateMatrixData
+  );
 
   // Cache Data
   const data = {

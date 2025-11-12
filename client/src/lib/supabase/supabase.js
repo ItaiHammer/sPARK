@@ -158,3 +158,37 @@ export const getBuildings = async (locationID) => {
 
   return { error: null, data };
 };
+
+export const insertBuildingCalculations = async (buildingCalculations) => {
+  const supabase = getSupabase();
+  const { error } = await supabase
+    .from("lot_to_building_times")
+    .upsert(buildingCalculations, {
+      onConflict: "location_id, building_id, lot_id",
+    });
+  if (error) {
+    return {
+      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+    };
+  }
+
+  return { error: null };
+};
+
+export const getBuildingCalculations = async (locationID, buildingID) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("lot_to_building_times")
+    .select("*")
+    .eq("location_id", locationID)
+    .eq("building_id", buildingID);
+
+  if (error) {
+    return {
+      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  return { error: null, data };
+};
