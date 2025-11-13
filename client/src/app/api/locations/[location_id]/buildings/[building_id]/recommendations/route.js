@@ -9,6 +9,7 @@ import { decisionHandler } from "@/lib/arcjet/arcjet";
 import {
   getOccupancyData,
   getBuildingCalculationsData,
+  getUserCalculationsData,
 } from "@/lib/helpers/api.helpers";
 import { getCache, setCache } from "@/lib/redis/redis";
 import { getRecommendationsKey } from "@/lib/redis/redis.keys";
@@ -60,8 +61,30 @@ export async function POST(req, { params }) {
       }
     );
   }
-  const { user_to_lots, arrival_time, scoring_model } = validatedBody;
-  const didUserProvideLocation = user_to_lots.length > 0;
+  const { address, coordinates, transportation, arrival_time, scoring_model } =
+    validatedBody;
+
+  // Calculate User to Lots Data
+  let user_to_lots = [];
+  let didUserProvideLocation = false;
+  if (address && coordinates && transportation) {
+    const { error: calculateDataError, data: user_to_lots_data } =
+      await getUserCalculationsData(
+        location_id,
+        address,
+        coordinates,
+        transportation
+      );
+    if (calculateDataError || !user_to_lots_data) {
+      return NextResponse.json(
+        errorHandler(calculateDataError.message, calculateDataError.code),
+        { status: calculateDataError.status }
+      );
+    }
+
+    user_to_lots = user_to_lots_data.lots;
+    didUserProvideLocation = true;
+  }
 
   // Check Arrival Time
   const { error: arrivalTimeError, data: arrivalTimeData } =
@@ -170,6 +193,11 @@ export async function POST(req, { params }) {
   // Cache Data (Only if user did NOT provide a location)
   const { durationWeight, occupancyWeight } = getScoringModel(scoring_model);
   const data = {
+    user: {
+      address: address,
+      coordinates: coordinates,
+      transportation: transportation,
+    },
     scoring: {
       model: scoring_model,
       duration_weight: durationWeight,

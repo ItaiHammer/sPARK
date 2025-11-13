@@ -4,6 +4,7 @@ import {
   getBuildingKey,
   getOccupancyKey,
   getBuildingCalculateKey,
+  getUserCalculateKey,
 } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 import {
@@ -14,8 +15,6 @@ import {
   getBuildingCalculations,
   insertBuildingCalculations,
 } from "@/lib/supabase/supabase";
-import { roundToTwoDecimalPlaces } from "@/lib/utils";
-import { DateTime } from "luxon";
 import {
   calculateMatrix,
   transportationTypes,
@@ -422,6 +421,100 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
     buildingCalculateKey,
     JSON.stringify(data),
     buildingCalculateInterval
+  );
+  if (cacheDataError) {
+    return {
+      error: {
+        message: cacheDataError.message,
+        code: cacheDataError.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  return {
+    error: null,
+    data,
+  };
+};
+
+export const getUserCalculationsData = async (
+  location_id,
+  address,
+  coordinates,
+  transportation
+) => {
+  const formattedLocationID = location_id.toLowerCase();
+
+  // Check if data is in Cache
+  const { key: calculateKey, interval: calculateInterval } =
+    getUserCalculateKey(formattedLocationID, address, transportation);
+  const { error: getCalculateCacheError, data: cachedCalculateData } =
+    await getCache(calculateKey);
+  if (getCalculateCacheError) {
+    return {
+      error: {
+        message: getCalculateCacheError.message,
+        code: getCalculateCacheError.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+  if (cachedCalculateData) {
+    return {
+      error: null,
+      data: JSON.parse(cachedCalculateData),
+    };
+  }
+
+  // Getting Lots Data
+  const { error: getLotsDataError, data: lotsData } = await getLotsData(
+    formattedLocationID
+  );
+  if (getLotsDataError || !lotsData) {
+    return {
+      error: getLotsDataError,
+      data: null,
+    };
+  }
+
+  // Calculate Distance Between User and Parking Lots
+  const locations = [
+    [coordinates.longitude, coordinates.latitude],
+    ...lotsData.map((lot) => [lot.longitude, lot.latitude]),
+  ];
+  const { error: calculateMatrixError, data: calculateMatrixData } =
+    await calculateMatrix(transportation, locations);
+  if (calculateMatrixError) {
+    return {
+      error: {
+        message: calculateMatrixError.message,
+        code: calculateMatrixError.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  // Format Data
+  const formattedData = formatCalculateMatrixData(
+    lotsData,
+    calculateMatrixData
+  );
+
+  // Cache Data
+  const data = {
+    address,
+    coordinates,
+    transportation,
+    lots: formattedData,
+  };
+  const { error: cacheDataError } = await setCache(
+    calculateKey,
+    JSON.stringify(data),
+    calculateInterval
   );
   if (cacheDataError) {
     return {

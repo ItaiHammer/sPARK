@@ -12,15 +12,18 @@ export const calculateNewLeaveTime = (
   const data = { ...oldData };
 
   // Set New Leave time to current time
-  data.rec_leave_time = currentTime.toISO({ zone: "UTC" });
+  data.rec_leave_time = DateTime.fromMillis(currentTime.toMillis(), {
+    zone: "UTC",
+  }).toISO();
 
   // New Leave time + time it takes from user to lot
   const expectedArrivalTimeToLot = currentTime.toMillis() + user_to_lot * 1000;
 
   // Set Expected Arrival Time to Lot to new late time arrival time
   data.expected_arrival_time_to_lot = DateTime.fromMillis(
-    expectedArrivalTimeToLot
-  ).toISO({ zone: "UTC" });
+    expectedArrivalTimeToLot,
+    { zone: "UTC" }
+  ).toISO();
 
   // New expected arrival time to lot + time it takes from lot to building
   const expectedArrivalTimeToBuildingMillis =
@@ -28,8 +31,9 @@ export const calculateNewLeaveTime = (
 
   // Set Expected Arrival Time to Building to new late time arrival time
   const expectedArrivalTimeToBuilding = DateTime.fromMillis(
-    expectedArrivalTimeToBuildingMillis
-  ).toISO({ zone: "UTC" });
+    expectedArrivalTimeToBuildingMillis,
+    { zone: "UTC" }
+  ).toISO();
   data.expected_arrival_time_to_building = expectedArrivalTimeToBuilding;
 
   // Find late time: Time past the recommended arrival time to building
@@ -58,9 +62,9 @@ export const getRecommendations = (
   // Data
   const expectedArrivalTime = recommendedArrivalTime.toISO({ zone: "UTC" });
   return {
-    rec_leave_time: DateTime.fromMillis(recommendedLeaveTime).toISO({
+    rec_leave_time: DateTime.fromMillis(recommendedLeaveTime, {
       zone: "UTC",
-    }),
+    }).toISO(),
     rec_arrival_time_to_lot: expectedArrivalTime,
     expected_arrival_time_to_lot: expectedArrivalTime,
     expected_arrival_time_to_building: arrivalTimeToBuilding.toISO({
@@ -128,13 +132,15 @@ export const calculateRecommendedArrivalTimesToLots = (
       lot_id: lot.lot_id,
       buffer: {
         recommended_arrival_time: DateTime.fromMillis(
-          currentTime.toMillis() + withBufferDiff - building_to_lot * 1000
-        ).toISO({ zone: "UTC" }),
+          currentTime.toMillis() + withBufferDiff - building_to_lot * 1000,
+          { zone: "UTC" }
+        ).toISO(),
       },
       without_buffer: {
         recommended_arrival_time: DateTime.fromMillis(
-          currentTime.toMillis() + withoutBufferDiff - building_to_lot * 1000
-        ).toISO({ zone: "UTC" }),
+          currentTime.toMillis() + withoutBufferDiff - building_to_lot * 1000,
+          { zone: "UTC" }
+        ).toISO(),
       },
       travel_time_to_building: building_to_lot,
     };
@@ -149,9 +155,10 @@ export const calculateRecommendedLeaveTimesToLots = (
   return recommendedArrivalTimesToLots.map((lot) => {
     const user_to_lot = user_to_lots.find(
       (user_lot) => user_lot.lot_id === lot.lot_id
-    ).duration;
+    ).duration.seconds;
     const building_to_lot = lot.travel_time_to_building;
     let data = {};
+    let withBuffer = true;
 
     // Calculate with Buffer
     const withBufferRecommendations = getRecommendations(
@@ -181,6 +188,7 @@ export const calculateRecommendedLeaveTimesToLots = (
         user_to_lot,
         building_to_lot
       );
+      withBuffer = false;
     }
 
     // Diff from current time to recommended leave time w/o buffer in milliseconds
@@ -200,11 +208,13 @@ export const calculateRecommendedLeaveTimesToLots = (
         building_to_lot,
         arrivalTimeToBuilding
       );
+      withBuffer = false;
     }
 
     return {
       lot_id: lot.lot_id,
       ...data,
+      with_buffer: withBuffer,
     };
   });
 };
