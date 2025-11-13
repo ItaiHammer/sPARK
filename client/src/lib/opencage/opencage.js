@@ -12,7 +12,7 @@ export const getCoordinates = async (address) => {
     return { error: null, data: result?.results?.[0]?.geometry };
   } catch (error) {
     return {
-      error: { message: error.message, code: errorCodes.OPENCAGE_ERROR },
+      error: { message: error?.message, code: errorCodes.OPENCAGE_ERROR },
       data: null,
     };
   }

@@ -16,17 +16,20 @@ export async function GET(req, { params }) {
   // Arcjet Protection
   const decision = await decisionHandler(req);
   if (decision.isDenied) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
     });
   }
 
   // Validate API Key
   const authError = authValidator(req, process.env.SCRAPING_API_KEY);
   if (authError) {
-    return NextResponse.json(errorHandler(authError.message, authError.code), {
-      status: 401,
-    });
+    return NextResponse.json(
+      errorHandler(authError?.message, authError?.code),
+      {
+        status: 401,
+      }
+    );
   }
 
   // Validate Request Parameters
@@ -37,7 +40,7 @@ export async function GET(req, { params }) {
   );
   if (validationError || !validatedData) {
     return NextResponse.json(
-      errorHandler(validationError.message, validationError.code),
+      errorHandler(validationError?.message, validationError?.code),
       {
         status: 400,
       }
@@ -50,9 +53,9 @@ export async function GET(req, { params }) {
     await getLocationData(location_id);
   if (getLocationDataError) {
     return NextResponse.json(
-      errorHandler(getLocationDataError.message, getLocationDataError.code),
+      errorHandler(getLocationDataError?.message, getLocationDataError?.code),
       {
-        status: getLocationDataError.status,
+        status: getLocationDataError?.status,
       }
     );
   }
@@ -76,8 +79,8 @@ export async function GET(req, { params }) {
   if (insertLotOccupancyError) {
     return NextResponse.json(
       errorHandler(
-        insertLotOccupancyError.message,
-        insertLotOccupancyError.code
+        insertLotOccupancyError?.message,
+        insertLotOccupancyError?.code
       ),
       {
         status: 500,

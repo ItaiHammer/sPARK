@@ -27,7 +27,7 @@ export const getLocationByID = async (locationID) => {
 
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -50,7 +50,7 @@ export const insertLotOccupancy = async (lotOccupancy) => {
   const { error } = await supabase.from("lot_occupancy").insert(lotOccupancy);
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
     };
   }
   return { error: null };
@@ -64,7 +64,7 @@ export const getLatestLotOccupancy = async (locationID) => {
 
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -90,7 +90,7 @@ export const getLots = async (locationID) => {
     .eq("location_id", locationID);
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -115,7 +115,7 @@ export const getBuildingByID = async (locationID, buildingID) => {
 
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -141,7 +141,7 @@ export const getBuildings = async (locationID) => {
     .eq("location_id", locationID);
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -168,7 +168,7 @@ export const insertBuildingCalculations = async (buildingCalculations) => {
     });
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
     };
   }
 
@@ -185,7 +185,7 @@ export const getBuildingCalculations = async (locationID, buildingID) => {
 
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }

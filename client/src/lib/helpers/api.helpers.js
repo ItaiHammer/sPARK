@@ -5,6 +5,7 @@ import {
   getOccupancyKey,
   getBuildingCalculateKey,
   getUserCalculateKey,
+  getGeocodeKey,
 } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 import {
@@ -20,6 +21,7 @@ import {
   transportationTypes,
   formatCalculateMatrixData,
 } from "@/lib/openroute/openroute";
+import { getCoordinates } from "@/lib/opencage/opencage";
 
 // ---- Data Fetching ----
 export const getLotsData = async (location_id) => {
@@ -31,8 +33,8 @@ export const getLotsData = async (location_id) => {
   if (getCacheError) {
     return {
       error: {
-        message: getCacheError.message,
-        code: getCacheError.code,
+        message: getCacheError?.message,
+        code: getCacheError?.code,
         status: 500,
       },
       data: null,
@@ -51,8 +53,8 @@ export const getLotsData = async (location_id) => {
   if (getLotsError) {
     return {
       error: {
-        message: getLotsError.message,
-        code: getLotsError.code,
+        message: getLotsError?.message,
+        code: getLotsError?.code,
         status: 500,
       },
       data: null,
@@ -68,8 +70,8 @@ export const getLotsData = async (location_id) => {
   if (setCacheError) {
     return {
       error: {
-        message: setCacheError.message,
-        code: setCacheError.code,
+        message: setCacheError?.message,
+        code: setCacheError?.code,
         status: 500,
       },
       data: null,
@@ -91,8 +93,8 @@ export const getLocationData = async (location_id) => {
   if (getCacheError) {
     return {
       error: {
-        message: getCacheError.message,
-        code: getCacheError.code,
+        message: getCacheError?.message,
+        code: getCacheError?.code,
         status: 500,
       },
       data: null,
@@ -113,8 +115,8 @@ export const getLocationData = async (location_id) => {
   if (getLocationByIDError) {
     return {
       error: {
-        message: getLocationByIDError.message,
-        code: getLocationByIDError.code,
+        message: getLocationByIDError?.message,
+        code: getLocationByIDError?.code,
         status: 500,
       },
       data: null,
@@ -130,8 +132,8 @@ export const getLocationData = async (location_id) => {
   if (setCacheError) {
     return {
       error: {
-        message: setCacheError.message,
-        code: setCacheError.code,
+        message: setCacheError?.message,
+        code: setCacheError?.code,
         status: 500,
       },
       data: null,
@@ -157,8 +159,8 @@ export const getBuildingData = async (location_id, building_id) => {
   if (getCacheError) {
     return {
       error: {
-        message: getCacheError.message,
-        code: getCacheError.code,
+        message: getCacheError?.message,
+        code: getCacheError?.code,
         status: 500,
       },
       data: null,
@@ -180,8 +182,8 @@ export const getBuildingData = async (location_id, building_id) => {
   if (getBuildingByIDError) {
     return {
       error: {
-        message: getBuildingByIDError.message,
-        code: getBuildingByIDError.code,
+        message: getBuildingByIDError?.message,
+        code: getBuildingByIDError?.code,
         status: 500,
       },
       data: null,
@@ -197,8 +199,8 @@ export const getBuildingData = async (location_id, building_id) => {
   if (setCacheError) {
     return {
       error: {
-        message: setCacheError.message,
-        code: setCacheError.code,
+        message: setCacheError?.message,
+        code: setCacheError?.code,
         status: 500,
       },
       data: null,
@@ -220,8 +222,8 @@ export const getOccupancyData = async (location_id) => {
   if (getCacheError) {
     return {
       error: {
-        message: getCacheError.message,
-        code: getCacheError.code,
+        message: getCacheError?.message,
+        code: getCacheError?.code,
         status: 500,
       },
       data: null,
@@ -241,8 +243,8 @@ export const getOccupancyData = async (location_id) => {
   if (getLatestLotOccupancyError) {
     return {
       error: {
-        message: getLatestLotOccupancyError.message,
-        code: getLatestLotOccupancyError.code,
+        message: getLatestLotOccupancyError?.message,
+        code: getLatestLotOccupancyError?.code,
         status: 500,
       },
       data: null,
@@ -258,8 +260,8 @@ export const getOccupancyData = async (location_id) => {
   if (setCacheError) {
     return {
       error: {
-        message: setCacheError.message,
-        code: setCacheError.code,
+        message: setCacheError?.message,
+        code: setCacheError?.code,
         status: 500,
       },
       data: null,
@@ -285,8 +287,8 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
   if (getCacheError) {
     return {
       error: {
-        message: getCacheError.message,
-        code: getCacheError.code,
+        message: getCacheError?.message,
+        code: getCacheError?.code,
         status: 500,
       },
       data: null,
@@ -308,8 +310,8 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
   if (checkBuildingCalculationsError) {
     return {
       error: {
-        message: checkBuildingCalculationsError.message,
-        code: checkBuildingCalculationsError.code,
+        message: checkBuildingCalculationsError?.message,
+        code: checkBuildingCalculationsError?.code,
         status: 500,
       },
       data: null,
@@ -322,8 +324,8 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
   if (getBuildingDataError) {
     return {
       error: {
-        message: getBuildingDataError.message,
-        code: getBuildingDataError.code,
+        message: getBuildingDataError?.message,
+        code: getBuildingDataError?.code,
         status: 500,
       },
       data: null,
@@ -341,8 +343,8 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
     if (getLotsDataError) {
       return {
         error: {
-          message: getLotsDataError.message,
-          code: getLotsDataError.code,
+          message: getLotsDataError?.message,
+          code: getLotsDataError?.code,
           status: 500,
         },
         data: null,
@@ -359,8 +361,8 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
     if (calculateMatrixError) {
       return {
         error: {
-          message: calculateMatrixError.message,
-          code: calculateMatrixError.code,
+          message: calculateMatrixError?.message,
+          code: calculateMatrixError?.code,
           status: 500,
         },
         data: null,
@@ -389,8 +391,8 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
     if (insertBuildingCalculationsError) {
       return {
         error: {
-          message: insertBuildingCalculationsError.message,
-          code: insertBuildingCalculationsError.code,
+          message: insertBuildingCalculationsError?.message,
+          code: insertBuildingCalculationsError?.code,
           status: 500,
         },
         data: null,
@@ -425,8 +427,8 @@ export const getBuildingCalculationsData = async (location_id, building_id) => {
   if (cacheDataError) {
     return {
       error: {
-        message: cacheDataError.message,
-        code: cacheDataError.code,
+        message: cacheDataError?.message,
+        code: cacheDataError?.code,
         status: 500,
       },
       data: null,
@@ -455,8 +457,8 @@ export const getUserCalculationsData = async (
   if (getCalculateCacheError) {
     return {
       error: {
-        message: getCalculateCacheError.message,
-        code: getCalculateCacheError.code,
+        message: getCalculateCacheError?.message,
+        code: getCalculateCacheError?.code,
         status: 500,
       },
       data: null,
@@ -490,8 +492,8 @@ export const getUserCalculationsData = async (
   if (calculateMatrixError) {
     return {
       error: {
-        message: calculateMatrixError.message,
-        code: calculateMatrixError.code,
+        message: calculateMatrixError?.message,
+        code: calculateMatrixError?.code,
         status: 500,
       },
       data: null,
@@ -519,8 +521,75 @@ export const getUserCalculationsData = async (
   if (cacheDataError) {
     return {
       error: {
-        message: cacheDataError.message,
-        code: cacheDataError.code,
+        message: cacheDataError?.message,
+        code: cacheDataError?.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  return {
+    error: null,
+    data,
+  };
+};
+
+export const getGeocodeData = async (address) => {
+  // Check if data is in Cache
+  const { key: geocodeKey, interval: geocodeInterval } = getGeocodeKey(address);
+  const { error: getCacheError, data: cachedData } = await getCache(geocodeKey);
+  if (getCacheError) {
+    return {
+      error: {
+        message: getCacheError?.message,
+        code: getCacheError?.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+  if (cachedData) {
+    return {
+      error: null,
+      data: JSON.parse(cachedData),
+    };
+  }
+
+  // Get Coordinates from Opencage
+  const { error: opencageError, data: opencageData } = await getCoordinates(
+    address
+  );
+  if (opencageError) {
+    return {
+      error: {
+        message: opencageError?.message,
+        code: opencageError?.code,
+        status: 400,
+      },
+      data: null,
+    };
+  }
+  const { lat: userLatitude, lng: userLongitude } = opencageData;
+
+  // Cache Data
+  const data = {
+    coordinates: {
+      latitude: userLatitude,
+      longitude: userLongitude,
+    },
+    address,
+  };
+  const { error: cacheDataError } = await setCache(
+    geocodeKey,
+    JSON.stringify(data),
+    geocodeInterval
+  );
+  if (cacheDataError) {
+    return {
+      error: {
+        message: cacheDataError?.message,
+        code: cacheDataError?.code,
         status: 500,
       },
       data: null,

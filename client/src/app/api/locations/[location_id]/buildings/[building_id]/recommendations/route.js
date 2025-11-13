@@ -9,7 +9,6 @@ import { decisionHandler } from "@/lib/arcjet/arcjet";
 import {
   getOccupancyData,
   getBuildingCalculationsData,
-  getUserCalculationsData,
 } from "@/lib/helpers/api.helpers";
 import { getCache, setCache } from "@/lib/redis/redis";
 import { getRecommendationsKey } from "@/lib/redis/redis.keys";
@@ -19,6 +18,7 @@ import {
   calculateRecommendedLeaveTimesToLots,
   formatArrivalTimeRecommendations,
   addOccupancyDataToRecommendations,
+  calculateUserToLots,
 } from "./calculations.helpers";
 import { getScoringModel, sortRecommendationsByScore } from "./scoring.helpers";
 
@@ -26,8 +26,8 @@ export async function POST(req, { params }) {
   // Arcjet Protection
   const decision = await decisionHandler(req);
   if (decision.isDenied) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
     });
   }
 
@@ -39,7 +39,7 @@ export async function POST(req, { params }) {
   );
   if (paramValidationError || !validatedParams) {
     return NextResponse.json(
-      errorHandler(paramValidationError.message, paramValidationError.code),
+      errorHandler(paramValidationError?.message, paramValidationError?.code),
       {
         status: 400,
       }
@@ -55,74 +55,75 @@ export async function POST(req, { params }) {
   );
   if (bodyValidationError || !validatedBody) {
     return NextResponse.json(
-      errorHandler(bodyValidationError.message, bodyValidationError.code),
+      errorHandler(bodyValidationError?.message, bodyValidationError?.code),
       {
         status: 400,
       }
     );
   }
-  const { address, coordinates, transportation, arrival_time, scoring_model } =
+  const { address, transportation, arrival_time, scoring_model } =
     validatedBody;
-
-  // Calculate User to Lots Data
-  let user_to_lots = [];
-  let didUserProvideLocation = false;
-  if (address && coordinates && transportation) {
-    const { error: calculateDataError, data: user_to_lots_data } =
-      await getUserCalculationsData(
-        location_id,
-        address,
-        coordinates,
-        transportation
-      );
-    if (calculateDataError || !user_to_lots_data) {
-      return NextResponse.json(
-        errorHandler(calculateDataError.message, calculateDataError.code),
-        { status: calculateDataError.status }
-      );
-    }
-
-    user_to_lots = user_to_lots_data.lots;
-    didUserProvideLocation = true;
-  }
 
   // Check Arrival Time
   const { error: arrivalTimeError, data: arrivalTimeData } =
     checkArrivalTime(arrival_time);
   if (arrivalTimeError || !arrivalTimeData) {
     return NextResponse.json(
-      errorHandler(arrivalTimeError.message, arrivalTimeError.code),
+      errorHandler(arrivalTimeError?.message, arrivalTimeError?.code),
       {
-        status: arrivalTimeError.status,
+        status: arrivalTimeError?.status,
       }
     );
   }
 
   const { arrivalTimeToBuilding } = arrivalTimeData;
 
-  // Check Cache (Only if user did NOT provide a location)
+  // Check Cache
   const { key: recommendationsKey, interval: recommendationsInterval } =
     getRecommendationsKey(
       location_id,
       building_id,
       scoring_model,
-      arrivalTimeToBuilding
+      arrivalTimeToBuilding,
+      address,
+      transportation
     );
-  if (!didUserProvideLocation) {
-    const { error: cacheDataError, data: cachedData } = await getCache(
-      recommendationsKey
+  const { error: cacheDataError, data: cachedData } = await getCache(
+    recommendationsKey
+  );
+  if (cacheDataError) {
+    return NextResponse.json(
+      errorHandler(cacheDataError?.message, cacheDataError?.code),
+      {
+        status: 500,
+      }
     );
-    if (cacheDataError) {
+  }
+  if (cachedData) {
+    return NextResponse.json(successHandler(JSON.parse(cachedData)));
+  }
+
+  // User to Lots Data
+  let user_to_lots = [];
+  let didUserProvideLocation = false;
+  let coordinates = null;
+  if (address && transportation) {
+    //  Calculate User to Lots
+    const { error: calculateUserToLotsError, data: calculateUserToLotsData } =
+      await calculateUserToLots(location_id, address, transportation);
+    if (calculateUserToLotsError || !calculateUserToLotsData) {
       return NextResponse.json(
-        errorHandler(cacheDataError.message, cacheDataError.code),
-        {
-          status: 500,
-        }
+        errorHandler(
+          calculateUserToLotsError?.message,
+          calculateUserToLotsError?.code
+        ),
+        { status: calculateUserToLotsError?.status }
       );
     }
-    if (cachedData) {
-      return NextResponse.json(successHandler(JSON.parse(cachedData)));
-    }
+
+    coordinates = calculateUserToLotsData.coordinates;
+    user_to_lots = calculateUserToLotsData.user_to_lots;
+    didUserProvideLocation = true;
   }
 
   // Get Building Calculations Data
@@ -133,11 +134,11 @@ export async function POST(req, { params }) {
   if (getBuildingCalculationsDataError) {
     return NextResponse.json(
       errorHandler(
-        getBuildingCalculationsDataError.message,
-        getBuildingCalculationsDataError.code
+        getBuildingCalculationsDataError?.message,
+        getBuildingCalculationsDataError?.code
       ),
       {
-        status: getBuildingCalculationsDataError.status,
+        status: getBuildingCalculationsDataError?.status,
       }
     );
   }
@@ -172,7 +173,7 @@ export async function POST(req, { params }) {
     await getOccupancyData(location_id);
   if (getOccupancyError) {
     return NextResponse.json(
-      errorHandler(getOccupancyError.message, getOccupancyError.code),
+      errorHandler(getOccupancyError?.message, getOccupancyError?.code),
       {
         status: 500,
       }
@@ -206,20 +207,18 @@ export async function POST(req, { params }) {
     desired_arrival_time: arrivalTimeToBuilding.toISO({ zone: "UTC" }),
     recommendations: scoredRecommendations,
   };
-  if (!didUserProvideLocation) {
-    const { error: cacheDataError } = await setCache(
-      recommendationsKey,
-      JSON.stringify(data),
-      recommendationsInterval
+  const { error: setCacheError } = await setCache(
+    recommendationsKey,
+    JSON.stringify(data),
+    recommendationsInterval
+  );
+  if (setCacheError) {
+    return NextResponse.json(
+      errorHandler(setCacheError?.message, setCacheError?.code),
+      {
+        status: 500,
+      }
     );
-    if (cacheDataError) {
-      return NextResponse.json(
-        errorHandler(cacheDataError.message, cacheDataError.code),
-        {
-          status: 500,
-        }
-      );
-    }
   }
 
   return NextResponse.json(successHandler(data));

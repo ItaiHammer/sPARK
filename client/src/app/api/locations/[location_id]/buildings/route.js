@@ -10,8 +10,8 @@ export async function GET(req, { params }) {
   // Arcjet Protection
   const decision = await decisionHandler(req);
   if (decision.isDenied) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
     });
   }
 
@@ -23,7 +23,7 @@ export async function GET(req, { params }) {
   );
   if (paramValidationError || !validatedParams) {
     return NextResponse.json(
-      errorHandler(paramValidationError.message, paramValidationError.code),
+      errorHandler(paramValidationError?.message, paramValidationError?.code),
       {
         status: 400,
       }
@@ -37,9 +37,9 @@ export async function GET(req, { params }) {
   const { error: getCacheError, data: cachedData } = await getCache(key);
   if (getCacheError) {
     return NextResponse.json(
-      errorHandler(getCacheError.message, getCacheError.code),
+      errorHandler(getCacheError?.message, getCacheError?.code),
       {
-        status: getCacheError.status,
+        status: getCacheError?.status,
       }
     );
   }
@@ -54,9 +54,9 @@ export async function GET(req, { params }) {
   );
   if (getBuildingsDataError) {
     return NextResponse.json(
-      errorHandler(getBuildingsDataError.message, getBuildingsDataError.code),
+      errorHandler(getBuildingsDataError?.message, getBuildingsDataError?.code),
       {
-        status: getBuildingsDataError.status,
+        status: getBuildingsDataError?.status,
       }
     );
   }
@@ -69,9 +69,9 @@ export async function GET(req, { params }) {
   );
   if (setCacheError) {
     return NextResponse.json(
-      errorHandler(setCacheError.message, setCacheError.code),
+      errorHandler(setCacheError?.message, setCacheError?.code),
       {
-        status: setCacheError.status,
+        status: setCacheError?.status,
       }
     );
   }

@@ -9,7 +9,7 @@ export const validateRoute = (data, schema) => {
     const errorMessages = {};
 
     result.error?.issues.forEach((error) => {
-      errorMessages[error.path[0]] = error.message;
+      errorMessages[error.path[0]] = error?.message;
     });
 
     return {
@@ -68,12 +68,6 @@ export const suggestionsSchema = z.object({
     .string()
     .min(3, "Address must be at least 3 characters")
     .max(255, "Address must be less than 255 characters")
-    .optional(),
-  coordinates: z
-    .object({
-      latitude: z.number().min(-90).max(90),
-      longitude: z.number().min(-180).max(180),
-    })
     .optional(),
   transportation: z.enum(Object.values(transportationTypes)).optional(),
   scoring_model: z.enum(Object.values(scoringModels)),

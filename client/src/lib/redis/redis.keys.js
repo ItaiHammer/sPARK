@@ -67,7 +67,9 @@ export const getRecommendationsKey = (
   location_id,
   building_id,
   scoring_model,
-  arrival_time
+  arrival_time,
+  address,
+  transportation
 ) => {
   const timeTillArrivalTime =
     arrival_time.diff(DateTime.now({ zone: "UTC" })).toMillis() / 1000;
@@ -75,7 +77,9 @@ export const getRecommendationsKey = (
   return {
     key: `LOCATION-RECOMMENDATIONS:LOCATION_ID:${location_id}:BUILDING_ID:${building_id}:SCORING_MODEL:${scoring_model}:ARRIVAL_TIME:${hashValue(
       arrival_time.toISO({ zone: "UTC" })
-    )}`,
+    )}${address ? `:ADDRESS:${hashValue(address)}` : ""}${
+      transportation ? `:TRANSPORTATION:${transportation}` : ""
+    }`,
     interval: Math.round(timeTillArrivalTime + 60 * 5),
   }; // Last until time of the arrival time + 5 mins
 };

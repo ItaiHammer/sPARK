@@ -1,6 +1,8 @@
 import { DateTime } from "luxon";
 import { errorCodes } from "@/lib/helpers/responseHandler";
 import { roundToTwoDecimalPlaces } from "@/lib/utils";
+import { getGeocodeData } from "@/lib/helpers/api.helpers";
+import { getUserCalculationsData } from "@/lib/helpers/api.helpers";
 
 export const calculateNewLeaveTime = (
   oldData,
@@ -272,5 +274,51 @@ export const addOccupancyDataToRecommendations = (
   return {
     highestTotalTravelTime,
     recommendations,
+  };
+};
+
+export const calculateUserToLots = async (
+  location_id,
+  address,
+  transportation
+) => {
+  // Geocode the address
+  const { error: geocodeError, data: geocodeData } = await getGeocodeData(
+    address
+  );
+  if (geocodeError || !geocodeData) {
+    return {
+      error: {
+        message: geocodeError?.message,
+        code: geocodeError?.code,
+        status: geocodeError?.status,
+      },
+      data: null,
+    };
+  }
+  const { coordinates } = geocodeData;
+
+  // Calculate User to Lots
+  const { error: calculateDataError, data: user_to_lots_data } =
+    await getUserCalculationsData(
+      location_id,
+      address,
+      coordinates,
+      transportation
+    );
+  if (calculateDataError || !user_to_lots_data) {
+    return {
+      error: {
+        message: calculateDataError?.message,
+        code: calculateDataError?.code,
+        status: calculateDataError?.status,
+      },
+      data: null,
+    };
+  }
+
+  return {
+    error: null,
+    data: { coordinates, user_to_lots: user_to_lots_data.lots },
   };
 };

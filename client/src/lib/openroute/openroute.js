@@ -44,7 +44,7 @@ export const calculateMatrix = async (transportation, locations) => {
     return {
       data: null,
       error: {
-        message: error.response.data.message,
+        message: error.response.data?.message,
         code: errorCodes.OPENROUTESERVICE_ERROR,
       },
     };

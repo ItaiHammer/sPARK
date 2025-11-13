@@ -8,8 +8,8 @@ export async function GET(req, { params }) {
   // Arcjet Protection
   const decision = await decisionHandler(req);
   if (decision.isDenied) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
     });
   }
 
@@ -21,7 +21,7 @@ export async function GET(req, { params }) {
   );
   if (paramValidationError || !validatedParams) {
     return NextResponse.json(
-      errorHandler(paramValidationError.message, paramValidationError.code),
+      errorHandler(paramValidationError?.message, paramValidationError?.code),
       {
         status: 400,
       }
@@ -36,9 +36,9 @@ export async function GET(req, { params }) {
   );
   if (getBuildingDataError) {
     return NextResponse.json(
-      errorHandler(getBuildingDataError.message, getBuildingDataError.code),
+      errorHandler(getBuildingDataError?.message, getBuildingDataError?.code),
       {
-        status: getBuildingDataError.status,
+        status: getBuildingDataError?.status,
       }
     );
   }

@@ -12,8 +12,8 @@ export async function POST(req, { params }) {
   // Arcjet Protection
   const decision = await decisionHandler(req);
   if (decision.isDenied) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
     });
   }
 
@@ -24,8 +24,8 @@ export async function POST(req, { params }) {
   if (locationIDValidationError || !validatedLocationID) {
     return NextResponse.json(
       errorHandler(
-        locationIDValidationError.message,
-        locationIDValidationError.code
+        locationIDValidationError?.message,
+        locationIDValidationError?.code
       ),
       {
         status: 400,
@@ -42,7 +42,7 @@ export async function POST(req, { params }) {
   );
   if (validationError || !validatedData) {
     return NextResponse.json(
-      errorHandler(validationError.message, validationError.code),
+      errorHandler(validationError?.message, validationError?.code),
       {
         status: 400,
       }
@@ -59,8 +59,8 @@ export async function POST(req, { params }) {
   );
   if (calculateDataError) {
     return NextResponse.json(
-      errorHandler(calculateDataError.message, calculateDataError.code),
-      { status: calculateDataError.status }
+      errorHandler(calculateDataError?.message, calculateDataError?.code),
+      { status: calculateDataError?.status }
     );
   }
 
