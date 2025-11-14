@@ -39,7 +39,7 @@ const redisErrorHandler = (error, key) => {
   console.error("Error getting Redis:", error);
   return {
     error: {
-      message: `Redis Error: ${error.message} - ${key}`,
+      message: `Redis Error: ${error?.message} - ${key}`,
       code: errorCodes.REDIS_ERROR,
     },
     data: null,

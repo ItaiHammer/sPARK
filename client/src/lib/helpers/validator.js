@@ -1,6 +1,7 @@
 import { errorCodes } from "@/lib/helpers/responseHandler";
 import { transportationTypes } from "@/lib/openroute/openroute";
-import { z } from "zod";
+import { scoringModels } from "@/app/api/locations/[location_id]/buildings/[building_id]/recommendations/scoring.helpers";
+import * as z from "zod";
 
 export const validateRoute = (data, schema) => {
   const result = schema.safeParse(data);
@@ -8,7 +9,7 @@ export const validateRoute = (data, schema) => {
     const errorMessages = {};
 
     result.error?.issues.forEach((error) => {
-      errorMessages[error.path[0]] = error.message;
+      errorMessages[error.path[0]] = error?.message;
     });
 
     return {
@@ -28,7 +29,18 @@ export const locationIDSchema = z.object({
   location_id: z
     .string()
     .min(3, "Location ID must be at least 3 characters")
-    .max(25, "Location ID must be less than 25 characters"),
+    .max(100, "Location ID must be less than 100 characters"),
+});
+
+export const buildingIDSchema = z.object({
+  location_id: z
+    .string()
+    .min(3, "Location ID must be at least 3 characters")
+    .max(100, "Location ID must be less than 100 characters"),
+  building_id: z
+    .string()
+    .min(3, "Building ID must be at least 3 characters")
+    .max(100, "Building ID must be less than 100 characters"),
 });
 
 // ---- Body Schemas ----
@@ -55,11 +67,9 @@ export const suggestionsSchema = z.object({
   address: z
     .string()
     .min(3, "Address must be at least 3 characters")
-    .max(255, "Address must be less than 255 characters"),
-  lots: z.array(
-    z.object({
-      lot_id: z.string(),
-      duration: z.number(),
-    })
-  ),
+    .max(255, "Address must be less than 255 characters")
+    .optional(),
+  transportation: z.enum(Object.values(transportationTypes)).optional(),
+  scoring_model: z.enum(Object.values(scoringModels)),
+  arrival_time: z.iso.datetime("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
 });

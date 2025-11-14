@@ -1,5 +1,12 @@
 import { errorCodes } from "@/lib/helpers/responseHandler";
 import axios from "axios";
+import {
+  roundToTwoDecimalPlaces,
+  convertToMinutes,
+  convertToHours,
+  convertToKM,
+  convertToMiles,
+} from "@/lib/utils";
 
 // Transportation Types
 export const transportationTypes = {
@@ -37,9 +44,40 @@ export const calculateMatrix = async (transportation, locations) => {
     return {
       data: null,
       error: {
-        message: error.response.data.message,
+        message: error.response.data?.message,
         code: errorCodes.OPENROUTESERVICE_ERROR,
       },
     };
   }
+};
+
+export const formatCalculateMatrixData = (
+  dataPairList,
+  calculateMatrixData
+) => {
+  return dataPairList.map((data, index) => {
+    const durationInSeconds = calculateMatrixData.durations[0][index];
+    const distanceInMeters = calculateMatrixData.distances[0][index];
+    const snappedDistance =
+      calculateMatrixData.destinations[index].snapped_distance;
+
+    return {
+      ...data,
+      duration: {
+        seconds: roundToTwoDecimalPlaces(durationInSeconds),
+        minutes: convertToMinutes(durationInSeconds),
+        hours: convertToHours(durationInSeconds),
+      },
+      distance: {
+        meters: roundToTwoDecimalPlaces(distanceInMeters),
+        kilometers: convertToKM(distanceInMeters),
+        miles: convertToMiles(distanceInMeters),
+      },
+      snapped_distance: {
+        meters: roundToTwoDecimalPlaces(snappedDistance),
+        kilometers: convertToKM(snappedDistance),
+        miles: convertToMiles(snappedDistance),
+      },
+    };
+  });
 };
