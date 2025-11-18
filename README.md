@@ -1,5 +1,3 @@
-<a name="top"></a>
-
 <p align="center">
   <img src="./client/public/spark-logo.svg" alt="sPARK Logo" width="200">
 </p>
@@ -20,8 +18,8 @@
   <a href="https://developers.google.com/maps"><img src="https://img.shields.io/badge/Google%20Maps%20API-Live-4285F4?logo=googlemaps&logoColor=white"></a>
   <a href="https://www.npmjs.com/"><img src="https://img.shields.io/badge/npm-10.9.2-CB3837?logo=npm"></a>
   <img src="https://img.shields.io/badge/status-in%20development-blueviolet">
-  </br>
-    If you find this project helpful, please consider giving it a ⭐ on GitHub!
+  <br><br>
+  If you find this project helpful, please consider giving it a ⭐ on GitHub!
 </p>
 
 ---
@@ -40,18 +38,22 @@
 
 ---
 
+<a id="about"></a>
+
 ## 📖 About
 
 > **Coming soon:** App demo showcase when UI is done.
 
 <img src="assets/demo.gif" alt="App Demo" width="100%" style="border-radius: 10px;">
 
-sPARK is a web platform that forecasts parking avaiability for San Jose State University, using both live and historical data.  
-sPARK's goal is to help students to make more informed parking decisions by knowing which garages will have space before they arrive.
+sPARK is a web platform that forecasts parking availability for San Jose State University, using both live and historical data.  
+sPARK’s goal is to help students make more informed parking decisions by knowing which garages will have space before they arrive.
 
-Made by students for students
+Made by students for students.
 
 ---
+
+<a id="features"></a>
 
 ## ✨ Features
 
@@ -62,25 +64,29 @@ Made by students for students
     Enter your location, class building, and intended arrival time. sPARK calculates the best garage, when to leave, and walking distances.
 
 -   **Data-driven Predictions:**  
-    Thousands of real-time data points are crunched to forecast availability, reduce wasted driving, and save time.
+    Thousands of real-time data points are analyzed to forecast availability, reduce wasted driving, and save time.
 
 -   **Modern UI:**  
     Clean interface with seamless Google Maps integration.
 
 ---
 
+<a id="roadmap"></a>
+
 ## 🧩 Roadmap
 
 -   🚧 **In Progress**
 
     -   UI design improvements for a more polished student experience
-    -   “Plan Your Trip” feature (smart recommendations for best garage, leave time, and walking distance from parking lot to class)
+    -   “Plan Your Trip” feature (smart recommendations for best garage, leave time, and walking distance)
 
 -   🚀 **Planned**
     -   **AI Schedule Parser / Planner:** Upload a screenshot of your class schedule and sPARK will use AI to extract your classes and buildings, calculate recommended leave times for each day, and prefill the trip planner. Includes multiple schedules, editable plans, and automatic trip planning.
     -   **Notifications:** Receive leave-time reminders and alerts if your preferred garages are nearing capacity or trip conditions change.
 
 ---
+
+<a id="technologies-used"></a>
 
 ## 🛠️ Technologies Used
 
@@ -90,6 +96,8 @@ Made by students for students
 -   **Deployment:** Vercel
 
 ---
+
+<a id="getting-started"></a>
 
 ## 📚 Getting Started
 
@@ -108,12 +116,13 @@ Made by students for students
     ```
 
 2. **Install Dependencies**
-
     ```bash
     npm install
     ```
 
 ---
+
+<a id="running-the-application"></a>
 
 ## ⚙️ Running the Application
 
@@ -121,11 +130,15 @@ Made by students for students
 
 ---
 
+<a id="environment-variables"></a>
+
 ## 🔧 Environment Variables
 
 > **Coming soon:** Details for environment variable setup will be added as development progresses.
 
 ---
+
+<a id="contributing"></a>
 
 ## 🤝 Contributing
 
@@ -133,8 +146,10 @@ Contributions are welcome! Open an issue or submit a pull request with features 
 
 ---
 
+<a id="license"></a>
+
 ## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
 
-[Back to top](#top)
+[Back to top](#table-of-contents)
