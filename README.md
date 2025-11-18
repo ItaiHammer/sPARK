@@ -77,8 +77,8 @@ Made by students for students.
 
 -   🚧 **In Progress**
 
-    -   UI design improvements for a more polished student experience
-    -   “Plan Your Trip” feature (smart recommendations for best garage, leave time, and walking distance)
+    -   UI Design & Implementation
+    -   “Plan Your Trip” feature (recommendations for best garage, leave time, and walking distance)
 
 -   🚀 **Planned**
     -   **AI Schedule Parser / Planner:** Upload a screenshot of your class schedule and sPARK will use AI to extract your classes and buildings, calculate recommended leave times for each day, and prefill the trip planner. Includes multiple schedules, editable plans, and automatic trip planning.
