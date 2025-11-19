@@ -41,10 +41,10 @@ export const errorHandler = (message, code) => {
 };
 
 export const successHandler = (data) => {
-  return {
-    error: null,
-    data: data,
-  };
+    return {
+        error: null,
+        data: data,
+    };
 };
 
 // Return an error if the API key is invalid
@@ -57,13 +57,13 @@ export const authValidator = (req, internalAPIKey) => {
     };
   }
 
-  const apiKey = authHeader?.split(" ")[1];
-  if (!apiKey) {
-    return {
-      message: "MUST provide an API key.",
-      code: errorCodes.API_KEY_REQUIRED,
-    };
-  }
+    const apiKey = authHeader?.split(' ')[1];
+    if (!apiKey) {
+        return {
+            message: 'MUST provide an API key.',
+            code: errorCodes.API_KEY_REQUIRED,
+        };
+    }
 
   if (apiKey !== internalAPIKey) {
     return {
@@ -72,5 +72,5 @@ export const authValidator = (req, internalAPIKey) => {
     };
   }
 
-  return null;
+    return null;
 };
