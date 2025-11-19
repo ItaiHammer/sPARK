@@ -192,3 +192,22 @@ export const getBuildingCalculations = async (locationID, buildingID) => {
 
   return { error: null, data };
 };
+
+export const getForecastPoints = async (lot_id, prevUTC, nextUTC) => {
+  const supabase = getSupabase();
+  const { data: rows, error: fErr } = await supabase
+    .from("forecasts")
+    .select("forecast_ts, prediction_pct")
+    .eq("lot_id", lot_id)
+    .in("forecast_ts", [prevUTC, nextUTC])
+    .order("forecast_ts", { ascending: true });
+
+  if (fErr) {
+    return {
+      error: { message: fErr?.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  return { error: null, data: rows };
+};
