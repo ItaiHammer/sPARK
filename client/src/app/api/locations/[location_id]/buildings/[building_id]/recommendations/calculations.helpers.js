@@ -3,6 +3,7 @@ import { errorCodes } from "@/lib/helpers/responseHandler";
 import { roundToTwoDecimalPlaces } from "@/lib/utils";
 import { getGeocodeData } from "@/lib/helpers/api.helpers";
 import { getUserCalculationsData } from "@/lib/helpers/api.helpers";
+import { calculateForecastPoints } from "@/lib/helpers/forecast.helpers";
 
 export const calculateNewLeaveTime = (
   oldData,
@@ -246,37 +247,6 @@ export const formatArrivalTimeRecommendations = (
   });
 };
 
-export const addOccupancyDataToRecommendations = (
-  lotRecommendations,
-  lotsOccupancyData
-) => {
-  let highestTotalTravelTime = 0;
-  const recommendations = lotRecommendations.map((recommendation) => {
-    const totalTravelTime = recommendation.total_travel_time;
-    if (totalTravelTime > highestTotalTravelTime) {
-      highestTotalTravelTime = totalTravelTime;
-    }
-
-    const occupancyData = lotsOccupancyData.find(
-      (occupancy) => occupancy.lot_id === recommendation.lot_id
-    );
-
-    if (!occupancyData) {
-      return null;
-    }
-
-    return {
-      ...recommendation,
-      ...occupancyData,
-    };
-  });
-
-  return {
-    highestTotalTravelTime,
-    recommendations,
-  };
-};
-
 export const calculateUserToLots = async (
   location_id,
   address,
@@ -320,5 +290,56 @@ export const calculateUserToLots = async (
   return {
     error: null,
     data: { coordinates, user_to_lots: user_to_lots_data.lots },
+  };
+};
+
+export const getForecastedOccupancyData = async (
+  location_id,
+  lotRecommendations,
+  arrivalTimeData
+) => {
+  const intervalMin = 30;
+  let highestTotalTravelTime = 0;
+  let forecastedOccupancyData = [...lotRecommendations];
+  for (let i = 0; i < forecastedOccupancyData.length; i++) {
+    const curLot = forecastedOccupancyData[i];
+    const totalTravelTime = curLot.total_travel_time;
+    if (totalTravelTime > highestTotalTravelTime) {
+      highestTotalTravelTime = totalTravelTime;
+    }
+
+    // Calculate forecasted occupancy for current lot
+    const expectedArrivalTimeToLot = DateTime.fromISO(
+      curLot.expected_arrival_time_to_lot || curLot.rec_arrival_time_to_lot,
+      { zone: "UTC" }
+    );
+    const { error: calculateForecastPointError, data: forecastPointData } =
+      await calculateForecastPoints(
+        location_id,
+        curLot.lot_id,
+        expectedArrivalTimeToLot.toFormat("yyyy-MM-dd"),
+        expectedArrivalTimeToLot.toFormat("HH:mm"),
+        intervalMin
+      );
+    if (calculateForecastPointError || !forecastPointData) {
+      return {
+        error: {
+          message: calculateForecastPointError?.message,
+          code: calculateForecastPointError?.code,
+          status: calculateForecastPointError?.status,
+        },
+        data: null,
+      };
+    }
+
+    forecastedOccupancyData[i].occupancy_pct = forecastPointData.point;
+  }
+
+  return {
+    error: null,
+    data: {
+      highestTotalTravelTime,
+      forecastedOccupancyData,
+    },
   };
 };

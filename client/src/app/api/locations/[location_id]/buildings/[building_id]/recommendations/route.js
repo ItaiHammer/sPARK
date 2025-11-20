@@ -6,10 +6,7 @@ import {
   suggestionsSchema,
 } from "@/lib/helpers/validator";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
-import {
-  getOccupancyData,
-  getBuildingCalculationsData,
-} from "@/lib/helpers/api.helpers";
+import { getBuildingCalculationsData } from "@/lib/helpers/api.helpers";
 import { getCache, setCache } from "@/lib/redis/redis";
 import { getRecommendationsKey } from "@/lib/redis/redis.keys";
 import {
@@ -17,8 +14,8 @@ import {
   calculateRecommendedArrivalTimesToLots,
   calculateRecommendedLeaveTimesToLots,
   formatArrivalTimeRecommendations,
-  addOccupancyDataToRecommendations,
   calculateUserToLots,
+  getForecastedOccupancyData,
 } from "./calculations.helpers";
 import { getScoringModel, sortRecommendationsByScore } from "./scoring.helpers";
 
@@ -168,26 +165,33 @@ export async function POST(req, { params }) {
     );
   }
 
-  // Get Occupancy Data
-  const { error: getOccupancyError, data: lotsOccupancyData } =
-    await getOccupancyData(location_id);
-  if (getOccupancyError) {
+  // Getting Forecasted Occupancy Data for each lot
+  const {
+    error: getForecastedOccupancyDataError,
+    data: forecastedOccupancyData,
+  } = await getForecastedOccupancyData(
+    location_id,
+    lotRecommendations,
+    arrivalTimeData
+  );
+  if (getForecastedOccupancyDataError || !forecastedOccupancyData) {
     return NextResponse.json(
-      errorHandler(getOccupancyError?.message, getOccupancyError?.code),
-      {
-        status: 500,
-      }
+      errorHandler(
+        getForecastedOccupancyDataError?.message,
+        getForecastedOccupancyDataError?.code
+      ),
+      { status: getForecastedOccupancyDataError?.status }
     );
   }
-
-  // Adding Occupancy Data to Recommendations
-  const { highestTotalTravelTime, recommendations: combinedRecommendations } =
-    addOccupancyDataToRecommendations(lotRecommendations, lotsOccupancyData);
+  const {
+    highestTotalTravelTime,
+    forecastedOccupancyData: recommendationsWithForecastedOccupancy,
+  } = forecastedOccupancyData;
 
   // Calculate the Score for each lot & Sort by the recommendation Score
   const scoredRecommendations = sortRecommendationsByScore(
     scoring_model,
-    combinedRecommendations,
+    recommendationsWithForecastedOccupancy,
     highestTotalTravelTime
   );
 

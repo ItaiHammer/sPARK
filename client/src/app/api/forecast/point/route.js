@@ -6,10 +6,9 @@
     Query parameters (required):
         location_id  (string) - location id (e.g. 'sjsu')
         lot_id       (string) - lot id
-        time         (string) - local time 'HH:MM' to sample/interpolate (required)
+        time         (string) - UTC ISO datetime (required)
 
     Query parameters (optional):
-        date         (string) - 'tomorrow' (default) or ISO date YYYY-MM-DD
         intervalMin  (number) - slot size in minutes (default: 30)
 
     Example URL:
