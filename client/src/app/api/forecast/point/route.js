@@ -12,7 +12,7 @@
         intervalMin  (number) - slot size in minutes (default: 30)
 
     Example URL:
-        /api/forecast/point?location_id=sjsu&lot_id=lot123&time=14:30&date=2025-11-20&intervalMin=30
+        /api/forecast/point?location_id=sjsu&lot_id=lot123&time=2025-11-14T00:30:00Z&intervalMin=30
 
     Headers:
         None (public read)
@@ -59,13 +59,12 @@ export async function GET(req) {
   const url = new URL(req.url);
   const locationId = (url.searchParams.get("location_id") || "").toLowerCase();
   const lotId = url.searchParams.get("lot_id") || "";
-  const timeStr = url.searchParams.get("time") || "";
-  const dateStr = url.searchParams.get("date") || "tomorrow";
+  const time = url.searchParams.get("time") || "";
   const intervalMin = Number(
     url.searchParams.get("intervalMin") || DEFAULT_INTERVAL
   );
 
-  if (!locationId || !lotId || !timeStr) {
+  if (!locationId || !lotId || !time) {
     return NextResponse.json(
       errorHandler(
         new Error("location_id, lot_id, time required"),
@@ -76,13 +75,7 @@ export async function GET(req) {
   }
 
   const { error: calculateForecastPointsError, data } =
-    await calculateForecastPoints(
-      locationId,
-      lotId,
-      dateStr,
-      timeStr,
-      intervalMin
-    );
+    await calculateForecastPoints(locationId, lotId, time, intervalMin);
   if (calculateForecastPointsError) {
     console.error(calculateForecastPointsError);
     return NextResponse.json(

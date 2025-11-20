@@ -20,12 +20,16 @@ function snap(dt, intervalMin, mode = "floor") {
 export const calculateForecastPoints = async (
   location_id,
   lot_id,
-  dateStr,
-  timeStr,
+  time,
   intervalMin
 ) => {
+  const foramttedLocationID = location_id.toLowerCase();
+  const formattedLotID = lot_id.toLowerCase();
+
   // timezone for location
-  const { error: locErr, data: loc } = await getLocationByID(location_id);
+  const { error: locErr, data: loc } = await getLocationByID(
+    foramttedLocationID
+  );
   if (locErr || !loc) {
     return {
       error: {
@@ -39,22 +43,11 @@ export const calculateForecastPoints = async (
   const tz = loc.timezone || "America/Los_Angeles";
 
   // local datetime to forecast for
-  const baseDay =
-    dateStr === "tomorrow"
-      ? DateTime.utc().setZone(tz).plus({ days: 1 }).startOf("day")
-      : DateTime.fromISO(`${dateStr}T00:00:00`, { zone: tz });
-
-  const [hh, mm] = timeStr.split(":").map(Number);
-  const tLocal = baseDay.set({
-    hour: hh,
-    minute: mm,
-    second: 0,
-    millisecond: 0,
-  });
+  const baseDay = DateTime.fromISO(time, { zone: tz });
 
   // prev/next boundaries
-  const prevLocal = snap(tLocal, intervalMin, "floor");
-  let nextLocal = snap(tLocal, intervalMin, "ceil");
+  const prevLocal = snap(baseDay, intervalMin, "floor");
+  let nextLocal = snap(baseDay, intervalMin, "ceil");
   if (nextLocal.equals(prevLocal))
     nextLocal = prevLocal.plus({ minutes: intervalMin });
 
@@ -63,7 +56,7 @@ export const calculateForecastPoints = async (
 
   // fetch the two bordering rows
   const { error: fErr, data: rows } = await getForecastPoints(
-    lot_id,
+    formattedLotID,
     prevUTC,
     nextUTC
   );
@@ -91,7 +84,7 @@ export const calculateForecastPoints = async (
   }
 
   // position between boundaries (0..1)
-  const minsFromPrev = tLocal.diff(prevLocal, "minutes").minutes;
+  const minsFromPrev = baseDay.diff(prevLocal, "minutes").minutes;
   const f = Math.max(0, Math.min(1, minsFromPrev / intervalMin));
 
   // interpolate
@@ -105,13 +98,16 @@ export const calculateForecastPoints = async (
     location_id,
     lot_id,
     tz,
-    request_local_time: tLocal.toISO(),
+    request_local_time: baseDay.toISO(),
     prev_boundary_local: prevLocal.toISO(),
     next_boundary_local: nextLocal.toISO(),
     interval_min: intervalMin,
     points: rows || [],
-    f,
-    point: point == null ? null : Math.max(0, Math.min(100, point)),
+    f: Number(f.toFixed(2)),
+    point:
+      point == null
+        ? null
+        : Number(Math.max(0, Math.min(100, point)).toFixed(2)),
   };
 
   return {

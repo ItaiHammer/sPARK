@@ -169,11 +169,7 @@ export async function POST(req, { params }) {
   const {
     error: getForecastedOccupancyDataError,
     data: forecastedOccupancyData,
-  } = await getForecastedOccupancyData(
-    location_id,
-    lotRecommendations,
-    arrivalTimeData
-  );
+  } = await getForecastedOccupancyData(location_id, lotRecommendations);
   if (getForecastedOccupancyDataError || !forecastedOccupancyData) {
     return NextResponse.json(
       errorHandler(

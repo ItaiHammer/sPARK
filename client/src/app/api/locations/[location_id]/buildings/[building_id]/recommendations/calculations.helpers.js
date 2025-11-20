@@ -295,8 +295,7 @@ export const calculateUserToLots = async (
 
 export const getForecastedOccupancyData = async (
   location_id,
-  lotRecommendations,
-  arrivalTimeData
+  lotRecommendations
 ) => {
   const intervalMin = 30;
   let highestTotalTravelTime = 0;
@@ -312,13 +311,12 @@ export const getForecastedOccupancyData = async (
     const expectedArrivalTimeToLot = DateTime.fromISO(
       curLot.expected_arrival_time_to_lot || curLot.rec_arrival_time_to_lot,
       { zone: "UTC" }
-    );
+    ).toISO();
     const { error: calculateForecastPointError, data: forecastPointData } =
       await calculateForecastPoints(
         location_id,
         curLot.lot_id,
-        expectedArrivalTimeToLot.toFormat("yyyy-MM-dd"),
-        expectedArrivalTimeToLot.toFormat("HH:mm"),
+        expectedArrivalTimeToLot,
         intervalMin
       );
     if (calculateForecastPointError || !forecastPointData) {
