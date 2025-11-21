@@ -52,10 +52,19 @@ import {
   errorCodes,
 } from "@/lib/helpers/responseHandler.js";
 import { calculateForecastPoints } from "@/lib/helpers/forecast.helpers.js";
+import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 const DEFAULT_INTERVAL = 30;
 
 export async function GET(req) {
+  // Arcjet Protection
+  const decision = await decisionHandler(req);
+  if (decision.isDenied) {
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
+    });
+  }
+
   const url = new URL(req.url);
   const locationId = (url.searchParams.get("location_id") || "").toLowerCase();
   const lotId = url.searchParams.get("lot_id") || "";
