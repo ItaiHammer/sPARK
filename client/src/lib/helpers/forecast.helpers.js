@@ -54,13 +54,18 @@ export const calculateForecastPoints = async (
   const prevUTC = prevLocal.toUTC().toISO();
   const nextUTC = nextLocal.toUTC().toISO();
 
-  // fetch the two bordering rows
-  const { error: fErr, data: rows } = await getForecastPoints(
+  // position between boundaries (0..1)
+  const minsFromPrev = baseDay.diff(prevLocal, "minutes").minutes;
+  const f = Math.max(0, Math.min(1, minsFromPrev / intervalMin));
+
+  // Otherwise fetch the two bordering rows as before
+  const { data: rows, error: fErr } = await getForecastPoints(
     formattedLotID,
     prevUTC,
     nextUTC
   );
-  if (fErr) {
+
+  if (fErr || !rows) {
     return {
       error: {
         message: fErr?.message,
@@ -71,7 +76,7 @@ export const calculateForecastPoints = async (
     };
   }
 
-  // --- robust mapping (compare times, not strings) ---
+  // mapping
   const prevMs = prevLocal.toUTC().toMillis();
   const nextMs = nextLocal.toUTC().toMillis();
 
@@ -83,9 +88,40 @@ export const calculateForecastPoints = async (
     else if (ms === nextMs) y1 = Number(r.prediction_pct);
   }
 
-  // position between boundaries (0..1)
-  const minsFromPrev = baseDay.diff(prevLocal, "minutes").minutes;
-  const f = Math.max(0, Math.min(1, minsFromPrev / intervalMin));
+  // If requested time equals one of the boundaries and that boundary exists in DB
+  if (baseDay.equals(prevLocal) && y0 != null) {
+    return {
+      data: {
+        location_id: foramttedLocationID,
+        lot_id: formattedLotID,
+        tz,
+        request_local_time: baseDay.toISO(),
+        prev_boundary_local: prevLocal.toISO(),
+        next_boundary_local: nextLocal.toISO(),
+        interval_min: intervalMin,
+        f,
+        point: Math.max(0, Math.min(100, y0)),
+      },
+      error: null,
+    };
+  }
+
+  if (baseDay.equals(nextLocal) && y1 != null) {
+    return {
+      data: {
+        location_id: foramttedLocationID,
+        lot_id: formattedLotID,
+        tz,
+        request_local_time: baseDay.toISO(),
+        prev_boundary_local: prevLocal.toISO(),
+        next_boundary_local: nextLocal.toISO(),
+        interval_min: intervalMin,
+        f,
+        point: Math.max(0, Math.min(100, y1)),
+      },
+      error: null,
+    };
+  }
 
   // interpolate
   let point = null;
@@ -94,24 +130,19 @@ export const calculateForecastPoints = async (
   else if (y0 == null && y1 != null) point = y1;
   else point = y0 + (y1 - y0) * f;
 
-  const data = {
-    location_id,
-    lot_id,
-    tz,
-    request_local_time: baseDay.toISO(),
-    prev_boundary_local: prevLocal.toISO(),
-    next_boundary_local: nextLocal.toISO(),
-    interval_min: intervalMin,
-    points: rows || [],
-    f: Number(f.toFixed(2)),
-    point:
-      point == null
-        ? null
-        : Number(Math.max(0, Math.min(100, point)).toFixed(2)),
-  };
-
   return {
     error: null,
-    data,
+    data: {
+      location_id: foramttedLocationID,
+      lot_id: formattedLotID,
+      tz,
+      request_local_time: baseDay.toISO(),
+      prev_boundary_local: prevLocal.toISO(),
+      next_boundary_local: nextLocal.toISO(),
+      interval_min: intervalMin,
+      points: rows || [],
+      f,
+      point: point == null ? null : Math.max(0, Math.min(100, point)),
+    },
   };
 };

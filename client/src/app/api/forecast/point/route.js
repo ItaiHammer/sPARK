@@ -74,16 +74,16 @@ export async function GET(req) {
     );
   }
 
-  const { error: calculateForecastPointsError, data } =
-    await calculateForecastPoints(locationId, lotId, time, intervalMin);
-  if (calculateForecastPointsError) {
-    console.error(calculateForecastPointsError);
+  const { error: forecastPointsError, data } = await calculateForecastPoints(
+    locationId,
+    lotId,
+    time,
+    intervalMin
+  );
+  if (forecastPointsError) {
     return NextResponse.json(
-      errorHandler(
-        calculateForecastPointsError?.message,
-        calculateForecastPointsError?.code
-      ),
-      { status: calculateForecastPointsError?.status }
+      errorHandler(forecastPointsError?.message, forecastPointsError?.code),
+      { status: 500 }
     );
   }
 
