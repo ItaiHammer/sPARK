@@ -135,7 +135,11 @@ export async function GET(req) {
     const prevUTC = prevLocal.toUTC().toISO();
     const nextUTC = nextLocal.toUTC().toISO();
 
-    // fetch the two bordering rows
+    // position between boundaries (0..1)
+    const minsFromPrev = tLocal.diff(prevLocal, 'minutes').minutes;
+    const f = Math.max(0, Math.min(1, minsFromPrev / intervalMin));
+
+    // Otherwise fetch the two bordering rows as before
     const { data: rows, error: fErr } = await supabase
         .from('forecasts')
         .select('forecast_ts, prediction_pct')
@@ -150,7 +154,7 @@ export async function GET(req) {
         );
     }
 
-    // --- robust mapping (compare times, not strings) ---
+    // mapping
     const prevMs = prevLocal.toUTC().toMillis();
     const nextMs = nextLocal.toUTC().toMillis();
 
@@ -162,9 +166,40 @@ export async function GET(req) {
         else if (ms === nextMs) y1 = Number(r.prediction_pct);
     }
 
-    // position between boundaries (0..1)
-    const minsFromPrev = tLocal.diff(prevLocal, 'minutes').minutes;
-    const f = Math.max(0, Math.min(1, minsFromPrev / intervalMin));
+    // If requested time equals one of the boundaries and that boundary exists in DB
+    if (tLocal.equals(prevLocal) && y0 != null) {
+        return NextResponse.json(
+            successHandler({
+                location_id: locationId,
+                lot_id: lotId,
+                tz,
+                request_local_time: tLocal.toISO(),
+                prev_boundary_local: prevLocal.toISO(),
+                next_boundary_local: nextLocal.toISO(),
+                interval_min: intervalMin,
+                f,
+                point: Math.max(0, Math.min(100, y0)),
+            }),
+            { status: 200 }
+        );
+    }
+
+    if (tLocal.equals(nextLocal) && y1 != null) {
+        return NextResponse.json(
+            successHandler({
+                location_id: locationId,
+                lot_id: lotId,
+                tz,
+                request_local_time: tLocal.toISO(),
+                prev_boundary_local: prevLocal.toISO(),
+                next_boundary_local: nextLocal.toISO(),
+                interval_min: intervalMin,
+                f,
+                point: Math.max(0, Math.min(100, y1)),
+            }),
+            { status: 200 }
+        );
+    }
 
     // interpolate
     let point = null;
