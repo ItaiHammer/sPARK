@@ -4,7 +4,7 @@
     Endpoint: POST /api/cron/forecast
 
     Required header:
-        Authorization: Bearer <API_KEY>
+        X-API-Key: Bearer <API_KEY>
     Content-Type: application/json
 
     Body (JSON) fields:
@@ -53,6 +53,7 @@ import {
 import { tomorrowRangeTZ, isWithinOpenWindow } from "@/lib/helpers/time.js";
 import { getModelVersion as getLastWeekSameTimeModelVersion } from "./forecasting-models/last_week_same_time/index.js";
 import { getModelVersion as getMeanLast3WeeksModelVersion } from "./forecasting-models/mean_last_3_weeks/index.js";
+import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 const DEFAULT_INTERVAL = 30;
 const DEFAULT_MODEL = "mean_last_3_weeks";
@@ -67,13 +68,24 @@ function getModel(name, version) {
 }
 
 export async function POST(req) {
-  const authErr = authValidator(req);
-  if (authErr)
-    return NextResponse.json(
-      errorHandler(new Error(authErr.message), authErr.code),
-      { status: 401 }
-    );
+  // Arcjet Protection
+  const decision = await decisionHandler(req);
+  if (decision.isDenied) {
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
+    });
+  }
 
+  // Validate API Key
+  const authError = authValidator(req, process.env.FORECASTING_API_KEY);
+  if (authError) {
+    return NextResponse.json(
+      errorHandler(authError?.message, authError?.code),
+      {
+        status: 401,
+      }
+    );
+  }
   // parse request body
   const body = await req.json().catch(() => ({}));
   const locationFilter = String(body.location_id || "all").toLowerCase();
