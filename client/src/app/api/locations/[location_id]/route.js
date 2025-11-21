@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { getLocationByID } from "@/lib/supabase/supabase";
-import { getLocationKey } from "@/lib/redis/redis.keys";
-import { getCache, setCache } from "@/lib/redis/redis";
+import { getLocationData } from "@/lib/helpers/api.helpers";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function GET(req, { params }) {
   // Arcjet Protection
   const decision = await decisionHandler(req);
   if (decision.isDenied) {
-    return NextResponse.json(errorHandler(decision.message, decision.code), {
-      status: decision.status,
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
     });
   }
 
@@ -23,56 +21,22 @@ export async function GET(req, { params }) {
   );
   if (validationError || !validatedData) {
     return NextResponse.json(
-      errorHandler(validationError.message, validationError.code),
+      errorHandler(validationError?.message, validationError?.code),
       {
         status: 400,
       }
     );
   }
   const { location_id } = validatedData;
-  const formattedLocationId = location_id.toLowerCase();
 
-  // Check if data is in Redis
-  const { key, interval } = getLocationKey(formattedLocationId);
-  const { error: getCacheError, data: cachedData } = await getCache(key);
-  if (getCacheError) {
+  // Getting Location Data
+  const { error: getLocationDataError, data: locationData } =
+    await getLocationData(location_id);
+  if (getLocationDataError) {
     return NextResponse.json(
-      errorHandler(getCacheError.message, getCacheError.code),
+      errorHandler(getLocationDataError?.message, getLocationDataError?.code),
       {
-        status: 500,
-      }
-    );
-  }
-
-  if (cachedData) {
-    return NextResponse.json(successHandler(JSON.parse(cachedData)));
-  }
-
-  // Fetch Location Data
-  const { error: getLocationByIDError, data } = await getLocationByID(
-    formattedLocationId
-  );
-  if (getLocationByIDError) {
-    return NextResponse.json(
-      errorHandler(getLocationByIDError.message, getLocationByIDError.code),
-      {
-        status: 500,
-      }
-    );
-  }
-
-  // Cache Data
-  const locationData = data[0];
-  const { error: setCacheError } = await setCache(
-    key,
-    JSON.stringify(locationData),
-    interval
-  );
-  if (setCacheError) {
-    return NextResponse.json(
-      errorHandler(setCacheError.message, setCacheError.code),
-      {
-        status: 500,
+        status: getLocationDataError?.status,
       }
     );
   }

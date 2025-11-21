@@ -27,7 +27,7 @@ export const getLocationByID = async (locationID) => {
 
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -42,7 +42,7 @@ export const getLocationByID = async (locationID) => {
     };
   }
 
-  return { error: null, data };
+  return { error: null, data: data[0] };
 };
 
 export const insertLotOccupancy = async (lotOccupancy) => {
@@ -50,7 +50,7 @@ export const insertLotOccupancy = async (lotOccupancy) => {
   const { error } = await supabase.from("lot_occupancy").insert(lotOccupancy);
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
     };
   }
   return { error: null };
@@ -64,7 +64,7 @@ export const getLatestLotOccupancy = async (locationID) => {
 
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -90,7 +90,7 @@ export const getLots = async (locationID) => {
     .eq("location_id", locationID);
   if (error) {
     return {
-      error: { message: error.message, code: errorCodes.SUPABASE_ERROR },
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }
@@ -103,4 +103,111 @@ export const getLots = async (locationID) => {
   }
 
   return { error: null, data };
+};
+
+export const getBuildingByID = async (locationID, buildingID) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("buildings")
+    .select("*")
+    .eq("location_id", locationID)
+    .eq("building_id", buildingID);
+
+  if (error) {
+    return {
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      error: {
+        message: "Building not found",
+        code: errorCodes.BUILDING_NOT_FOUND,
+      },
+      data: null,
+    };
+  }
+
+  return { error: null, data: data[0] };
+};
+
+export const getBuildings = async (locationID) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("buildings")
+    .select("*")
+    .eq("location_id", locationID);
+  if (error) {
+    return {
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      error: {
+        message: "No buildings found",
+        code: errorCodes.BUILDINGS_NOT_FOUND,
+      },
+      data: null,
+    };
+  }
+
+  return { error: null, data };
+};
+
+export const insertBuildingCalculations = async (buildingCalculations) => {
+  const supabase = getSupabase();
+  const { error } = await supabase
+    .from("lot_to_building_times")
+    .upsert(buildingCalculations, {
+      onConflict: "location_id, building_id, lot_id",
+    });
+  if (error) {
+    return {
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
+    };
+  }
+
+  return { error: null };
+};
+
+export const getBuildingCalculations = async (locationID, buildingID) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("lot_to_building_times")
+    .select("*")
+    .eq("location_id", locationID)
+    .eq("building_id", buildingID);
+
+  if (error) {
+    return {
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  return { error: null, data };
+};
+
+export const getForecastPoints = async (lot_id, prevUTC, nextUTC) => {
+  const supabase = getSupabase();
+  const { data: rows, error: fErr } = await supabase
+    .from("forecasts")
+    .select("forecast_ts, prediction_pct")
+    .eq("lot_id", lot_id)
+    .in("forecast_ts", [prevUTC, nextUTC])
+    .order("forecast_ts", { ascending: true });
+
+  if (fErr) {
+    return {
+      error: { message: fErr?.message, code: errorCodes.SUPABASE_ERROR },
+      data: null,
+    };
+  }
+
+  return { error: null, data: rows };
 };
