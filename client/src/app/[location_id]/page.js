@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { DateTime } from 'luxon';
+import { useLocationTracking } from '@/lib/location/locationservices';
+import { isWithinGeoFence } from '@/lib/location/polygeofence';
 
 export default function SimpleForecastPage() {
     const { location_id } = useParams();
@@ -72,6 +74,21 @@ export default function SimpleForecastPage() {
         load();
     }, [locationId, time, date]);
 
+
+    //TESTING FOR PERMITER -> feel free to add parameters in devtesting
+    const testPolygon = [
+        { lat: 37.249033, lon: -121.809786 },  // Northwest corner
+        { lat: 37.249138, lon: -121.809723 },  // Northeast corner
+        { lat: 37.249081, lon: -121.809451 },  // Southeast corner
+        { lat: 37.248889, lon: -121.809527 },  // Southwest corner
+    ];
+
+    // Use the location tracking hook - will update based on interval
+    //locationtracking is a hook
+    const { location, error: locationError } = useLocationTracking(10);
+
+
+
     return (
         <main style={{ padding: 20 }}>
             <h1>Forecasting Web App - {locationName}</h1>
@@ -109,6 +126,31 @@ export default function SimpleForecastPage() {
                     ? 'Loading...'
                     : garages.map((line, i) => <div key={i}>{line}</div>)}
             </pre>
+
+                
+            {/*
+            functional testing space for location services component
+             - Note location component requires client-side rendering (use-client)    
+            */}
+
+            <div className = "mt-4">
+                {locationError && <p style={{color: 'red'}}>Location Error: {locationError}</p>}
+                {location ? (
+                    <>
+                        <p>Your coords are {location.latitude}, {location.longitude}</p>
+
+                        {location.accuracy && <p>Accuracy: ±{Math.round(location.accuracy)} meters</p>}
+
+                        <p>Last updated: {new Date(location.timestamp).toLocaleTimeString()}</p>
+
+                        <p>Within geofence: {String(isWithinGeoFence(location.latitude, location.longitude, testPolygon))}</p>
+                    </>
+                ) : (
+                    <p>Loading location...</p>
+                )}
+            </div>
+
+
         </main>
     );
 }
