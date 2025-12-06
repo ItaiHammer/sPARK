@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
-import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { getOccupancyData } from "@/lib/helpers/api.helpers";
+import { validateRoute, userLocationSchema } from "@/lib/helpers/validator";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
+import { getGeocodeData } from "@/lib/helpers/api.helpers";
 
-export async function GET(req, { params }) {
+export async function POST(req) {
   // Arcjet Protection
   const decision = await decisionHandler(req);
   if (decision.isDenied) {
@@ -13,11 +13,11 @@ export async function GET(req, { params }) {
     });
   }
 
-  // Validate Request Parameters
-  const reqParams = await params;
+  // Validate Request Body
+  const body = await req.json();
   const { data: validatedData, error: validationError } = validateRoute(
-    reqParams,
-    locationIDSchema
+    body,
+    userLocationSchema
   );
   if (validationError || !validatedData) {
     return NextResponse.json(
@@ -27,17 +27,15 @@ export async function GET(req, { params }) {
       }
     );
   }
-  const { location_id } = validatedData;
+  const { address } = validatedData;
 
-  //  Get Occupancy Data
-  const { error: getOccupancyError, data } = await getOccupancyData(
-    location_id
-  );
-  if (getOccupancyError) {
+  //  Get Geocode Data
+  const { error: geocodeError, data } = await getGeocodeData(address);
+  if (geocodeError) {
     return NextResponse.json(
-      errorHandler(getOccupancyError?.message, getOccupancyError?.code),
+      errorHandler(geocodeError?.message, geocodeError?.code),
       {
-        status: 500,
+        status: geocodeError?.status,
       }
     );
   }

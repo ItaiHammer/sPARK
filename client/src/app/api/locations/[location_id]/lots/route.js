@@ -1,36 +1,46 @@
-export const runtime = "edge";
-
 import { NextResponse } from "next/server";
-import {
-  errorHandler,
-  successHandler,
-  errorCodes,
-} from "@/lib/helpers/responseHandler";
+import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { supabase } from "@/lib/supabase/supabase";
+import { getLotsData } from "@/lib/helpers/api.helpers";
+import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function GET(req, { params }) {
-  const reqParams = await params;
-  const { location_id } = validateRoute(reqParams, locationIDSchema);
-  const { data, error } = await supabase
-    .from("lots")
-    .select("*")
-    .eq("location_id", location_id.toLowerCase());
-
-  if (error) {
-    return NextResponse.json(errorHandler(error, errorCodes.SUPABASE_ERROR), {
-      status: 500,
+  // Arcjet Protection
+  const decision = await decisionHandler(req);
+  if (decision.isDenied) {
+    return NextResponse.json(errorHandler(decision?.message, decision?.code), {
+      status: decision?.status,
     });
   }
 
-  if (!data || data?.data?.length === 0) {
+  // Validate Request Parameters
+  const reqParams = await params;
+  const { data: validatedData, error: validationError } = validateRoute(
+    reqParams,
+    locationIDSchema
+  );
+  if (validationError || !validatedData) {
     return NextResponse.json(
-      errorHandler("No garages found", errorCodes.GARAGES_NOT_FOUND),
+      errorHandler(validationError?.message, validationError?.code),
       {
-        status: 404,
+        status: 400,
+      }
+    );
+  }
+  const { location_id } = validatedData;
+
+  // Gettin Lots Data
+  const { error: getLotsError, data: lotsData } = await getLotsData(
+    location_id
+  );
+  if (getLotsError) {
+    return NextResponse.json(
+      errorHandler(getLotsError?.message, getLotsError?.code),
+      {
+        status: getLotsError?.status,
       }
     );
   }
 
-  return NextResponse.json(successHandler(data));
+  return NextResponse.json(successHandler(lotsData));
 }

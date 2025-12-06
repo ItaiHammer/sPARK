@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { getOccupancyData } from "@/lib/helpers/api.helpers";
+import { getLocationData } from "@/lib/helpers/api.helpers";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function GET(req, { params }) {
@@ -29,18 +29,17 @@ export async function GET(req, { params }) {
   }
   const { location_id } = validatedData;
 
-  //  Get Occupancy Data
-  const { error: getOccupancyError, data } = await getOccupancyData(
-    location_id
-  );
-  if (getOccupancyError) {
+  // Getting Location Data
+  const { error: getLocationDataError, data: locationData } =
+    await getLocationData(location_id);
+  if (getLocationDataError) {
     return NextResponse.json(
-      errorHandler(getOccupancyError?.message, getOccupancyError?.code),
+      errorHandler(getLocationDataError?.message, getLocationDataError?.code),
       {
-        status: 500,
+        status: getLocationDataError?.status,
       }
     );
   }
 
-  return NextResponse.json(successHandler(data));
+  return NextResponse.json(successHandler(locationData));
 }

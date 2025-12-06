@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { DateTime } from "luxon";
 
 function parsePercentageText(fullness) {
   /*
@@ -30,12 +31,18 @@ function parsePercentageText(fullness) {
 export function scrapeData(html) {
   const $ = cheerio.load(html);
 
-  // Last Updated Raw: "10/9/2025 10:00 AM"
+  // Last Updated Raw: "2025-11-11 2:01:00 AM"
   const lastUpdatedRaw = $("p.timestamp")
     .text()
     .replace("Last updated ", "")
     .replace(" Refresh", "");
-  const lastUpdated = new Date(lastUpdatedRaw).toISOString();
+  const lastUpdated = DateTime.fromFormat(
+    lastUpdatedRaw.trim(),
+    "yyyy-MM-dd h:mm:ss a",
+    { zone: "America/Los_Angeles" }
+  )
+    .toUTC()
+    .toISO();
 
   const garages = $("div.garage").find("span.garage__fullness");
   const parkingLots = [
@@ -51,6 +58,7 @@ export function scrapeData(html) {
       lot_id: parkingLots[index],
       occupancy_pct: parsePercentageText(garage.text()),
       observed_at: lastUpdated,
+      scraped_at: DateTime.now({ zone: "America/Los_Angeles" }).toUTC().toISO(),
     });
   });
 

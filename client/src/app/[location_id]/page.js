@@ -1,32 +1,62 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { DateTime } from 'luxon';
 
-export default function SimpleForecastPage({ params }) {
-    const [time, setTime] = useState('12:00');
-    const [date, setDate] = useState('2025-11-17');
+export default function SimpleForecastPage() {
+    const { location_id } = useParams();
+    const [time, setTime] = useState(DateTime.now().toFormat('HH:mm'));
+    const [date, setDate] = useState(DateTime.now().toISODate());
 
     // location information
-    const [locationId, setLocationId] = useState(
-        (params.location_id || 'sjsu').toLowerCase()
-    );
+    const [locationId, setLocationId] = useState(location_id.toLowerCase());
+    const [locationName, setLocationName] = useState();
     const [garages, setGarages] = useState([]);
+
+    const authHeaders = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-API-Key': `Bearer ${process.env.NEXT_PUBLIC_INTERNAL_API_KEY}`,
+        },
+    };
 
     useEffect(() => {
         async function load() {
             try {
+                // get location info
+                const locationRes = await fetch(
+                    `/api/locations/${locationId}`,
+                    authHeaders
+                );
+
+                const locationJson = await locationRes.json();
+                const location = locationJson.data || {};
+
+                setLocationName(location.name || locationId.toUpperCase());
+
                 // get all lots for this location
                 const lotsRes = await fetch(
-                    `/api/locations/${locationId}/lots`
+                    `/api/locations/${locationId}/lots`,
+                    authHeaders
                 );
                 const lotsJson = await lotsRes.json();
                 const lots = lotsJson.data || [];
 
                 // for each lot, get the forecast at the chosen time
                 const results = [];
+                const combinedTime = DateTime.fromISO(`${date}T${time}`, {
+                    zone: 'local',
+                })
+                    .toUTC()
+                    .toISO();
+
                 for (const lot of lots) {
                     const fRes = await fetch(
-                        `/api/forecast/point?location_id=${locationId}&lot_id=${lot.lot_id}&time=${time}&date=${date}`
+                        `/api/forecast/point?location_id=${locationId}&lot_id=${lot.lot_id}&time=${combinedTime}`,
+                        authHeaders
                     );
                     const fJson = await fRes.json();
                     const point = fJson?.data?.point ?? 'N/A';
@@ -44,7 +74,7 @@ export default function SimpleForecastPage({ params }) {
 
     return (
         <main style={{ padding: 20 }}>
-            <h1>Forecasting Web App - {locationId.toUpperCase()}</h1>
+            <h1>Forecasting Web App - {locationName}</h1>
 
             <div style={{ marginBottom: 10 }}>
                 <label>
@@ -62,7 +92,7 @@ export default function SimpleForecastPage({ params }) {
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
                     />
-                </label>
+                </label>{' '}
                 <label>
                     Location:{' '}
                     <input

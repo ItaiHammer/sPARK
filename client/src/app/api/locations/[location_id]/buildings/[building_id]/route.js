@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { errorHandler, successHandler } from "@/lib/helpers/responseHandler";
-import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
-import { getOccupancyData } from "@/lib/helpers/api.helpers";
+import { validateRoute, buildingIDSchema } from "@/lib/helpers/validator";
+import { getBuildingData } from "@/lib/helpers/api.helpers";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 
 export async function GET(req, { params }) {
@@ -15,29 +15,30 @@ export async function GET(req, { params }) {
 
   // Validate Request Parameters
   const reqParams = await params;
-  const { data: validatedData, error: validationError } = validateRoute(
+  const { error: paramValidationError, data: validatedParams } = validateRoute(
     reqParams,
-    locationIDSchema
+    buildingIDSchema
   );
-  if (validationError || !validatedData) {
+  if (paramValidationError || !validatedParams) {
     return NextResponse.json(
-      errorHandler(validationError?.message, validationError?.code),
+      errorHandler(paramValidationError?.message, paramValidationError?.code),
       {
         status: 400,
       }
     );
   }
-  const { location_id } = validatedData;
+  const { location_id, building_id } = validatedParams;
 
-  //  Get Occupancy Data
-  const { error: getOccupancyError, data } = await getOccupancyData(
-    location_id
+  // Getting Building Data
+  const { error: getBuildingDataError, data } = await getBuildingData(
+    location_id,
+    building_id
   );
-  if (getOccupancyError) {
+  if (getBuildingDataError) {
     return NextResponse.json(
-      errorHandler(getOccupancyError?.message, getOccupancyError?.code),
+      errorHandler(getBuildingDataError?.message, getBuildingDataError?.code),
       {
-        status: 500,
+        status: getBuildingDataError?.status,
       }
     );
   }
