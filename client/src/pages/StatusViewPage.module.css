@@ -1,0 +1,125 @@
+.StatusViewPage {
+    display: flex;
+    padding: 0 32px 36px 32px;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    align-self: stretch;
+}
+
+.GaragesTitle {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    color: #2c2c2c;
+    font-family: Geist;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px; /* 120% */
+}
+
+.GarageControls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    align-self: stretch;
+}
+
+.GarageControlsBar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    align-self: stretch;
+}
+
+.SortButton {
+    border-radius: 34px;
+    border: 1px solid #f6f6f6;
+    background: #fff;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    width: 94px;
+    padding: 12px 16px;
+    align-items: center;
+    gap: 6px;
+
+    color: #747474;
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px; /* 142.857% */
+
+    cursor: pointer;
+}
+
+.SortIcon {
+    width: 12px;
+    height: 10px;
+    aspect-ratio: 6/5;
+
+    fill: #747474;
+}
+
+.TimeSelector {
+    border-radius: 32px;
+    border: 1px solid #f6f6f6;
+    background: #fff;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    padding: 12px 16px;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1 0 0;
+
+    cursor: pointer;
+}
+
+.TimeSelectorTextContainer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.TimeSelectorLiveIndicator {
+    width: 6px;
+    height: 6px;
+    background: #f00;
+    border-radius: 50px;
+    --glow-blur: 4px;
+    box-shadow: 0 0 var(--glow-blur) rgba(255, 0, 0, 0.9);
+    will-change: box-shadow;
+    transform: translateZ(0);
+}
+
+.TimeSelectorLiveText {
+    color: #2c2c2c;
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 20px; /* 142.857% */
+}
+
+.TimeSelectorDateText {
+    color: #747474;
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px; /* 142.857% */
+}
+
+.SortingIndicator {
+    color: var(--Secondary-Gray, #747474);
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px; /* 142.857% */
+}
