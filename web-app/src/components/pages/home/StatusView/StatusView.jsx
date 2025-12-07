@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DateTime } from "luxon";
 import { motion } from "framer-motion";
 import useSWR from "swr";
-import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
+import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
+import { formattedDateTime } from "@/lib/utils";
 
+// Contexts
+import { useForecastAPI } from "@/contexts/API/ForecastAPI.context";
+
+// CSS
 import styles from "./StatusViewPage.module.css";
 
 export default function StatusViewPage({ locationId }) {
@@ -13,94 +18,37 @@ export default function StatusViewPage({ locationId }) {
   const [time, setTime] = useState(DateTime.now().toFormat("HH:mm"));
   const [date, setDate] = useState(DateTime.now().toISODate());
 
-  // location information
-  const [garages, setGarages] = useState([]);
-
-  // Get Locaiton Info
-  const { defaultSWROptions, getLocationInfo, getLocationLots } =
-    useLocationAPI();
+  // Get Forecast Points
+  const { getForecastPoints } = useForecastAPI();
   const {
-    data: locationJSON,
-    error: locationError,
-    isLoading: locationLoading,
+    data: rawData,
+    error,
+    isLoading,
   } = useSWR(
-    [`location-info`, locationId],
-    ([key, id]) => getLocationInfo(id),
-    defaultSWROptions
+    [`forecast-points`, locationId, time, date],
+    ([key, id, time, date]) => getForecastPoints(id, time, date),
+    DEFAULT_SWR_OPTIONS
   );
 
-  if (locationError) {
-    return <div>Error: {locationError.message}</div>;
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
-  const locationData = locationJSON?.data || {};
-
-  // Get Location Lots
-  const {
-    data: lotsJSON,
-    error: lotsError,
-    isLoading: lotsLoading,
-  } = useSWR(
-    [`location-lots`, locationId],
-    ([key, id]) => getLocationLots(id),
-    defaultSWROptions
-  );
-
-  if (lotsError) {
-    return <div>Error: {lotsError.message}</div>;
+  if (error) {
+    return <div>Error: {error.message}</div>;
   }
 
-  const lotsData = lotsJSON?.data || [];
-
-  // useEffect(() => {
-  //   async function load() {
-  //     try {
-  //       // for each lot, get the forecast at the chosen time
-  //       const results = [];
-  //       const combinedTime = DateTime.fromISO(`${date}T${time}`, {
-  //         zone: "local",
-  //       })
-  //         .toUTC()
-  //         .toISO();
-
-  //       for (const lot of lots) {
-  //         const fRes = await fetch(
-  //           `/api/forecast/point?location_id=${locationId}&lot_id=${lot.lot_id}&time=${combinedTime}`,
-  //           authHeaders
-  //         );
-  //         const fJson = await fRes.json();
-  //         const point = fJson?.data?.point ?? "N/A";
-  //         results.push(`${lot.name || lot.lot_id}: ${point}% full`);
-  //       }
-
-  //       setGarages(results);
-  //     } catch (err) {
-  //       setGarages([`Error loading forecasts: ${err.message}`]);
-  //     }
-  //   }
-
-  //   load();
-  // }, [locationId, time, date]);
-
-  function formattedDateTime() {
-    const dt = DateTime.fromISO(`${date}T${time}`, { zone: "local" });
-    if (!dt.isValid) {
-      const fallback = DateTime.fromISO(date);
-      return fallback.isValid ? fallback.toLocaleString() : "";
-    }
-    const weekday = dt.toFormat("ccc");
-    const timeStr = dt.toFormat("h:mm a").toLowerCase();
-    return `${weekday}, ${timeStr}`;
-  }
+  const data = rawData?.data || {};
+  const forecastedLots =
+    data?.lots?.map((lot) => `${lot.name || lot.lot_id}: ${lot.point}% full`) ||
+    [];
 
   return (
     <div className={styles.StatusViewPage}>
       <div className={styles.GarageControls}>
         <h2 className={styles.GaragesTitle}>
           All Garages{" "}
-          {garages.length == 0 ? (
-            ""
-          ) : (
+          {forecastedLots.length > 0 && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{
@@ -109,7 +57,7 @@ export default function StatusViewPage({ locationId }) {
                 transition: { duration: 0.3 },
               }}
             >
-              ({garages.length})
+              ({forecastedLots.length})
             </motion.p>
           )}
         </h2>
@@ -140,7 +88,7 @@ export default function StatusViewPage({ locationId }) {
               />
               <p className={styles.TimeSelectorLiveText}>Live</p>
               <p className={styles.TimeSelectorDateText}>
-                {formattedDateTime()}
+                {formattedDateTime(date, time)}
               </p>
             </div>
             <img
@@ -172,9 +120,9 @@ export default function StatusViewPage({ locationId }) {
       </div>
 
       <pre>
-        {garages.length === 0
-          ? "Loading..."
-          : garages.map((line, i) => <div key={i}>{line}</div>)}
+        {forecastedLots.length === 0
+          ? "There is no forecasted data for this time and date."
+          : forecastedLots.map((line, i) => <div key={i}>{line}</div>)}
       </pre>
     </div>
   );

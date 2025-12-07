@@ -1,30 +1,18 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import { getInternalAuthHeader } from "@/lib/constants/api.constants";
 
 // Location Context
 const LocationAPIContext = createContext();
 export const useLocationAPI = () => useContext(LocationAPIContext);
 export const LocationAPIProvider = ({ children }) => {
-  const defaultSWROptions = {
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    revalidateOnReconnect: false,
-  };
-  const authHeaders = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "X-API-Key": `Bearer ${process.env.NEXT_PUBLIC_INTERNAL_API_KEY}`,
-    },
-  };
   const getAPIURL = (locationId, slug = "") =>
     `/api/locations/${locationId}${slug ? `/${slug}` : ""}`;
 
   // Get Location Info
   const getLocationInfo = (locationId) =>
-    fetch(getAPIURL(locationId), authHeaders)
+    fetch(getAPIURL(locationId), getInternalAuthHeader())
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText);
         return res.json();
@@ -36,7 +24,7 @@ export const LocationAPIProvider = ({ children }) => {
 
   // Get Location Lots
   const getLocationLots = (locationId) =>
-    fetch(getAPIURL(locationId, "lots"), authHeaders)
+    fetch(getAPIURL(locationId, "lots"), getInternalAuthHeader())
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText);
         return res.json();
@@ -48,7 +36,10 @@ export const LocationAPIProvider = ({ children }) => {
 
   return (
     <LocationAPIContext.Provider
-      value={{ defaultSWROptions, getLocationInfo, getLocationLots }}
+      value={{
+        getLocationInfo,
+        getLocationLots,
+      }}
     >
       {children}
     </LocationAPIContext.Provider>

@@ -151,6 +151,7 @@ export async function GET(req) {
 
   // Cache Data
   const data = {
+    ...locationData,
     lots: results,
   };
 

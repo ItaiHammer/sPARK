@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { DateTime } from "luxon";
 
 // ---- Math Functions ----
 export const roundToTwoDecimalPlaces = (value) => {
@@ -21,4 +22,15 @@ export const hashValue = (value) => {
     .update(value.toLowerCase())
     .digest("hex")
     .slice(0, 8);
+};
+
+export const formattedDateTime = (date, time) => {
+  const dt = DateTime.fromISO(`${date}T${time}`, { zone: "local" });
+  if (!dt.isValid) {
+    const fallback = DateTime.fromISO(date);
+    return fallback.isValid ? fallback.toLocaleString() : "";
+  }
+  const weekday = dt.toFormat("ccc");
+  const timeStr = dt.toFormat("h:mm a").toLowerCase();
+  return `${weekday}, ${timeStr}`;
 };
