@@ -2,7 +2,12 @@
 import React from "react";
 import styles from "./AppHeader.module.css";
 
-export default function AppHeader({ tabs = [], activeTab, onChange }) {
+// Contexts
+import { useUI } from "@/contexts/UI/UI.context";
+
+export default function AppHeader({ tabs = [] }) {
+  const { activeTab, setActiveTab } = useUI();
+
   return (
     <header>
       <div className={styles.brandBar}>
@@ -26,7 +31,7 @@ export default function AppHeader({ tabs = [], activeTab, onChange }) {
                 type="button"
                 className={styles.tab}
                 onClick={() => {
-                  onChange?.(p.id);
+                  setActiveTab(p.id);
                 }}
               >
                 <p

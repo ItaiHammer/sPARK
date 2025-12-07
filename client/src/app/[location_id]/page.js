@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useParams } from "next/navigation";
 
-// Components
+// Contexts
+import { useUI } from "@/contexts/UI/UI.context";
+
+// omponents
 import AppHeader from "@/components/layout/header/AppHeader";
 import StatusView from "@/components/pages/home/StatusView/StatusView";
 import ArrivalTimeView from "@/components/pages/home/ArrivalTimeView/ArrivalTimeView";
@@ -20,12 +23,17 @@ export default function SimpleForecastPage() {
     },
   ];
 
-  const [activeTab, setActiveTab] = useState(tabs[0].id);
+  const { activeTab, setActiveTab } = useUI();
   const active = tabs.find((p) => p.id === activeTab) || tabs[0];
+
+  // Set Initial Tab
+  useEffect(() => {
+    setActiveTab(tabs[0].id);
+  }, []);
 
   return (
     <div>
-      <AppHeader tabs={tabs} onChange={setActiveTab} activeTab={activeTab} />
+      <AppHeader tabs={tabs} />
 
       <main>
         <AnimatePresence mode="wait">
