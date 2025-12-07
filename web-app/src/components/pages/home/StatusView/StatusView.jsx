@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import { motion } from "framer-motion";
+import useSWR from "swr";
+import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
 
 import styles from "./StatusViewPage.module.css";
 
@@ -12,63 +14,66 @@ export default function StatusViewPage({ locationId }) {
   const [date, setDate] = useState(DateTime.now().toISODate());
 
   // location information
-  const [locationName, setLocationName] = useState("");
   const [garages, setGarages] = useState([]);
-  const authHeaders = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "X-API-Key": `Bearer ${process.env.NEXT_PUBLIC_INTERNAL_API_KEY}`,
-    },
-  };
 
-  useEffect(() => {
-    async function load() {
-      try {
-        // get location info
-        const locationRes = await fetch(
-          `/api/locations/${locationId}`,
-          authHeaders
-        );
-        const locationJson = await locationRes.json();
-        const location = locationJson.data || {};
-        setLocationName(location.name || locationId.toUpperCase());
+  // Get Locaiton Info
+  const { getLocationInfo, getLocationLots } = useLocationAPI();
+  const {
+    data: locationJSON,
+    error: locationError,
+    isLoading: locationLoading,
+  } = useSWR([`location-info`, locationId], ([key, id]) => getLocationInfo(id));
 
-        // get all lots for this location
-        const lotsRes = await fetch(
-          `/api/locations/${locationId}/lots`,
-          authHeaders
-        );
-        const lotsJson = await lotsRes.json();
-        const lots = lotsJson.data || [];
+  if (locationError) {
+    return <div>Error: {locationError.message}</div>;
+  }
 
-        // for each lot, get the forecast at the chosen time
-        const results = [];
-        const combinedTime = DateTime.fromISO(`${date}T${time}`, {
-          zone: "local",
-        })
-          .toUTC()
-          .toISO();
+  const locationData = locationJSON?.data || {};
 
-        for (const lot of lots) {
-          const fRes = await fetch(
-            `/api/forecast/point?location_id=${locationId}&lot_id=${lot.lot_id}&time=${combinedTime}`,
-            authHeaders
-          );
-          const fJson = await fRes.json();
-          const point = fJson?.data?.point ?? "N/A";
-          results.push(`${lot.name || lot.lot_id}: ${point}% full`);
-        }
+  // Get Location Lots
+  const {
+    data: lotsJSON,
+    error: lotsError,
+    isLoading: lotsLoading,
+  } = useSWR([`location-lots`, locationId], ([key, id]) => getLocationLots(id));
 
-        setGarages(results);
-      } catch (err) {
-        setGarages([`Error loading forecasts: ${err.message}`]);
-      }
-    }
+  if (lotsError) {
+    return <div>Error: {lotsError.message}</div>;
+  }
 
-    load();
-  }, [locationId, time, date]);
+  const lotsData = lotsJSON?.data || [];
+
+  console.log(lotsData);
+
+  // useEffect(() => {
+  //   async function load() {
+  //     try {
+  //       // for each lot, get the forecast at the chosen time
+  //       const results = [];
+  //       const combinedTime = DateTime.fromISO(`${date}T${time}`, {
+  //         zone: "local",
+  //       })
+  //         .toUTC()
+  //         .toISO();
+
+  //       for (const lot of lots) {
+  //         const fRes = await fetch(
+  //           `/api/forecast/point?location_id=${locationId}&lot_id=${lot.lot_id}&time=${combinedTime}`,
+  //           authHeaders
+  //         );
+  //         const fJson = await fRes.json();
+  //         const point = fJson?.data?.point ?? "N/A";
+  //         results.push(`${lot.name || lot.lot_id}: ${point}% full`);
+  //       }
+
+  //       setGarages(results);
+  //     } catch (err) {
+  //       setGarages([`Error loading forecasts: ${err.message}`]);
+  //     }
+  //   }
+
+  //   load();
+  // }, [locationId, time, date]);
 
   function formattedDateTime() {
     const dt = DateTime.fromISO(`${date}T${time}`, { zone: "local" });

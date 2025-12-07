@@ -7,7 +7,6 @@ export async function middleware(req) {
   // Only protect API routes
   if (url.pathname.startsWith("/api")) {
     const authHeader = req.headers.get("x-api-key")?.replace("Bearer ", "");
-    console.log(authHeader);
     if (!authHeader || authHeader !== process.env.INTERNAL_API_KEY) {
       return NextResponse.json(
         errorHandler(
