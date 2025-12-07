@@ -15,6 +15,7 @@
     "axios": "^1.12.2",
     "cheerio": "^1.1.2",
     "crypto": "^1.0.1",
+    "framer-motion": "^12.23.24",
     "ioredis": "^5.8.1",
     "luxon": "^3.7.2",
     "next": "15.5.6",
