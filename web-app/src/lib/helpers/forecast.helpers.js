@@ -1,4 +1,5 @@
-import { getLocationByID, getForecastPoints } from "@/lib/supabase/supabase";
+import { getForecastPoints } from "@/lib/supabase/supabase";
+import { getLocationData } from "@/lib/helpers/api.helpers";
 import { errorCodes } from "@/lib/helpers/responseHandler";
 import { DateTime } from "luxon";
 
@@ -21,26 +22,34 @@ export const calculateForecastPoints = async (
   location_id,
   lot_id,
   time,
-  intervalMin
+  intervalMin,
+  locationData = null
 ) => {
   const foramttedLocationID = location_id.toLowerCase();
   const formattedLotID = lot_id.toLowerCase();
 
   // timezone for location
-  const { error: locErr, data: loc } = await getLocationByID(
-    foramttedLocationID
-  );
-  if (locErr || !loc) {
-    return {
-      error: {
-        message: locErr || "location not found",
-        code: errorCodes.LOCATION_NOT_FOUND,
-        status: 404,
-      },
-      data: null,
-    };
+  let loc = null;
+  if (!locationData) {
+    const { error: locErr, data: locData } = await getLocationData(
+      foramttedLocationID
+    );
+    if (locErr || !locData) {
+      return {
+        error: {
+          message: locErr || "location not found",
+          code: errorCodes.LOCATION_NOT_FOUND,
+          status: 404,
+        },
+        data: null,
+      };
+    }
+
+    loc = locData;
+  } else {
+    loc = locationData;
   }
-  const tz = loc.timezone || "America/Los_Angeles";
+  const tz = loc?.timezone || "America/Los_Angeles";
 
   // local datetime to forecast for
   const baseDay = DateTime.fromISO(time, { zone: tz });

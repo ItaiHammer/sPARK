@@ -83,3 +83,10 @@ export const getRecommendationsKey = (
     interval: Math.round(timeTillArrivalTime + 60 * 5),
   }; // Last until time of the arrival time + 5 mins
 };
+
+export const getForecastPointsKey = (locationId, time, intervalMin) => {
+  return {
+    key: `FORECAST-POINTS:LOCATION_ID:${locationId}:TIME:${time}:INTERVAL_MIN:${intervalMin}`,
+    interval: 60 * 60,
+  }; // 1 hour
+};
