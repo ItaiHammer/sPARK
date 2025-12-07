@@ -17,12 +17,17 @@ export default function StatusViewPage({ locationId }) {
   const [garages, setGarages] = useState([]);
 
   // Get Locaiton Info
-  const { getLocationInfo, getLocationLots } = useLocationAPI();
+  const { defaultSWROptions, getLocationInfo, getLocationLots } =
+    useLocationAPI();
   const {
     data: locationJSON,
     error: locationError,
     isLoading: locationLoading,
-  } = useSWR([`location-info`, locationId], ([key, id]) => getLocationInfo(id));
+  } = useSWR(
+    [`location-info`, locationId],
+    ([key, id]) => getLocationInfo(id),
+    defaultSWROptions
+  );
 
   if (locationError) {
     return <div>Error: {locationError.message}</div>;
@@ -35,15 +40,17 @@ export default function StatusViewPage({ locationId }) {
     data: lotsJSON,
     error: lotsError,
     isLoading: lotsLoading,
-  } = useSWR([`location-lots`, locationId], ([key, id]) => getLocationLots(id));
+  } = useSWR(
+    [`location-lots`, locationId],
+    ([key, id]) => getLocationLots(id),
+    defaultSWROptions
+  );
 
   if (lotsError) {
     return <div>Error: {lotsError.message}</div>;
   }
 
   const lotsData = lotsJSON?.data || [];
-
-  console.log(lotsData);
 
   // useEffect(() => {
   //   async function load() {

@@ -6,6 +6,11 @@ import { createContext, useContext } from "react";
 const LocationAPIContext = createContext();
 export const useLocationAPI = () => useContext(LocationAPIContext);
 export const LocationAPIProvider = ({ children }) => {
+  const defaultSWROptions = {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+    revalidateOnReconnect: false,
+  };
   const authHeaders = {
     method: "GET",
     headers: {
@@ -42,7 +47,9 @@ export const LocationAPIProvider = ({ children }) => {
       });
 
   return (
-    <LocationAPIContext.Provider value={{ getLocationInfo, getLocationLots }}>
+    <LocationAPIContext.Provider
+      value={{ defaultSWROptions, getLocationInfo, getLocationLots }}
+    >
       {children}
     </LocationAPIContext.Provider>
   );
