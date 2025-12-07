@@ -86,7 +86,7 @@
     left: 0;
     bottom: 0;
     border-radius: 4px 0 0 4px;
-    width: calc(100% / var(--num-pages));
+    width: calc(100% / var(--num-tabs));
     transform: translateX(calc(var(--active-index) * 100%));
     transition: transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1), width 220ms ease;
 }
