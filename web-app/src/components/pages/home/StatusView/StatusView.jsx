@@ -1,22 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { DateTime } from "luxon";
+import React from "react";
 import { motion } from "framer-motion";
 import useSWR from "swr";
 import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
-import { formattedDateTime } from "@/lib/utils";
 
 // Contexts
 import { useForecastAPI } from "@/contexts/API/ForecastAPI.context";
+import { useUI } from "@/contexts/UI/UI.context";
 
 // CSS
 import styles from "./StatusViewPage.module.css";
+import FilterButtons from "./FilterButtons";
 
 export default function StatusViewPage({ locationId }) {
-  // input information
-  const [time, setTime] = useState(DateTime.now().toFormat("HH:mm"));
-  const [date, setDate] = useState(DateTime.now().toISODate());
+  const {
+    timeFilterMenu: { date },
+  } = useUI();
 
   // Get Forecast Points
   const { getForecastPoints } = useForecastAPI();
@@ -25,8 +25,8 @@ export default function StatusViewPage({ locationId }) {
     error,
     isLoading,
   } = useSWR(
-    [`forecast-points`, locationId, time, date],
-    ([key, id, time, date]) => getForecastPoints(id, time, date),
+    [`forecast-points`, locationId, date],
+    ([key, id, date]) => getForecastPoints(id, date),
     DEFAULT_SWR_OPTIONS
   );
 
@@ -61,62 +61,8 @@ export default function StatusViewPage({ locationId }) {
             </motion.p>
           )}
         </h2>
-        <div className={styles.GarageControlsBar}>
-          <button className={styles.SortButton}>
-            <img
-              src="/icons/emptiest_first_icon.svg"
-              className={styles.SortIcon}
-            />
-            Sort
-            <img
-              src="/icons/collapse_icon.svg"
-              className={styles.CollapseIcon}
-            />
-          </button>
-          <button className={styles.TimeSelector}>
-            <div className={styles.TimeSelectorTextContainer}>
-              <motion.div
-                animate={{
-                  "--glow-blur": ["4px", "10px", "4px"],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 3,
-                  ease: "easeInOut",
-                }}
-                className={styles.TimeSelectorLiveIndicator}
-              />
-              <p className={styles.TimeSelectorLiveText}>Live</p>
-              <p className={styles.TimeSelectorDateText}>
-                {formattedDateTime(date, time)}
-              </p>
-            </div>
-            <img
-              src="/icons/collapse_icon.svg"
-              className={styles.CollapseIcon}
-            />
-          </button>
-        </div>
+        <FilterButtons />
         <p className={styles.SortingIndicator}>Sorted by emptiest to fullest</p>
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <label>
-          Time:{" "}
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
-        </label>{" "}
-        <label>
-          Date:{" "}
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </label>{" "}
       </div>
 
       <pre>

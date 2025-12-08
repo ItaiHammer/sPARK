@@ -7,10 +7,11 @@ import { useParams } from "next/navigation";
 // Contexts
 import { useUI } from "@/contexts/UI/UI.context";
 
-// omponents
+// Components
 import AppHeader from "@/components/layout/header/AppHeader";
 import StatusView from "@/components/pages/home/StatusView/StatusView";
 import ArrivalTimeView from "@/components/pages/home/ArrivalTimeView/ArrivalTimeView";
+import ForecastFilterMenu from "@/components/layout/menus/ForecastFilterMenu/ForecastFilterMenu";
 
 export default function SimpleForecastPage() {
   const { location_id } = useParams();
@@ -50,6 +51,8 @@ export default function SimpleForecastPage() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      <ForecastFilterMenu />
     </div>
   );
 }

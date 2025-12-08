@@ -8,25 +8,15 @@ import { DateTime } from "luxon";
 const ForecastAPIContext = createContext();
 export const useForecastAPI = () => useContext(ForecastAPIContext);
 export const ForecastAPIProvider = ({ children }) => {
-  const getAPIURL = (locationId, slug = "", queryParams = "") =>
+  const getAPIURL = (slug = "", queryParams = "") =>
     `/api/forecast${slug ? `/${slug}` : ""}${
       queryParams ? `?${queryParams}` : ""
     }`;
 
   // Get Forecast Points
-  const getForecastPoints = (locationId, time, date) => {
-    const combinedTime = DateTime.fromISO(`${date}T${time}`, {
-      zone: "local",
-    })
-      .toUTC()
-      .toISO();
-
+  const getForecastPoints = (locationId, date) => {
     return fetch(
-      getAPIURL(
-        locationId,
-        "points",
-        `location_id=${locationId}&time=${combinedTime}`
-      ),
+      getAPIURL("points", `location_id=${locationId}&time=${date.toUTC().toISO()}`),
       getInternalAuthHeader()
     )
       .then((res) => {

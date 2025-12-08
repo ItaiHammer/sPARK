@@ -1,4 +1,4 @@
-import { roundToTwoDecimalPlaces } from "@/lib/utils";
+import { roundToTwoDecimalPlaces } from "@/lib/utils/formatters";
 
 export const scoringModels = {
   closest: "closest",
