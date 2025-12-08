@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { errorHandler, errorCodes } from "@/lib/helpers/responseHandler";
 
-export async function middleware(req) {
-  const url = req.nextUrl;
+export async function proxy(req) {
+  const url = new URL(req.nextUrl);
 
   // Only protect API routes
   if (url.pathname.startsWith("/api")) {
