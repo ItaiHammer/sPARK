@@ -20,11 +20,11 @@ export default {
 
         const { data, error } = await supabase
             .from('lot_occupancy')
-            .select('observed_at, occupancy_pct')
+            .select('scraped_at, occupancy_pct')
             .eq('lot_id', lot.lot_id)
-            .gte('observed_at', rangeStart.toUTC().toISO())
-            .lt('observed_at', rangeEnd.toUTC().toISO())
-            .order('observed_at', { ascending: true });
+            .gte('scraped_at', rangeStart.toUTC().toISO())
+            .lt('scraped_at', rangeEnd.toUTC().toISO())
+            .order('scraped_at', { ascending: true });
 
         if (error) throw error;
 
@@ -33,7 +33,7 @@ export default {
         const counts = new Map();
 
         for (const r of data || []) {
-            const local = DateTime.fromISO(r.observed_at, {
+            const local = DateTime.fromISO(r.scraped_at, {
                 zone: 'utc',
             }).setZone(tz);
             if (local.weekday !== targetWeekday) continue;
