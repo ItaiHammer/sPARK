@@ -76,13 +76,6 @@ async function scrapeData() {
     const html = response.data;
     const $ = cheerio.load(html);
 
-    // Last Updated Raw: "10/9/2025 10:00 AM"
-    const lastUpdatedRaw = $("p.timestamp")
-      .text()
-      .replace("Last updated ", "")
-      .replace(" Refresh", "");
-    const lastUpdated = new Date(lastUpdatedRaw).toISOString();
-
     const garages = $("div.garage").find("span.garage__fullness");
     garages.each(async (index, element) => {
       const garage = $(element);
@@ -92,7 +85,6 @@ async function scrapeData() {
       const parkingLotData = {
         lot_id: parkingLot.id,
         occupancy_pct: parsedFullness,
-        observed_at: lastUpdated,
       };
 
       // Insert new data to supabase
