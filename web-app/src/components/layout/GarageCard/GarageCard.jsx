@@ -19,7 +19,7 @@ export default function GarageCard({ garage, order }) {
     useEffect(() => {
         const targetOccupancy = Math.round(garage.point || 0);
         const targetSpots = Math.floor(
-            ((garage.point || 0) / 100) * (garage.spot_count || 0)
+            ((100 - (garage.point || 0)) / 100) * (garage.spot_count || 0)
         );
 
         const occAnim = animate(occupancyRef.current, targetOccupancy, {
