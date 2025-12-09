@@ -10,6 +10,9 @@ import { formattedDateTime } from "@/lib/utils";
 // Contexts
 import { useForecastAPI } from "@/contexts/API/ForecastAPI.context";
 
+// components
+import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
+
 // CSS
 import styles from "./StatusViewPage.module.css";
 
@@ -39,16 +42,13 @@ export default function StatusViewPage({ locationId }) {
   }
 
   const data = rawData?.data || {};
-  const forecastedLots =
-    data?.lots?.map((lot) => `${lot.name || lot.lot_id}: ${lot.point}% full`) ||
-    [];
 
   return (
     <div className={styles.StatusViewPage}>
       <div className={styles.GarageControls}>
         <h2 className={styles.GaragesTitle}>
           All Garages{" "}
-          {forecastedLots.length > 0 && (
+          {data.lots.length > 0 && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{
@@ -57,7 +57,7 @@ export default function StatusViewPage({ locationId }) {
                 transition: { duration: 0.3 },
               }}
             >
-              ({forecastedLots.length})
+              ({data.lots.length})
             </motion.p>
           )}
         </h2>
@@ -100,30 +100,11 @@ export default function StatusViewPage({ locationId }) {
         <p className={styles.SortingIndicator}>Sorted by emptiest to fullest</p>
       </div>
 
-      <div style={{ marginBottom: 10 }}>
-        <label>
-          Time:{" "}
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
-        </label>{" "}
-        <label>
-          Date:{" "}
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </label>{" "}
-      </div>
-
-      <pre>
-        {forecastedLots.length === 0
-          ? "There is no forecasted data for this time and date."
-          : forecastedLots.map((line, i) => <div key={i}>{line}</div>)}
-      </pre>
+      {data.lots.length === 0
+        ? "There is no forecasted data for this time and date."
+        : data.lots.map((garage, i) => (
+            <GarageCard garage={garage} order={i} key={i} />
+          ))}
     </div>
   );
 }
