@@ -1,11 +1,19 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, animate } from "framer-motion";
+import { FILTER_TYPES } from "@/lib/constants/filters";
+import { ChartNoAxesColumn } from "lucide-react";
+
+// Contexts
+import { useUI } from "@/contexts/UI/UI.context";
 
 // CSS
 import styles from "./GarageCard.module.css";
 
 export default function GarageCard({ garage, order }) {
+  const {
+    timeFilterMenu: { type },
+  } = useUI();
   const duration = 0.7;
   const occupancyPct = garage.point || garage.occupancy_pct || 0;
   const [occupancyValue, setOccupancyValue] = useState(0);
@@ -140,17 +148,37 @@ export default function GarageCard({ garage, order }) {
             ></motion.div>
           </div>
           <div className={styles.GarageCardUpdatedIndicatorContainer}>
-            <img src="/icons/refresh-icon.svg" />
-            <p className={styles.GarageCardUpdatedIndicator}>
-              last updated{" "}
-              {new Date(garage.request_local_time)
-                .toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })
-                .toLowerCase()}
-            </p>
+            {type === FILTER_TYPES.LIVE.value ? (
+              <>
+                <img src="/icons/refresh-icon.svg" />
+                <p className={styles.GarageCardUpdatedIndicator}>
+                  last updated{" "}
+                  {new Date(garage.scraped_at)
+                    .toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                    .toLowerCase()}
+                </p>
+              </>
+            ) : (
+              <>
+                <ChartNoAxesColumn className="w-4 h-4 text-secondary-gray/20" />
+                <p className={styles.GarageCardUpdatedIndicator}>
+                  Estimation for{" "}
+                  {new Date(garage.request_local_time)
+                    .toLocaleTimeString("en-US", {
+                      day: "numeric",
+                      month: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                    .toLowerCase()}
+                </p>
+              </>
+            )}
           </div>
           <div className={styles.GarageCardStatusLabelContainer}>
             <img src="/icons/notice-icon.svg" />
