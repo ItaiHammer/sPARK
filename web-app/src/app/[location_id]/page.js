@@ -8,9 +8,10 @@ import { useParams } from 'next/navigation';
 import { useUI } from '@/contexts/UI/UI.context';
 
 // Components
-import AppHeader from '@/components/layout/header/AppHeader';
-import StatusView from '@/components/pages/home/StatusView/StatusView';
-import ArrivalTimeView from '@/components/pages/home/ArrivalTimeView/ArrivalTimeView';
+import AppHeader from "@/components/layout/header/AppHeader";
+import StatusView from "@/components/pages/home/StatusView/StatusView";
+import ArrivalTimeView from "@/components/pages/home/ArrivalTimeView/ArrivalTimeView";
+import ForecastFilterMenu from "@/components/layout/menus/ForecastFilterMenu/ForecastFilterMenu";
 
 export default function SimpleForecastPage() {
     const { location_id } = useParams();
@@ -35,21 +36,23 @@ export default function SimpleForecastPage() {
         <div>
             <AppHeader tabs={tabs} />
 
-            <main>
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={active.id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.18 }}
-                    >
-                        {active.component ? (
-                            <active.component locationId={location_id} />
-                        ) : null}
-                    </motion.div>
-                </AnimatePresence>
-            </main>
-        </div>
-    );
+      <main>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+          >
+            {active.component ? (
+              <active.component locationId={location_id} />
+            ) : null}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      <ForecastFilterMenu />
+    </div>
+  );
 }

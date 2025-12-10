@@ -6,7 +6,7 @@ import {
   convertToHours,
   convertToKM,
   convertToMiles,
-} from "@/lib/utils";
+} from "@/lib/utils/formatters";
 
 // Transportation Types
 export const transportationTypes = {
