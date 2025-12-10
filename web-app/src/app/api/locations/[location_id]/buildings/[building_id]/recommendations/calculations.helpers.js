@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { errorCodes } from "@/lib/helpers/responseHandler";
-import { roundToTwoDecimalPlaces } from "@/lib/utils/formatters/formatters";
+import { roundToTwoDecimalPlaces } from "@/lib/utils/formatters";
 import { getGeocodeData } from "@/lib/helpers/api.helpers";
 import { getUserCalculationsData } from "@/lib/helpers/api.helpers";
 import { calculateForecastPoints } from "@/lib/helpers/forecast.helpers";
