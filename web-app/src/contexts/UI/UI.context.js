@@ -6,20 +6,26 @@ import { DateTime } from "luxon";
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
 
+const DEFAULT_TIME_FILTER = {
+  type: FILTER_TYPES.LIVE.value,
+  date: DateTime.now(),
+  form: {
+    type: FILTER_TYPES.LIVE.value,
+    day: DateTime.now().toISODate(),
+    time: DateTime.now().toFormat("HH:mm"),
+  },
+};
+
 // UI Context
 const UIContext = createContext();
 export const useUI = () => useContext(UIContext);
 export const UIProvider = ({ children }) => {
   // Home Page
   const [activeTab, setActiveTab] = useState(null);
+
   const [timeFilterMenu, setTimeFilterMenu] = useState({
     isOpen: false,
-    type: FILTER_TYPES.LIVE.value,
-    date: DateTime.now(),
-    form: {
-      day: DateTime.now().toISODate(),
-      time: DateTime.now().toFormat("HH:mm"),
-    },
+    ...DEFAULT_TIME_FILTER,
   });
 
   // Toggle Time Filter
@@ -39,12 +45,7 @@ export const UIProvider = ({ children }) => {
   const resetTimeFilterForm = () =>
     setTimeFilterMenu((prev) => ({
       ...prev,
-      type: FILTER_TYPES.LIVE.value,
-      date: DateTime.now(),
-      form: {
-        day: DateTime.now().toISODate(),
-        time: DateTime.now().toFormat("HH:mm"),
-      },
+      ...DEFAULT_TIME_FILTER,
     }));
 
   return (
