@@ -12,9 +12,10 @@ import LiveIcon from "@/components/layout/animated/LiveIcon";
 
 function RadioOptions() {
   const {
-    timeFilterMenu: { type },
-    resetTimeFilterForm,
-    updateTimeFilterMenu,
+    timeFilterMenu: {
+      form: { type },
+    },
+    updateTimeFilterForm,
   } = useUI();
   const options = Object.values(FILTER_TYPES);
 
@@ -50,11 +51,7 @@ function RadioOptions() {
                 value={option.value}
                 checked={isSelected}
                 onChange={(e) => {
-                  if (e.target.value === FILTER_TYPES.LIVE.value) {
-                    resetTimeFilterForm();
-                  } else {
-                    updateTimeFilterMenu({ type: e.target.value });
-                  }
+                  updateTimeFilterForm({ type: e.target.value });
                 }}
                 className="sr-only"
               />

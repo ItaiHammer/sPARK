@@ -17,35 +17,54 @@ import TimeDateForm from "./TimeDateForm";
 
 function ForecastFilterMenu() {
   const {
-    timeFilterMenu: { isOpen, type, form },
+    timeFilterMenu: {
+      isOpen,
+      type: currentType,
+      date: currentDate,
+      form: { type: formType, day, time },
+    },
     updateTimeFilterMenu,
     toggleTimeFilter,
   } = useUI();
+
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       toggleTimeFilter();
     }
   };
 
-  const handleApplyClick = () => {
-    if (type === FILTER_TYPES.LIVE.value) return;
-
-    const date = DateTime.fromISO(form.day);
-    const [hour, minute, second] = form.time.split(":").map(Number);
-    const combinedDate = date.set({
+  const getCombinedDate = (day, time) => {
+    const date = DateTime.fromISO(day);
+    const [hour, minute, second] = time.split(":").map(Number);
+    return date.set({
       hour,
       minute,
       second,
-      millisecond: 0,
     });
+  };
 
+  const handleApplyClick = () => {
     updateTimeFilterMenu({
-      date: combinedDate,
+      type: formType,
+      date:
+        formType === FILTER_TYPES.LIVE.value
+          ? DateTime.now()
+          : getCombinedDate(day, time),
     });
 
     toggleTimeFilter();
   };
 
+  const isChanged =
+    formType === FILTER_TYPES.LIVE.value
+      ? formType !== currentType
+      : formType !== currentType ||
+        getCombinedDate(day, time).toISO() !==
+          DateTime.fromISO(currentDate).toISO();
+
+  console.log(isChanged);
+  console.log(getCombinedDate(day, time).toISO());
+  console.log(DateTime.fromISO(currentDate).toISO());
   return (
     <AnimatePresence>
       {isOpen && (
@@ -77,7 +96,7 @@ function ForecastFilterMenu() {
               <RadioOptions />
 
               {/* Custom Date/Time Pickers (shown when Custom is selected) */}
-              {type === FILTER_TYPES.CUSTOM.value ? (
+              {formType === FILTER_TYPES.CUSTOM.value ? (
                 <TimeDateForm />
               ) : (
                 <div className="flex items-center justify-center mt-12">
@@ -92,9 +111,9 @@ function ForecastFilterMenu() {
 
             {/* Apply Button - Fixed at bottom */}
             <button
-              disabled={type === FILTER_TYPES.LIVE.value}
+              disabled={!isChanged}
               className={`w-full py-3 rounded-full font-medium text-base transition-all ${
-                type === FILTER_TYPES.LIVE.value
+                !isChanged
                   ? "bg-divider-gray text-secondary-gray cursor-not-allowed"
                   : "bg-main-blue text-white hover:bg-main-blue/80 active:bg-main-blue/80"
               }`}
