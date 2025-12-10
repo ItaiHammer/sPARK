@@ -3,12 +3,15 @@
 import React from "react";
 import { motion } from "framer-motion";
 import useSWR from "swr";
+
+// Constants
 import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
+import { FILTER_TYPES } from "@/lib/constants/filters";
 
 // Contexts
 import { useForecastAPI } from "@/contexts/API/ForecastAPI.context";
 import { useUI } from "@/contexts/UI/UI.context";
-
+import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
 // CSS
 import styles from "./StatusViewPage.module.css";
 import FilterButtons from "./FilterButtons";
@@ -18,18 +21,31 @@ import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
 
 export default function StatusViewPage({ locationId }) {
   const {
-    timeFilterMenu: { date },
+    timeFilterMenu: { date, type },
   } = useUI();
 
   // Get Forecast Points
+  const { getLatestOccupancy } = useLocationAPI();
   const { getForecastPoints } = useForecastAPI();
   const {
     data: rawData,
     error,
     isLoading,
   } = useSWR(
-    [`forecast-points`, locationId, date],
-    ([key, id, date]) => getForecastPoints(id, date),
+    [
+      type === FILTER_TYPES.LIVE.value
+        ? "live-occupancy"
+        : "forecasted-occupancy",
+      locationId,
+      date,
+      type,
+    ],
+    ([key, id, date, type]) => {
+      if (type === FILTER_TYPES.CUSTOM.value)
+        return getForecastPoints(id, date);
+
+      return getLatestOccupancy(id);
+    },
     DEFAULT_SWR_OPTIONS
   );
 
@@ -42,7 +58,7 @@ export default function StatusViewPage({ locationId }) {
   }
 
   const data = rawData?.data || {};
-  const numOfLots = data.lots.length;
+  const numOfLots = data?.lots?.length || 0;
 
   return (
     <div className={styles.StatusViewPage}>

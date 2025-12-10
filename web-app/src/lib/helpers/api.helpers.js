@@ -238,7 +238,7 @@ export const getOccupancyData = async (location_id) => {
   }
 
   // Fetch Occupancy Data
-  const { error: getLatestLotOccupancyError, data } =
+  const { error: getLatestLotOccupancyError, data: occupancyData } =
     await getLatestLotOccupancy(formattedLocationId);
   if (getLatestLotOccupancyError) {
     return {
@@ -250,6 +250,29 @@ export const getOccupancyData = async (location_id) => {
       data: null,
     };
   }
+
+  const { error: getLotsDataError, data: lotsData } = await getLotsData(
+    formattedLocationId
+  );
+  if (getLotsDataError) {
+    return {
+      error: {
+        message: getLotsDataError?.message,
+        code: getLotsDataError?.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  // Combine Occupancy Data and Lots Data
+  const data = {
+    location_id: formattedLocationId,
+    lots: occupancyData.map((lotOccupancy) => ({
+      ...lotOccupancy,
+      ...lotsData.find((lot) => lot.lot_id === lotOccupancy.lot_id),
+    })),
+  };
 
   // Cache Data
   const { error: setCacheError } = await setCache(
