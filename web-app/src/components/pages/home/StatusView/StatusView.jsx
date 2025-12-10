@@ -13,6 +13,9 @@ import { useUI } from "@/contexts/UI/UI.context";
 import styles from "./StatusViewPage.module.css";
 import FilterButtons from "./FilterButtons";
 
+// components
+import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
+
 export default function StatusViewPage({ locationId }) {
   const {
     timeFilterMenu: { date },
@@ -39,16 +42,14 @@ export default function StatusViewPage({ locationId }) {
   }
 
   const data = rawData?.data || {};
-  const forecastedLots =
-    data?.lots?.map((lot) => `${lot.name || lot.lot_id}: ${lot.point}% full`) ||
-    [];
+  const numOfLots = data.lots.length;
 
   return (
     <div className={styles.StatusViewPage}>
       <div className={styles.GarageControls}>
         <h2 className={styles.GaragesTitle}>
           All Garages{" "}
-          {forecastedLots.length > 0 && (
+          {numOfLots > 0 && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{
@@ -57,7 +58,7 @@ export default function StatusViewPage({ locationId }) {
                 transition: { duration: 0.3 },
               }}
             >
-              ({forecastedLots.length})
+              ({numOfLots})
             </motion.p>
           )}
         </h2>
@@ -65,11 +66,11 @@ export default function StatusViewPage({ locationId }) {
         <p className={styles.SortingIndicator}>Sorted by emptiest to fullest</p>
       </div>
 
-      <pre>
-        {forecastedLots.length === 0
-          ? "There is no forecasted data for this time and date."
-          : forecastedLots.map((line, i) => <div key={i}>{line}</div>)}
-      </pre>
+      {numOfLots === 0
+        ? "There is no forecasted data for this time and date."
+        : data.lots.map((garage, i) => (
+            <GarageCard garage={garage} order={i} key={i} />
+          ))}
     </div>
   );
 }

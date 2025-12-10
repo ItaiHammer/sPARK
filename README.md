@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./client/public/spark-logo.svg" alt="sPARK Logo" width="200">
+  <img src="./web-app/public/spark-logo.svg" alt="sPARK Logo" width="200">
 </p>
 
 <h1 align="center">sPARK</h1>
