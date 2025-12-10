@@ -36,6 +36,17 @@ export const UIProvider = ({ children }) => {
       form: { ...prev.form, ...newState },
     }));
 
+  const resetTimeFilterForm = () =>
+    setTimeFilterMenu((prev) => ({
+      ...prev,
+      type: FILTER_TYPES.LIVE.value,
+      date: DateTime.now(),
+      form: {
+        day: DateTime.now().toISODate(),
+        time: DateTime.now().toFormat("HH:mm"),
+      },
+    }));
+
   return (
     <UIContext.Provider
       value={{
@@ -45,6 +56,7 @@ export const UIProvider = ({ children }) => {
         toggleTimeFilter,
         updateTimeFilterMenu,
         updateTimeFilterForm,
+        resetTimeFilterForm,
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 import React from "react";
+import { DateTime } from "luxon";
 
 // Contexts
 import { useUI } from "@/contexts/UI/UI.context";
@@ -11,7 +12,8 @@ import LiveIcon from "@/components/layout/animated/LiveIcon";
 
 function RadioOptions() {
   const {
-    timeFilterMenu: { type, date },
+    timeFilterMenu: { type },
+    resetTimeFilterForm,
     updateTimeFilterMenu,
   } = useUI();
   const options = Object.values(FILTER_TYPES);
@@ -27,7 +29,7 @@ function RadioOptions() {
             className={`gap-4 cursor-pointer group flex items-start rounded-xl p-4 ${
               isSelected
                 ? "border-2 border-main-blue bg-main-blue/5"
-                : "border-1 border-divider-gray"
+                : "border border-divider-gray"
             }`}
           >
             <div className="flex-1">
@@ -37,7 +39,7 @@ function RadioOptions() {
               </div>
               <div className="text-sm text-secondary-gray">
                 {option.value === FILTER_TYPES.LIVE.value
-                  ? date.toFormat("cccc, LL/d - hh:mm a")
+                  ? DateTime.now().toFormat("cccc, LL/d - hh:mm a")
                   : "Select Custom Date and Time"}
               </div>
             </div>
@@ -47,7 +49,13 @@ function RadioOptions() {
                 name="filterType"
                 value={option.value}
                 checked={isSelected}
-                onChange={(e) => updateTimeFilterMenu({ type: e.target.value })}
+                onChange={(e) => {
+                  if (e.target.value === FILTER_TYPES.LIVE.value) {
+                    resetTimeFilterForm();
+                  } else {
+                    updateTimeFilterMenu({ type: e.target.value });
+                  }
+                }}
                 className="sr-only"
               />
               <div
