@@ -1,110 +1,120 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { DateTime } from "luxon";
-import { motion } from "framer-motion";
-import useSWR from "swr";
-import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
-import { formattedDateTime } from "@/lib/utils";
+import { useState } from 'react';
+import { DateTime } from 'luxon';
+import { motion } from 'framer-motion';
+import useSWR from 'swr';
+import { DEFAULT_SWR_OPTIONS } from '@/lib/constants/api.constants';
+import { formattedDateTime } from '@/lib/utils';
+import Lottie from 'lottie-react';
 
 // Contexts
-import { useForecastAPI } from "@/contexts/API/ForecastAPI.context";
+import { useForecastAPI } from '@/contexts/API/ForecastAPI.context';
 
 // components
-import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
+import GarageCard from '@/components/layout/GarageCard/GarageCard.jsx';
 
 // CSS
-import styles from "./StatusViewPage.module.css";
+import styles from './StatusViewPage.module.css';
+
+// animations
+import carAnimation from '@/animations/car_loading_animation.json';
 
 export default function StatusViewPage({ locationId }) {
-  // input information
-  const [time, setTime] = useState(DateTime.now().toFormat("HH:mm"));
-  const [date, setDate] = useState(DateTime.now().toISODate());
+    // input information
+    const [time, setTime] = useState(DateTime.now().toFormat('HH:mm'));
+    const [date, setDate] = useState(DateTime.now().toISODate());
 
-  // Get Forecast Points
-  const { getForecastPoints } = useForecastAPI();
-  const {
-    data: rawData,
-    error,
-    isLoading,
-  } = useSWR(
-    [`forecast-points`, locationId, time, date],
-    ([key, id, time, date]) => getForecastPoints(id, time, date),
-    DEFAULT_SWR_OPTIONS
-  );
+    // Get Forecast Points
+    const { getForecastPoints } = useForecastAPI();
+    const {
+        data: rawData,
+        error,
+        isLoading,
+    } = useSWR(
+        [`forecast-points`, locationId, time, date],
+        ([key, id, time, date]) => getForecastPoints(id, time, date),
+        DEFAULT_SWR_OPTIONS
+    );
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+    const data = rawData?.data || {};
 
-  const data = rawData?.data || {};
-
-  return (
-    <div className={styles.StatusViewPage}>
-      <div className={styles.GarageControls}>
-        <h2 className={styles.GaragesTitle}>
-          All Garages{" "}
-          {data.lots.length > 0 && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.3 },
-              }}
-            >
-              ({data.lots.length})
-            </motion.p>
-          )}
-        </h2>
-        <div className={styles.GarageControlsBar}>
-          <button className={styles.SortButton}>
-            <img
-              src="/icons/emptiest_first_icon.svg"
-              className={styles.SortIcon}
-            />
-            Sort
-            <img
-              src="/icons/collapse_icon.svg"
-              className={styles.CollapseIcon}
-            />
-          </button>
-          <button className={styles.TimeSelector}>
-            <div className={styles.TimeSelectorTextContainer}>
-              <motion.div
-                animate={{
-                  "--glow-blur": ["4px", "10px", "4px"],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 3,
-                  ease: "easeInOut",
-                }}
-                className={styles.TimeSelectorLiveIndicator}
-              />
-              <p className={styles.TimeSelectorLiveText}>Live</p>
-              <p className={styles.TimeSelectorDateText}>
-                {formattedDateTime(date, time)}
-              </p>
+    return (
+        <div className={styles.StatusViewPage}>
+            <div className={styles.GarageControls}>
+                <h2 className={styles.GaragesTitle}>
+                    All Garages{' '}
+                    {data.lots?.length > 0 && (
+                        <motion.p
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{
+                                opacity: 1,
+                                y: 0,
+                                transition: { duration: 0.3 },
+                            }}
+                        >
+                            ({data.lots.length})
+                        </motion.p>
+                    )}
+                </h2>
+                <div className={styles.GarageControlsBar}>
+                    <button className={styles.SortButton}>
+                        <img
+                            src="/icons/emptiest_first_icon.svg"
+                            className={styles.SortIcon}
+                        />
+                        Sort
+                        <img
+                            src="/icons/collapse_icon.svg"
+                            className={styles.CollapseIcon}
+                        />
+                    </button>
+                    <button className={styles.TimeSelector}>
+                        <div className={styles.TimeSelectorTextContainer}>
+                            <motion.div
+                                animate={{
+                                    '--glow-blur': ['4px', '10px', '4px'],
+                                }}
+                                transition={{
+                                    repeat: Infinity,
+                                    duration: 3,
+                                    ease: 'easeInOut',
+                                }}
+                                className={styles.TimeSelectorLiveIndicator}
+                            />
+                            <p className={styles.TimeSelectorLiveText}>Live</p>
+                            <p className={styles.TimeSelectorDateText}>
+                                {formattedDateTime(date, time)}
+                            </p>
+                        </div>
+                        <img
+                            src="/icons/collapse_icon.svg"
+                            className={styles.CollapseIcon}
+                        />
+                    </button>
+                </div>
+                <p className={styles.SortingIndicator}>
+                    Sorted by emptiest to fullest
+                </p>
             </div>
-            <img
-              src="/icons/collapse_icon.svg"
-              className={styles.CollapseIcon}
-            />
-          </button>
-        </div>
-        <p className={styles.SortingIndicator}>Sorted by emptiest to fullest</p>
-      </div>
 
-      {data.lots.length === 0
-        ? "There is no forecasted data for this time and date."
-        : data.lots.map((garage, i) => (
-            <GarageCard garage={garage} order={i} key={i} />
-          ))}
-    </div>
-  );
+            {isLoading ? (
+                <Lottie
+                    animationData={carAnimation}
+                    style={{ height: 200 }}
+                    loop
+                />
+            ) : data.lots?.length === 0 ? (
+                'There is no forecasted data for this time and date.'
+            ) : (
+                data.lots.map((garage, i) => (
+                    <GarageCard garage={garage} order={i} key={i} />
+                ))
+            )}
+        </div>
+    );
 }

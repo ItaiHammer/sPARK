@@ -5,7 +5,7 @@ import { motion, animate } from 'framer-motion';
 // CSS
 import styles from './GarageCard.module.css';
 
-// Contexts
+// contexts
 import { useUI } from '@/contexts/UI/UI.context';
 
 export default function GarageCard({ garage, order }) {
@@ -170,12 +170,52 @@ export default function GarageCard({ garage, order }) {
                                 .toLowerCase()}
                         </p>
                     </div>
-                    <div className={styles.GarageCardStatusLabelContainer}>
-                        <img src="/icons/notice-icon.svg" />
-                        <p className={styles.GarageCardStatusLabel}>
-                            Full for the next 2 hours
-                        </p>
+                </div>
+
+                <div className={styles.GarageCardStatusLabelContainer}>
+                    <img src="/icons/notice-icon.svg" />
+                    <p className={styles.GarageCardStatusLabel}>
+                        Test Indicator Message
+                    </p>
+                </div>
+            </div>
+
+            <div className={styles.GarageCardDivider}></div>
+
+            <div className={styles.GarageCardInfoSection}>
+                <div className={styles.GarageCardInfoRow}>
+                    {Object.entries(garage.spot_categories).map(
+                        ([category, count]) => (
+                            <div
+                                className={styles.GarageCardInfoContainer}
+                                key={category}
+                            >
+                                <img src={`/icons/${category}_icon.svg`} />
+
+                                {count}
+                            </div>
+                        )
+                    )}
+                </div>
+                <p className={styles.GarageCardInfoDisclaimer}>
+                    Total capacity for each type, not live availability*
+                </p>
+            </div>
+
+            <div className={styles.GarageCardDivider}></div>
+
+            <div className={styles.GarageCardDailyForecastSection}>
+                <div className={styles.GarageCardDailyForecastSectionHeader}>
+                    <div
+                        className={
+                            styles.GarageCardDailyForecastSectionHeaderLabelContainer
+                        }
+                    >
+                        <img src="/icons/graph_icon.svg" />
+                        <h3>Today’s estimated forecast</h3>
                     </div>
+
+                    <img src="/icons/collapse_icon.svg" />
                 </div>
             </div>
         </motion.div>
