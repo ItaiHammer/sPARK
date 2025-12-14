@@ -20,7 +20,7 @@ export const metadata = {
       ? "http://localhost:3000"
       : process.env.NEXT_PUBLIC_WEB_APP_URL ?? "https://sparkparking.vercel.app"
   ),
-  title: "sPARK - Parking Made Simple",
+  title: "sPARK",
   description:
     "Real-time parking availability, forecasting, and smart navigation",
   manifest: "/manifest.json",
@@ -50,7 +50,7 @@ export const metadata = {
         type: "image/png",
       },
     ],
-    apple: "/icons/logos/spark-logo-192.png",
+    apple: "/icons/logos/apple-touch-icon.png",
   },
   appleWebApp: {
     capable: true,
