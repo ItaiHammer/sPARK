@@ -39,7 +39,7 @@ function FilterButtons() {
             </>
           ) : (
             <>
-              <LiveIcon className="bg-main-blue shadow-[0_0_var(--glow-blur)_rgba(0,102,255,0.9)] mr-1" />
+              <LiveIcon isLive={false} />
               <p className={styles.TimeSelectorDateText}>
                 {date.toFormat("ccc, LL/d, hh:mm a")}
               </p>

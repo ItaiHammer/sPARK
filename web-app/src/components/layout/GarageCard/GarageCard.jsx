@@ -11,6 +11,9 @@ import { useUI } from "@/contexts/UI/UI.context";
 // CSS
 import styles from "./GarageCard.module.css";
 
+// Components
+import LiveIcon from "@/components/layout/animated/LiveIcon";
+
 export default function GarageCard({ garage, order }) {
   const {
     timeFilterMenu: { type },
@@ -86,17 +89,7 @@ export default function GarageCard({ garage, order }) {
       <div className={styles.GarageCardHeader}>
         <div className={styles.GarageCardHeaderTitleContainer}>
           <div className={styles.GarageCardHeaderTitleContainerLeft}>
-            <motion.div
-              animate={{
-                "--glow-blur": ["4px", "10px", "4px"],
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 3,
-                ease: "easeInOut",
-              }}
-              className={styles.GarageCardHeaderLiveIndicator}
-            />
+            <LiveIcon isLive={type === FILTER_TYPES.LIVE.value} />
             <h3 className={styles.GarageCardHeaderTitle}>{garage.name}</h3>
           </div>
 
