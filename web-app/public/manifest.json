@@ -1,0 +1,21 @@
+{
+  "name": "sPARK",
+  "short_name": "sPARK",
+  "description": "Real-time parking availability, forecasting, and smart navigation",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icons/logos/spark-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/logos/spark-logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

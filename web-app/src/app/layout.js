@@ -15,15 +15,55 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+  metadataBase: new URL(
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:3000"
+      : process.env.NEXT_PUBLIC_WEB_APP_URL ?? "https://sparkparking.vercel.app"
+  ),
   title: "sPARK - Parking Made Simple",
   description:
     "Real-time parking availability, forecasting, and smart navigation",
+  manifest: "/manifest.json",
   openGraph: {
-    images: ["/sPARK-logo.svg"],
+    title: "sPARK - Parking Made Simple",
+    description:
+      "Real-time parking availability, forecasting, and smart navigation",
+    images: [
+      {
+        url: "/icons/logos/spark-logo-1200x630.png",
+        width: 1200,
+        height: 630,
+        alt: "sPARK",
+      },
+    ],
   },
   icons: {
-    icon: "/sPARK-logo.svg?v=3",
+    icon: [
+      {
+        url: "/icons/logos/spark-logo-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/icons/logos/spark-logo-512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: "/icons/logos/spark-logo-192.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "sPARK",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({ children }) {
