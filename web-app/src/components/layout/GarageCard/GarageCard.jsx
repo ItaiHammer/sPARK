@@ -61,6 +61,15 @@ export default function GarageCard({ garage, order }) {
       ? "var(--occupancy-orange, var(--Occupancy-Orange, #FF8800))"
       : "var(--occupancy-green, var(--Occupancy-Green, #009133))";
 
+  // Spot Categories
+  const defaultSpotCategories = {
+    disabled: 0,
+    employee: 0,
+    motorcycle: 0,
+    ev_charging: 0,
+    limited_time: 0,
+  };
+  const spotCategories = garage.spot_categories || defaultSpotCategories;
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -193,7 +202,7 @@ export default function GarageCard({ garage, order }) {
 
       <div className={styles.GarageCardInfoSection}>
         <div className={styles.GarageCardInfoRow}>
-          {Object.entries(garage.spot_categories).map(([category, count]) => (
+          {Object.entries(spotCategories).map(([category, count]) => (
             <div className={styles.GarageCardInfoContainer} key={category}>
               <img src={`/icons/${category}_icon.svg`} />
 
