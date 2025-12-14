@@ -45,7 +45,7 @@ export async function POST(req, { params }) {
   const { location_id, building_id } = validatedParams;
 
   // Validate Request Body
-  const reqBody = await req.json();
+  const reqBody = await req.json().catch(() => ({}));
   const { error: bodyValidationError, data: validatedBody } = validateRoute(
     reqBody,
     suggestionsSchema

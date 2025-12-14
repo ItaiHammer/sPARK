@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { errorCodes } from "../helpers/responseHandler";
+import { DateTime } from "luxon";
 
 let supabase;
 export const getSupabase = () => {
@@ -98,6 +99,29 @@ export const getLots = async (locationID) => {
   if (!data || data.length === 0) {
     return {
       error: { message: "No lots found", code: errorCodes.LOTS_NOT_FOUND },
+      data: null,
+    };
+  }
+
+  return { error: null, data };
+};
+
+export const getLotsForecast = async (lots, date) => {
+  const dt = DateTime.fromISO(date, { zone: "utc" });
+  const start = dt.startOf("day").toISO();
+  const end = dt.plus({ days: 1 }).startOf("day").toISO();
+
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("forecasts")
+    .select("*")
+    .in("lot_id", lots)
+    .gte("forecast_ts", start)
+    .lt("forecast_ts", end);
+
+  if (error) {
+    return {
+      error: { message: error?.message, code: errorCodes.SUPABASE_ERROR },
       data: null,
     };
   }

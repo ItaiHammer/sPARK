@@ -29,7 +29,7 @@ export async function GET(req, { params }) {
   }
   const { location_id } = validatedData;
 
-  // Gettin Lots Data
+  // Getting Lots Data
   const { error: getLotsError, data: lotsData } = await getLotsData(
     location_id
   );

@@ -35,7 +35,7 @@ export async function POST(req, { params }) {
   const { location_id } = validatedLocationID;
 
   // Validate Request Body
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
   const { data: validatedData, error: validationError } = validateRoute(
     body,
     coorindatesSchema
