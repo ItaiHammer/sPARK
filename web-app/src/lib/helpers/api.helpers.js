@@ -6,6 +6,7 @@ import {
   getBuildingCalculateKey,
   getUserCalculateKey,
   getGeocodeKey,
+  getLotsForecastKey,
 } from "@/lib/redis/redis.keys";
 import { getCache, setCache } from "@/lib/redis/redis";
 import {
@@ -15,6 +16,7 @@ import {
   getLatestLotOccupancy,
   getBuildingCalculations,
   insertBuildingCalculations,
+  getLotsForecast,
 } from "@/lib/supabase/supabase";
 import {
   calculateMatrix,
@@ -623,4 +625,124 @@ export const getGeocodeData = async (address) => {
     error: null,
     data,
   };
+};
+
+export const getLotsForecastData = async (location_id, date, lot_id) => {
+  const formattedLocationId = location_id?.toLowerCase();
+  const formattedLotID = lot_id ? lot_id?.toLowerCase() : null;
+
+  // Check if data is in Cache
+  const { key: lotsForecastKey, interval: lotsForecastInterval } =
+    getLotsForecastKey(formattedLocationId, date, formattedLotID);
+  const { error: getCacheError, data: cachedData } = await getCache(
+    lotsForecastKey
+  );
+  if (getCacheError) {
+    return {
+      error: {
+        message: getCacheError?.message,
+        code: getCacheError?.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+  if (cachedData) {
+    return {
+      error: null,
+      data: JSON.parse(cachedData),
+    };
+  }
+
+  // Fetch Lots Data
+  let lots = [];
+  if (!formattedLotID) {
+    const { error: getLotsDataError, data: lotsData } = await getLotsData(
+      formattedLocationId
+    );
+    if (getLotsDataError) {
+      return {
+        error: {
+          message: getLotsDataError?.message,
+          code: getLotsDataError?.code,
+          status: 500,
+        },
+      };
+    }
+
+    lots = lotsData.map((lot) => lot.lot_id);
+  } else {
+    lots = [formattedLotID];
+  }
+
+  // Fetch Lots Forecast Data
+  const { error: getLotsForecastDataError, data: lotsForecastData } =
+    await getLotsForecast(formattedLotID ? [formattedLotID] : lots, date);
+  if (getLotsForecastDataError) {
+    return {
+      error: {
+        message: getLotsForecastDataError?.message,
+        code: getLotsForecastDataError?.code,
+        status: 500,
+      },
+      data: null,
+    };
+  }
+
+  // If lot_id is provided, filter the data by lot_id
+  let model = null;
+  const lotsWithForecast = lots.map((lotID) => {
+    const forecastedData = lotsForecastData.filter(
+      (forecast) => forecast.lot_id === lotID
+    );
+
+    const formattedForecastedData = forecastedData.map((forecast) => {
+      const formattedData = { ...forecast };
+      if (!model) {
+        model = {
+          name: forecast.model_name,
+          version: forecast.model_version,
+        };
+      }
+      delete formattedData.lot_id;
+      delete formattedData.model_name;
+      delete formattedData.model_version;
+
+      return formattedData;
+    });
+
+    return {
+      lot_id: lotID,
+      forecasted_data:
+        formattedForecastedData?.length > 0 ? formattedForecastedData : [],
+      total_forecasts: formattedForecastedData?.length || 0,
+    };
+  });
+  const data = {
+    location_id: formattedLocationId,
+    date,
+    model,
+    lots: lotsWithForecast,
+  };
+
+  // Cache Data
+  if (data.lots.length > 0) {
+    const { error: cacheDataError } = await setCache(
+      lotsForecastKey,
+      JSON.stringify(data),
+      lotsForecastInterval
+    );
+    if (cacheDataError) {
+      return {
+        error: {
+          message: cacheDataError?.message,
+          code: cacheDataError?.code,
+          status: 500,
+        },
+        data: null,
+      };
+    }
+  }
+
+  return { error: null, data };
 };

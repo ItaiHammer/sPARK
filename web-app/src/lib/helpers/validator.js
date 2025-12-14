@@ -73,3 +73,12 @@ export const suggestionsSchema = z.object({
   scoring_model: z.enum(Object.values(scoringModels)),
   arrival_time: z.iso.datetime("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
 });
+
+export const lotsForecastSchema = z.object({
+  date: z.iso.datetime("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
+  lot_id: z
+    .string()
+    .min(3, "Lot ID must be at least 3 characters")
+    .max(100, "Lot ID must be less than 100 characters")
+    .optional(),
+});

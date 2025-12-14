@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 
 // Intervals
 const SEVEN_DAYS = 60 * 60 * 24 * 7;
+const HALF_DAY = 60 * 60 * 12;
 
 // ---- Keys ----
 export const getLotsKey = (location_id) => {
@@ -10,6 +11,13 @@ export const getLotsKey = (location_id) => {
     key: `LOCATION-LOTS:LOCATION_ID:${location_id}`,
     interval: SEVEN_DAYS,
   }; // 7 days
+};
+
+export const getLotsForecastKey = (location_id, date, lot_id) => {
+  return {
+    key: `LOTS-FORECAST:LOCATION_ID:${location_id}:DATE:${date}${lot_id ? `:LOT_ID:${lot_id}` : ""}`,
+    interval: HALF_DAY,
+  }; // 12 hours
 };
 
 export const getLocationKey = (location_id) => {
