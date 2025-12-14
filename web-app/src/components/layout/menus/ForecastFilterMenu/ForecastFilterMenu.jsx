@@ -62,9 +62,6 @@ function ForecastFilterMenu() {
         getCombinedDate(day, time).toISO() !==
           DateTime.fromISO(currentDate).toISO();
 
-  console.log(isChanged);
-  console.log(getCombinedDate(day, time).toISO());
-  console.log(DateTime.fromISO(currentDate).toISO());
   return (
     <AnimatePresence>
       {isOpen && (
