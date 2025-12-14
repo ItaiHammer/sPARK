@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import useSWR from "swr";
+import Lottie from "lottie-react";
 
 // Constants
 import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
@@ -12,12 +13,16 @@ import { FILTER_TYPES } from "@/lib/constants/filters";
 import { useForecastAPI } from "@/contexts/API/ForecastAPI.context";
 import { useUI } from "@/contexts/UI/UI.context";
 import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
+
 // CSS
 import styles from "./StatusViewPage.module.css";
+
+// Components
+import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
 import FilterButtons from "./FilterButtons";
 
-// components
-import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
+// Animations
+import carAnimation from "@/animations/car_loading_animation.json";
 
 export default function StatusViewPage({ locationId }) {
   const {
@@ -50,7 +55,7 @@ export default function StatusViewPage({ locationId }) {
   );
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Lottie animationData={carAnimation} style={{ height: 200 }} loop />;
   }
 
   if (error) {
