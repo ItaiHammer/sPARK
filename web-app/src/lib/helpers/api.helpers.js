@@ -726,20 +726,22 @@ export const getLotsForecastData = async (location_id, date, lot_id) => {
   };
 
   // Cache Data
-  const { error: cacheDataError } = await setCache(
-    lotsForecastKey,
-    JSON.stringify(data),
-    lotsForecastInterval
-  );
-  if (cacheDataError) {
-    return {
-      error: {
-        message: cacheDataError?.message,
-        code: cacheDataError?.code,
-        status: 500,
-      },
-      data: null,
-    };
+  if (data.lots.length > 0) {
+    const { error: cacheDataError } = await setCache(
+      lotsForecastKey,
+      JSON.stringify(data),
+      lotsForecastInterval
+    );
+    if (cacheDataError) {
+      return {
+        error: {
+          message: cacheDataError?.message,
+          code: cacheDataError?.code,
+          status: 500,
+        },
+        data: null,
+      };
+    }
   }
 
   return { error: null, data };

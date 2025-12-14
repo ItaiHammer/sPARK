@@ -155,16 +155,18 @@ export async function GET(req) {
     lots: results,
   };
 
-  const { error: setCacheError } = await setCache(
-    key,
-    JSON.stringify(data),
-    interval
-  );
-  if (setCacheError) {
-    return NextResponse.json(
-      errorHandler(setCacheError?.message, setCacheError?.code),
-      { status: 500 }
+  if (data.lots.length > 0) {
+    const { error: setCacheError } = await setCache(
+      key,
+      JSON.stringify(data),
+      interval
     );
+    if (setCacheError) {
+      return NextResponse.json(
+        errorHandler(setCacheError?.message, setCacheError?.code),
+        { status: 500 }
+      );
+    }
   }
 
   return NextResponse.json(successHandler(data), { status: 200 });
