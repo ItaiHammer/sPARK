@@ -14,6 +14,9 @@ import { useForecastAPI } from "@/contexts/API/ForecastAPI.context";
 import { useUI } from "@/contexts/UI/UI.context";
 import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
 
+// Constants
+import { getSortLabel } from "@/lib/constants/sort";
+
 // CSS
 import styles from "./StatusViewPage.module.css";
 
@@ -27,6 +30,10 @@ import carAnimation from "@/animations/car_loading_animation.json";
 export default function StatusViewPage({ locationId }) {
   const {
     timeFilterMenu: { date, type },
+    sortMenu: {
+      type: sortType,
+      form: { buildingName },
+    },
   } = useUI();
 
   // Get Forecast Points
@@ -84,7 +91,9 @@ export default function StatusViewPage({ locationId }) {
           )}
         </h2>
         <FilterButtons />
-        <p className={styles.SortingIndicator}>Sorted by emptiest to fullest</p>
+        <p className={styles.SortingIndicator}>
+          Sorted by {getSortLabel(sortType, buildingName).toLowerCase()}
+        </p>
       </div>
 
       {numOfLots === 0

@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
+import { SORT_TYPES } from "@/lib/constants/sort";
 
 const DEFAULT_TIME_FILTER = {
   type: FILTER_TYPES.LIVE.value,
@@ -16,6 +17,16 @@ const DEFAULT_TIME_FILTER = {
   },
 };
 
+const DEFAULT_SORT_MENU = {
+  isOpen: false,
+  type: SORT_TYPES.EMPTIEST_FIRST.value,
+  form: {
+    type: SORT_TYPES.EMPTIEST_FIRST.value,
+    buildingId: null,
+    buildingName: null,
+  },
+};
+
 // UI Context
 const UIContext = createContext();
 export const useUI = () => useContext(UIContext);
@@ -23,9 +34,16 @@ export const UIProvider = ({ children }) => {
   // Home Page
   const [activeTab, setActiveTab] = useState(null);
 
+  // Time Filter Menu
   const [timeFilterMenu, setTimeFilterMenu] = useState({
     isOpen: false,
     ...DEFAULT_TIME_FILTER,
+  });
+
+  // Sort Menu
+  const [sortMenu, setSortMenu] = useState({
+    isOpen: false,
+    ...DEFAULT_SORT_MENU,
   });
 
   // Toggle Time Filter
@@ -48,6 +66,26 @@ export const UIProvider = ({ children }) => {
       ...DEFAULT_TIME_FILTER,
     }));
 
+  // Toggle Sort Menu
+  const toggleSortMenu = () =>
+    setSortMenu((prev) => ({ ...prev, isOpen: !prev.isOpen }));
+
+  // Update Sort Menu Status
+  const updateSortMenu = (newState) =>
+    setSortMenu((prev) => ({ ...prev, ...newState }));
+
+  const updateSortMenuForm = (newState) =>
+    setSortMenu((prev) => ({
+      ...prev,
+      form: { ...prev.form, ...newState },
+    }));
+
+  const resetSortMenuForm = () =>
+    setSortMenu((prev) => ({
+      ...prev,
+      ...DEFAULT_SORT_MENU,
+    }));
+
   return (
     <UIContext.Provider
       value={{
@@ -58,6 +96,11 @@ export const UIProvider = ({ children }) => {
         updateTimeFilterMenu,
         updateTimeFilterForm,
         resetTimeFilterForm,
+        sortMenu,
+        toggleSortMenu,
+        updateSortMenu,
+        updateSortMenuForm,
+        resetSortMenuForm,
       }}
     >
       {children}

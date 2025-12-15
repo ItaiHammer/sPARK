@@ -14,11 +14,12 @@ function FilterButtons() {
   const {
     timeFilterMenu: { date, type },
     toggleTimeFilter,
+    toggleSortMenu,
   } = useUI();
 
   return (
     <div className={styles.GarageControlsBar}>
-      <button className={styles.SortButton}>
+      <button className={styles.SortButton} onClick={toggleSortMenu}>
         <img src="/icons/emptiest_first_icon.svg" className={styles.SortIcon} />
         Sort
         <img src="/icons/collapse_icon.svg" className={styles.CollapseIcon} />
