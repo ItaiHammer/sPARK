@@ -1,89 +1,91 @@
 .StatusViewPage {
-  display: flex;
-  padding: 0 32px 36px 32px;
-  flex-direction: column;
-  align-items: center;
-  gap: 36px;
-  align-self: stretch;
+    display: flex;
+    padding: 0 32px 36px 32px;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    align-self: stretch;
 }
 
 .GaragesTitle {
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
-  color: #2c2c2c;
-  font-family: Geist;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 24px; /* 120% */
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    color: #2c2c2c;
+    font-family: Geist;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px; /* 120% */
 }
 
 .GarageControls {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 18px;
-  align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    align-self: stretch;
 }
 
 .GarageControlsBar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  align-self: stretch;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    align-self: stretch;
 }
 
 .SortButton {
-  border-radius: 34px;
-  border: 1px solid #f6f6f6;
-  background: #fff;
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
+    border-radius: 34px;
+    border: 1px solid #f6f6f6;
+    background: #fff;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
 
-  display: flex;
-  width: 94px;
-  padding: 12px 16px;
-  align-items: center;
-  gap: 6px;
+    display: flex;
+    width: 94px;
+    padding: 12px 16px;
+    align-items: center;
+    gap: 6px;
 
-  color: #747474;
-  font-family: Geist;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px; /* 142.857% */
+    color: #747474;
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px; /* 142.857% */
 
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .SortIcon {
-  width: 12px;
-  height: 10px;
-  aspect-ratio: 6/5;
+    width: 12px;
+    height: 10px;
+    aspect-ratio: 6/5;
 
-  fill: #747474;
+    fill: #747474;
 }
 
 .TimeSelector {
-  border-radius: 32px;
-  border: 1px solid #f6f6f6;
-  background: #fff;
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
+    max-width: 400px;
 
-  display: flex;
-  padding: 12px 16px;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1 0 0;
+    border-radius: 32px;
+    border: 1px solid #f6f6f6;
+    background: #fff;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.25);
 
-  cursor: pointer;
+    display: flex;
+    padding: 12px 16px;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1 0 0;
+
+    cursor: pointer;
 }
 
 .TimeSelectorTextContainer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* 
@@ -99,28 +101,37 @@
 } */
 
 .TimeSelectorLiveText {
-  color: var(--primary-black);
-  font-family: Geist;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 20px; /* 142.857% */
+    color: var(--primary-black);
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 20px; /* 142.857% */
 }
 
 .TimeSelectorDateText {
-  color: var(--secondary-gray);
-  font-family: Geist;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px; /* 142.857% */
+    color: var(--secondary-gray);
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px; /* 142.857% */
 }
 
 .SortingIndicator {
-  color: var(--secondary-gray);
-  font-family: Geist;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 20px; /* 142.857% */
+    color: var(--secondary-gray);
+    font-family: Geist;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px; /* 142.857% */
+}
+
+.GarageCardsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    gap: 24px;
+    width: 100%;
 }
