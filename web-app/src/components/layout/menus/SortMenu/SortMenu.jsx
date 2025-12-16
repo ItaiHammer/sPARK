@@ -19,7 +19,7 @@ function SortMenu() {
     sortMenu: {
       isOpen,
       type: currentType,
-      form: { type: formType, buildingName, buildingId },
+      form: { type: formType, buildingName, buildingID },
     },
     updateSortMenu,
     toggleSortMenu,
@@ -28,7 +28,7 @@ function SortMenu() {
 
   // Hide sort menu when building selection is open
   const isBuildingSelectionOpen =
-    isOpen && formType === SORT_TYPES.DISTANCE_TO_BUILDING.value && !buildingId;
+    isOpen && formType === SORT_TYPES.DISTANCE_TO_BUILDING.value && !buildingID;
 
   const shouldShowSortMenu = isOpen && !isBuildingSelectionOpen;
 
@@ -45,7 +45,7 @@ function SortMenu() {
       updateSortMenuForm({
         type: sortType,
         // Only clear building if we want to change it - for now, always allow selection
-        buildingId: null,
+        buildingID: null,
         buildingName: null,
       });
       return;
@@ -86,7 +86,7 @@ function SortMenu() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-0 top-16 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col p-6"
+              className="fixed inset-x-0 top-16 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col"
             >
               {/* Header - Fixed at top */}
               <SortMenuHeader />
@@ -107,7 +107,7 @@ function SortMenu() {
                         )}
                         <button
                           onClick={() => handleSortOptionClick(option.value)}
-                          className={`w-full flex items-center gap-4 px-4 py-4 transition-colors ${
+                          className={`w-full flex items-center gap-4 px-6 py-6 transition-colors ${
                             isSelected
                               ? "bg-main-blue text-white"
                               : "bg-white text-primary-black hover:bg-gray-50"

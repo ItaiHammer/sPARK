@@ -92,7 +92,10 @@ export default function StatusViewPage({ locationId }) {
         </h2>
         <FilterButtons />
         <p className={styles.SortingIndicator}>
-          Sorted by {getSortLabel(sortType, buildingName).toLowerCase()}
+          Sorted by{" "}
+          <span className="text-main-blue font-semibold">
+            {getSortLabel(sortType, buildingName)}
+          </span>
         </p>
       </div>
 

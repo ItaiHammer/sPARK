@@ -22,7 +22,7 @@ const DEFAULT_SORT_MENU = {
   type: SORT_TYPES.EMPTIEST_FIRST.value,
   form: {
     type: SORT_TYPES.EMPTIEST_FIRST.value,
-    buildingId: null,
+    buildingID: null,
     buildingName: null,
   },
 };

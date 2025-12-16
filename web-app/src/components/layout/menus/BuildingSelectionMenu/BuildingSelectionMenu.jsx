@@ -23,7 +23,7 @@ function BuildingSelectionMenu() {
   const {
     sortMenu: {
       isOpen: sortMenuIsOpen,
-      form: { type: formType, buildingId },
+      form: { type: formType, buildingID },
     },
     updateSortMenuForm,
   } = useUI();
@@ -35,7 +35,7 @@ function BuildingSelectionMenu() {
   const isOpen =
     sortMenuIsOpen &&
     formType === SORT_TYPES.DISTANCE_TO_BUILDING.value &&
-    !buildingId;
+    !buildingID;
 
   // Fetch buildings
   const { data: buildingsData, isLoading } = useSWR(
@@ -78,7 +78,7 @@ function BuildingSelectionMenu() {
     // This allows user to cancel building selection
     updateSortMenuForm({
       type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
-      buildingId: null,
+      buildingID: null,
       buildingName: null,
     });
   };
@@ -86,7 +86,7 @@ function BuildingSelectionMenu() {
   const handleBuildingClick = (building) => {
     updateSortMenuForm({
       type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
-      buildingId: building.building_id,
+      buildingID: building.building_id,
       buildingName: building.abbreviation || building.name,
     });
     // This will close the building selection menu and return to sort menu
