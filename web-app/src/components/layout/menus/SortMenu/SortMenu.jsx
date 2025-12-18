@@ -16,19 +16,15 @@ import BuildingSelectionMenu from "../BuildingSelectionMenu/BuildingSelectionMen
 
 function SortMenu() {
   const {
-    sortMenu: {
-      isOpen,
-      type: currentType,
-      form: { type: formType, buildingName, buildingID },
-    },
+    sortMenu: { isOpen, type, buildingName, buildingID },
     updateSortMenu,
     toggleSortMenu,
-    updateSortMenuForm,
+    selectSortOption,
   } = useUI();
 
   // Hide sort menu when building selection is open
   const isBuildingSelectionOpen =
-    isOpen && formType === SORT_TYPES.DISTANCE_TO_BUILDING.value && !buildingID;
+    isOpen && type === SORT_TYPES.DISTANCE_TO_BUILDING.value && !buildingID;
 
   const shouldShowSortMenu = isOpen && !isBuildingSelectionOpen;
 
@@ -40,29 +36,16 @@ function SortMenu() {
 
   const handleSortOptionClick = (sortType) => {
     if (sortType === SORT_TYPES.DISTANCE_TO_BUILDING.value) {
-      // If already selected with a building, allow changing it by opening building selection
-      // If not selected, open building selection menu
-      updateSortMenuForm({
+      updateSortMenu({
         type: sortType,
-        // Only clear building if we want to change it - for now, always allow selection
         buildingID: null,
         buildingName: null,
       });
       return;
+    } else {
+      selectSortOption(sortType);
     }
-    updateSortMenuForm({ type: sortType });
   };
-
-  const handleApplyClick = () => {
-    updateSortMenu({
-      type: formType,
-    });
-
-    toggleSortMenu();
-  };
-
-  const isChanged = formType !== currentType;
-
   const sortOptions = Object.values(SORT_TYPES);
 
   return (
@@ -86,7 +69,7 @@ function SortMenu() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-0 top-16 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col"
+              className="fixed inset-x-0 top-16 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col pb-4"
             >
               {/* Header - Fixed at top */}
               <SortMenuHeader />
@@ -96,7 +79,7 @@ function SortMenu() {
                 {/* Sort Options */}
                 <div className="flex flex-col">
                   {sortOptions.map((option, index) => {
-                    const isSelected = formType === option.value;
+                    const isSelected = type === option.value;
                     const isDistanceOption =
                       option.value === SORT_TYPES.DISTANCE_TO_BUILDING.value;
 
@@ -115,8 +98,8 @@ function SortMenu() {
                         >
                           <img
                             src={option.icon}
-                            alt=""
-                            className={`w-5 h-5 ${isSelected ? "invert" : ""}`}
+                            alt={option.label}
+                            className={`w-4 h-4 ${isSelected ? "invert" : ""}`}
                             style={{
                               filter: isSelected
                                 ? "brightness(0) invert(1)"
@@ -124,7 +107,7 @@ function SortMenu() {
                             }}
                           />
                           <span
-                            className={`flex-1 text-left font-medium ${
+                            className={`flex-1 text-left font-medium text-sm ${
                               isSelected ? "text-white" : "text-primary-black"
                             }`}
                           >
@@ -147,19 +130,6 @@ function SortMenu() {
                   })}
                 </div>
               </div>
-
-              {/* Apply Button - Fixed at bottom */}
-              <button
-                disabled={!isChanged}
-                className={`w-full py-3 rounded-full font-medium text-base transition-all ${
-                  !isChanged
-                    ? "bg-divider-gray text-secondary-gray cursor-not-allowed"
-                    : "bg-main-blue text-white hover:bg-main-blue/80 active:bg-main-blue/80"
-                }`}
-                onClick={handleApplyClick}
-              >
-                Apply
-              </button>
             </motion.div>
           </>
         )}

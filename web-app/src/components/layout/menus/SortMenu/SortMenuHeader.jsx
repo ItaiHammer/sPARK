@@ -5,14 +5,14 @@ import { X } from "lucide-react";
 import { useUI } from "@/contexts/UI/UI.context";
 
 function SortMenuHeader() {
-  const { toggleSortMenu } = useUI();
+  const { closeSortMenu } = useUI();
 
   return (
     <div className="py-6 relative  border-b border-divider-gray/80 w-full">
       <div className="px-8 relative">
         {/* Close Button */}
         <button
-          onClick={toggleSortMenu}
+          onClick={closeSortMenu}
           className="absolute top-0 left-4 self-start w-8 h-8 flex items-center justify-center text-secondary-gray transition-colors"
           aria-label="Close"
         >

@@ -20,11 +20,8 @@ const DEFAULT_TIME_FILTER = {
 const DEFAULT_SORT_MENU = {
   isOpen: false,
   type: SORT_TYPES.EMPTIEST_FIRST.value,
-  form: {
-    type: SORT_TYPES.EMPTIEST_FIRST.value,
-    buildingID: null,
-    buildingName: null,
-  },
+  buildingID: null,
+  buildingName: null,
 };
 
 // UI Context
@@ -70,17 +67,24 @@ export const UIProvider = ({ children }) => {
   const toggleSortMenu = () =>
     setSortMenu((prev) => ({ ...prev, isOpen: !prev.isOpen }));
 
+  // Close Sort Menu
+  const closeSortMenu = () =>
+    setSortMenu((prev) => ({
+      ...prev,
+      isOpen: false,
+      type: prev.type,
+      buildingID: null,
+      buildingName: null,
+    }));
+
   // Update Sort Menu Status
   const updateSortMenu = (newState) =>
     setSortMenu((prev) => ({ ...prev, ...newState }));
 
-  const updateSortMenuForm = (newState) =>
-    setSortMenu((prev) => ({
-      ...prev,
-      form: { ...prev.form, ...newState },
-    }));
+  const selectSortOption = (sortType) =>
+    setSortMenu((prev) => ({ ...prev, isOpen: false, type: sortType }));
 
-  const resetSortMenuForm = () =>
+  const resetSortMenu = () =>
     setSortMenu((prev) => ({
       ...prev,
       ...DEFAULT_SORT_MENU,
@@ -98,9 +102,10 @@ export const UIProvider = ({ children }) => {
         resetTimeFilterForm,
         sortMenu,
         toggleSortMenu,
+        closeSortMenu,
         updateSortMenu,
-        updateSortMenuForm,
-        resetSortMenuForm,
+        selectSortOption,
+        resetSortMenu,
       }}
     >
       {children}

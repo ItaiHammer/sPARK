@@ -21,8 +21,8 @@ import { getSortLabel } from "@/lib/constants/sort";
 import styles from "./StatusViewPage.module.css";
 
 // Components
-import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
 import FilterButtons from "./FilterButtons";
+import Garages from "./Garages";
 
 // Animations
 import carAnimation from "@/animations/car_loading_animation.json";
@@ -30,10 +30,7 @@ import carAnimation from "@/animations/car_loading_animation.json";
 export default function StatusViewPage({ locationId }) {
   const {
     timeFilterMenu: { date, type },
-    sortMenu: {
-      type: sortType,
-      form: { buildingName },
-    },
+    sortMenu: { type: sortType, buildingName },
   } = useUI();
 
   // Get Forecast Points
@@ -99,11 +96,7 @@ export default function StatusViewPage({ locationId }) {
         </p>
       </div>
 
-      {numOfLots === 0
-        ? "There is no forecasted data for this time and date."
-        : data.lots.map((garage, i) => (
-            <GarageCard garage={garage} order={i} key={i} />
-          ))}
+      <Garages lots={data.lots} numOfLots={numOfLots} />
     </div>
   );
 }

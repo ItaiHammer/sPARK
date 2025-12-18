@@ -21,11 +21,8 @@ function BuildingSelectionMenu() {
   const locationId = params?.location_id;
 
   const {
-    sortMenu: {
-      isOpen: sortMenuIsOpen,
-      form: { type: formType, buildingID },
-    },
-    updateSortMenuForm,
+    sortMenu: { isOpen: sortMenuIsOpen, type, buildingID, buildingName },
+    updateSortMenu,
   } = useUI();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,7 +31,7 @@ function BuildingSelectionMenu() {
   // It should be open when sort menu is open, distance_to_building is selected, and no building is selected yet
   const isOpen =
     sortMenuIsOpen &&
-    formType === SORT_TYPES.DISTANCE_TO_BUILDING.value &&
+    type === SORT_TYPES.DISTANCE_TO_BUILDING.value &&
     !buildingID;
 
   // Fetch buildings
@@ -74,9 +71,7 @@ function BuildingSelectionMenu() {
   }, [buildings, searchQuery]);
 
   const handleBackClick = () => {
-    // Go back to sort menu - keep distance_to_building selected but clear building selection
-    // This allows user to cancel building selection
-    updateSortMenuForm({
+    updateSortMenu({
       type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
       buildingID: null,
       buildingName: null,
@@ -84,12 +79,11 @@ function BuildingSelectionMenu() {
   };
 
   const handleBuildingClick = (building) => {
-    updateSortMenuForm({
+    updateSortMenu({
       type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
       buildingID: building.building_id,
       buildingName: building.abbreviation || building.name,
     });
-    // This will close the building selection menu and return to sort menu
   };
 
   const handleBackdropClick = (e) => {
@@ -108,7 +102,7 @@ function BuildingSelectionMenu() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 z-[55]"
+            className="fixed inset-0 bg-black/40 z-55"
             onClick={handleBackdropClick}
           />
 
@@ -118,7 +112,7 @@ function BuildingSelectionMenu() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-16 bottom-0 bg-white z-[60] rounded-t-2xl shadow-2xl flex flex-col p-6"
+            className="fixed inset-x-0 top-16 bottom-0 bg-white z-60 rounded-t-2xl shadow-2xl flex flex-col p-6"
           >
             {/* Header */}
             <div className="mb-6">
