@@ -55,7 +55,7 @@ function Garages({ locationId, lots }) {
   const sortedLots = getSortedLots(formattedLots, type);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="GarageCardsContainer flex flex-col md:flex-row md:flex-wrap gap-8">
       {sortedLots.map((garage, i) => (
         <GarageCard
           buildingName={data?.building?.abbreviation || ""}

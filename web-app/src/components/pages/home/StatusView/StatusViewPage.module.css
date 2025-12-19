@@ -29,7 +29,7 @@
 
 .GarageControlsBar {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 12px;
   align-self: stretch;
@@ -66,6 +66,8 @@
 }
 
 .TimeSelector {
+  max-width: 400px;
+
   border-radius: 32px;
   border: 1px solid #f6f6f6;
   background: #fff;
