@@ -1,68 +1,23 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronsUpDown, Search } from "lucide-react";
-import { useParams } from "next/navigation";
-import useSWR from "swr";
-
-// Constants
-import {
-  DEFAULT_SWR_OPTIONS,
-  getInternalAuthHeader,
-} from "@/lib/constants/api.constants";
 
 // Contexts
 import { useUI } from "@/contexts/UI/UI.context";
 
-function BuildingSelectionMenu() {
-  const params = useParams();
-  const locationId = params?.location_id;
+// Components
+import BuildingsList from "./BuildingsList";
 
+function BuildingSelectionMenu() {
   const {
-    sortMenu: { isBuildingSelectionOpen, building: prevBuilding },
+    sortMenu: { isBuildingSelectionOpen },
     closeBuildingSelectionMenu,
-    selectBuildingOption,
   } = useUI();
 
   const [searchQuery, setSearchQuery] = useState("");
   const resetSearchQuery = () => setSearchQuery("");
-
-  // Fetch buildings
-  const { data: buildingsData, isLoading } = useSWR(
-    locationId ? [`buildings`, locationId] : null,
-    ([key, id]) =>
-      fetch(`/api/locations/${id}/buildings`, getInternalAuthHeader())
-        .then((res) => res.json())
-        .then((res) => res.data),
-    DEFAULT_SWR_OPTIONS
-  );
-
-  const buildings = buildingsData || [];
-
-  // Filter and sort buildings
-  const filteredBuildings = useMemo(() => {
-    if (!buildings.length) return [];
-
-    let filtered = buildings;
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = buildings.filter(
-        (building) =>
-          building.name?.toLowerCase().includes(query) ||
-          building.abbreviation?.toLowerCase().includes(query)
-      );
-    }
-
-    // Sort A-Z
-    return filtered.sort((a, b) => {
-      const nameA = (a.abbreviation || a.name || "").toLowerCase();
-      const nameB = (b.abbreviation || b.name || "").toLowerCase();
-      return nameA.localeCompare(nameB);
-    });
-  }, [buildings, searchQuery]);
 
   return (
     <AnimatePresence>
@@ -133,62 +88,10 @@ function BuildingSelectionMenu() {
             </div>
 
             {/* Buildings List */}
-            <div className="flex-1 overflow-y-auto">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <p className="text-secondary-gray">Loading buildings...</p>
-                </div>
-              ) : filteredBuildings.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
-                  <p className="text-secondary-gray">
-                    {searchQuery
-                      ? "No Buildings Found"
-                      : "No Buildings Available"}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col">
-                  {filteredBuildings.map((building) => {
-                    const isSelected =
-                      building.building_id === prevBuilding?.buildingID;
-
-                    return (
-                      <button
-                        key={building.building_id}
-                        onClick={() => {
-                          resetSearchQuery();
-                          selectBuildingOption({
-                            buildingID: building.building_id,
-                            buildingName:
-                              building.abbreviation || building.name,
-                          });
-                        }}
-                        className={`w-full text-left py-6 ${
-                          isSelected ? "bg-main-blue" : ""
-                        }`}
-                      >
-                        <div className="flex items-center gap-4 px-8">
-                          <span
-                            className={`font-bold ${
-                              isSelected ? "text-white" : "text-primary-black"
-                            }`}
-                          >
-                            {building.abbreviation || "N/A"}
-                          </span>
-                          <span
-                            className={`text-sm ${
-                              isSelected ? "text-white" : "text-secondary-gray"
-                            } flex-1 truncate`}
-                          >
-                            {building.name}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <BuildingsList
+              searchQuery={searchQuery}
+              resetSearchQuery={resetSearchQuery}
+            />
           </motion.div>
         </>
       )}

@@ -33,8 +33,6 @@ export default function StatusViewPage({ locationId }) {
     sortMenu: { type: sortType, building },
   } = useUI();
 
-  console.log(sortType, building);
-
   // Get Forecast Points
   const { getLatestOccupancy } = useLocationAPI();
   const { getForecastPoints } = useForecastAPI();
@@ -64,8 +62,8 @@ export default function StatusViewPage({ locationId }) {
     return <Lottie animationData={carAnimation} style={{ height: 200 }} loop />;
   }
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
+  if (error || !rawData) {
+    return <div>Error: {error?.message || "No data found"}</div>;
   }
 
   const data = rawData?.data || {};
