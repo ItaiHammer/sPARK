@@ -82,6 +82,57 @@ export const UIProvider = ({ children }) => {
     }
   }, []);
 
+  // Prevent background scrolling when any menu is open
+  useEffect(() => {
+    const isAnyMenuOpen =
+      sortMenu.isOpen ||
+      sortMenu.isBuildingSelectionOpen ||
+      timeFilterMenu.isOpen;
+
+    if (typeof window !== "undefined") {
+      if (isAnyMenuOpen) {
+        // Store the current scroll position
+        const scrollY = window.scrollY;
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = "100%";
+        document.body.style.overflow = "hidden";
+      } else {
+        // Restore the scroll position
+        const scrollY = document.body.style.top
+          ? parseInt(document.body.style.top.replace("px", "")) * -1
+          : 0;
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        if (scrollY) {
+          window.scrollTo(0, scrollY);
+        }
+      }
+    }
+
+    // Cleanup function to restore scrolling if component unmounts
+    return () => {
+      if (typeof window !== "undefined") {
+        const scrollY = document.body.style.top
+          ? parseInt(document.body.style.top.replace("px", "")) * -1
+          : 0;
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        if (scrollY) {
+          window.scrollTo(0, scrollY);
+        }
+      }
+    };
+  }, [
+    sortMenu.isOpen,
+    sortMenu.isBuildingSelectionOpen,
+    timeFilterMenu.isOpen,
+  ]);
+
   // Toggle Sort Menu
   const toggleSortMenu = () =>
     setSortMenu((prev) => ({
