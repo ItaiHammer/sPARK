@@ -32,10 +32,10 @@ function TimeDateForm() {
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.2 }}
-      className="mt-12 mb-8"
+      className="mb-12"
     >
-      <div className="text-base font-medium text-primary-black mb-6">
-        Pick Date and Time:
+      <div className="text-base font-medium text-secondary-gray mb-6">
+        Select a forecast date and time:
       </div>
 
       <div className="flex flex-col gap-6 w-full">

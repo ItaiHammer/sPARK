@@ -37,14 +37,14 @@ function FilterButtons() {
               <LiveIcon />
               <p className={styles.TimeSelectorLiveText}>Live</p>
               <p className={styles.TimeSelectorDateText}>
-                {date.toFormat("ccc, hh:mm a")}
+                {date.toFormat("ccc, h:mm a")}
               </p>
             </>
           ) : (
             <>
               <LiveIcon isLive={false} />
               <p className={styles.TimeSelectorDateText}>
-                {date.toFormat("ccc, LL/d, hh:mm a")}
+                {date.toFormat("ccc, LL/d, h:mm a")}
               </p>
             </>
           )}
