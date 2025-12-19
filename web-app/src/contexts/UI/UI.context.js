@@ -18,7 +18,6 @@ const DEFAULT_TIME_FILTER = {
   type: FILTER_TYPES.LIVE.value,
   date: DateTime.now(),
   form: {
-    type: FILTER_TYPES.LIVE.value,
     day: DateTime.now().toISODate(),
     time: DateTime.now().toFormat("HH:mm"),
   },
@@ -59,6 +58,7 @@ export const UIProvider = ({ children }) => {
   const resetTimeFilterForm = () =>
     setTimeFilterMenu((prev) => ({
       ...prev,
+      isOpen: false,
       ...DEFAULT_TIME_FILTER,
     }));
 

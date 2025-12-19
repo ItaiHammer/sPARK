@@ -40,7 +40,7 @@ function RadioOptions() {
               </div>
               <div className="text-sm text-secondary-gray">
                 {option.value === FILTER_TYPES.LIVE.value
-                  ? DateTime.now().toFormat("cccc, LL/d - hh:mm a")
+                  ? DateTime.now().toFormat("cccc, LL/d - h:mm a")
                   : "Select Custom Date and Time"}
               </div>
             </div>

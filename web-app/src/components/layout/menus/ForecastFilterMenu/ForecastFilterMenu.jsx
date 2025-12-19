@@ -21,17 +21,12 @@ function ForecastFilterMenu() {
       isOpen,
       type: currentType,
       date: currentDate,
-      form: { type: formType, day, time },
+      form: { day, time },
     },
     updateTimeFilterMenu,
     toggleTimeFilter,
+    resetTimeFilterForm,
   } = useUI();
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      toggleTimeFilter();
-    }
-  };
 
   const getCombinedDate = (day, time) => {
     const date = DateTime.fromISO(day);
@@ -45,22 +40,17 @@ function ForecastFilterMenu() {
 
   const handleApplyClick = () => {
     updateTimeFilterMenu({
-      type: formType,
-      date:
-        formType === FILTER_TYPES.LIVE.value
-          ? DateTime.now()
-          : getCombinedDate(day, time),
+      type: FILTER_TYPES.CUSTOM.value,
+      date: getCombinedDate(day, time),
     });
 
     toggleTimeFilter();
   };
 
   const isChanged =
-    formType === FILTER_TYPES.LIVE.value
-      ? formType !== currentType
-      : formType !== currentType ||
-        getCombinedDate(day, time).toISO() !==
-          DateTime.fromISO(currentDate).toISO();
+    currentType === FILTER_TYPES.LIVE.value ||
+    getCombinedDate(day, time).toISO() !==
+      DateTime.fromISO(currentDate).toISO();
 
   return (
     <AnimatePresence>
@@ -73,7 +63,7 @@ function ForecastFilterMenu() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/40 z-40"
-            onClick={handleBackdropClick}
+            onClick={() => toggleTimeFilter()}
           />
 
           {/* Modal */}
@@ -92,26 +82,10 @@ function ForecastFilterMenu() {
             {/* Header - Fixed at top */}
             <Header />
 
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto max-w-full overflow-x-hidden mb-8">
-              {/* Radio Options */}
-              <RadioOptions />
+            {/* Time and Date form */}
+            <TimeDateForm />
 
-              {/* Custom Date/Time Pickers (shown when Custom is selected) */}
-              {formType === FILTER_TYPES.CUSTOM.value ? (
-                <TimeDateForm />
-              ) : (
-                <div className="flex items-center justify-center mt-12">
-                  <img
-                    src="/icons/sjsu_building.svg"
-                    alt="Building illustration"
-                    className="max-w-full h-auto"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Apply Button - Fixed at bottom */}
+            {/* Apply Button */}
             <button
               disabled={!isChanged}
               className={`w-full py-3 rounded-full font-medium text-base transition-all ${
@@ -122,6 +96,17 @@ function ForecastFilterMenu() {
               onClick={handleApplyClick}
             >
               Apply
+            </button>
+            <button
+              disabled={currentType === FILTER_TYPES.LIVE.value}
+              onClick={resetTimeFilterForm}
+              className={`text-sm font-medium mt-6 underline ${
+                currentType === FILTER_TYPES.LIVE.value
+                  ? "text-secondary-gray opacity-50"
+                  : "text-primary-black"
+              }`}
+            >
+              Reset to Live
             </button>
           </motion.div>
         </>
