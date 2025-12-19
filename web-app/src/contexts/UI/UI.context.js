@@ -1,7 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { DateTime } from "luxon";
+
+// Utils
+import {
+  getLocalSortType,
+  getLocalSortBuilding,
+  setLocalSortType,
+} from "@/lib/utils/storage";
 
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
@@ -62,6 +69,19 @@ export const UIProvider = ({ children }) => {
     ...DEFAULT_SORT_MENU,
   });
 
+  // Load sort type from localStorage on client-side mount
+  useEffect(() => {
+    const savedSortType = getLocalSortType();
+    if (savedSortType) {
+      const savedBuilding = getLocalSortBuilding();
+      setSortMenu((prev) => ({
+        ...prev,
+        type: savedSortType,
+        building: savedBuilding || DEFAULT_SORT_MENU.building,
+      }));
+    }
+  }, []);
+
   // Toggle Sort Menu
   const toggleSortMenu = () =>
     setSortMenu((prev) => ({
@@ -94,7 +114,8 @@ export const UIProvider = ({ children }) => {
     }));
 
   // Select Building Option
-  const selectBuildingOption = (building) =>
+  const selectBuildingOption = (building) => {
+    setLocalSortType(SORT_TYPES.DISTANCE_TO_BUILDING.value, building);
     setSortMenu((prev) => ({
       ...prev,
       building,
@@ -102,9 +123,11 @@ export const UIProvider = ({ children }) => {
       isBuildingSelectionOpen: false,
       type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
     }));
+  };
 
   // Select Sort Option
-  const selectSortOption = (sortType) =>
+  const selectSortOption = (sortType) => {
+    setLocalSortType(sortType);
     setSortMenu((prev) => ({
       ...prev,
       isOpen: false,
@@ -112,6 +135,7 @@ export const UIProvider = ({ children }) => {
         sortType === SORT_TYPES.DISTANCE_TO_BUILDING.value,
       type: sortType,
     }));
+  };
 
   return (
     <UIContext.Provider

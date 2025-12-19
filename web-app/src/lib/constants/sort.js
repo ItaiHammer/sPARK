@@ -115,3 +115,11 @@ export const getSortedLots = (lots, sortType) => {
       return lots;
   }
 };
+
+export const validateSortType = (sortType) => {
+  return Object.values(SORT_TYPES).some((type) => type.value === sortType);
+};
+
+export const validateSortBuilding = (building) => {
+  return building && building.buildingID && building.buildingName;
+};
