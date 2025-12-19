@@ -5,7 +5,11 @@ export const SORT_TYPES = Object.freeze({
     icon: "/icons/emptiest_first_icon.svg",
   },
   DISTANCE_TO_BUILDING: {
-    label: "Distance to Selected Building",
+    label: (
+      <p>
+        Distance to <span className="text-secondary-gray">select building</span>
+      </p>
+    ),
     value: "distance_to_building",
     icon: "/icons/building_icon.svg",
   },
@@ -48,7 +52,15 @@ export const getSortLabel = (sortType, buildingName = null) => {
   );
 };
 
-export const getSortedLots = (lots, sortType, building) => {
+export const getSortIcon = (sortType) => {
+  return (
+    SORT_TYPES[
+      Object.keys(SORT_TYPES).find((key) => SORT_TYPES[key].value === sortType)
+    ]?.icon || "/icons/emptiest_first_icon.svg"
+  );
+};
+
+export const getSortedLots = (lots, sortType) => {
   switch (sortType) {
     case SORT_TYPES.EMPTIEST_FIRST.value:
       return lots.sort((a, b) => {
@@ -90,6 +102,13 @@ export const getSortedLots = (lots, sortType, building) => {
         const evChargingA = a.spot_categories.ev_charging || 0;
         const evChargingB = b.spot_categories.ev_charging || 0;
         return evChargingB - evChargingA;
+      });
+
+    case SORT_TYPES.DISTANCE_TO_BUILDING.value:
+      return lots.sort((a, b) => {
+        const distanceA = a.travel?.distance || 0;
+        const distanceB = b.travel?.distance || 0;
+        return distanceA - distanceB;
       });
 
     default:

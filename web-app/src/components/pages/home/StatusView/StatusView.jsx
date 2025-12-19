@@ -96,7 +96,13 @@ export default function StatusViewPage({ locationId }) {
         </p>
       </div>
 
-      <Garages lots={data.lots} numOfLots={numOfLots} />
+      {numOfLots > 0 ? (
+        <Garages locationId={locationId} lots={data.lots} />
+      ) : (
+        <div className="flex flex-col gap-8">
+          <p>There is no forecasted data for this time and date.</p>
+        </div>
+      )}
     </div>
   );
 }

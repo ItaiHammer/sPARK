@@ -58,6 +58,21 @@ export const LocationAPIProvider = ({ children }) => {
         return { error: err.message, status: err.status, data: null };
       });
 
+  // Get Building Distances
+  const getBuildingDistances = (locationId, buildingId) =>
+    fetch(
+      getAPIURL(locationId, `buildings/${buildingId}/calculate`),
+      getInternalAuthHeader()
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText);
+        return res.json();
+      })
+      .catch((err) => {
+        console.error(err);
+        return { error: err.message, status: err.status, data: null };
+      });
+
   return (
     <LocationAPIContext.Provider
       value={{
@@ -65,6 +80,7 @@ export const LocationAPIProvider = ({ children }) => {
         getLocationLots,
         getLatestOccupancy,
         getLocationBuildings,
+        getBuildingDistances,
       }}
     >
       {children}
