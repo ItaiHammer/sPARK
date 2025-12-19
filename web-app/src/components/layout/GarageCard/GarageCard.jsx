@@ -3,7 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, animate } from "framer-motion";
 import { FILTER_TYPES } from "@/lib/constants/filters";
-import { ChartNoAxesColumn } from "lucide-react";
+import {
+  formatMinutes,
+  convertToMinutes,
+  convertToMiles,
+} from "@/lib/utils/formatters";
+import { ArrowRightIcon, ChartNoAxesColumn } from "lucide-react";
 
 // Contexts
 import { useUI } from "@/contexts/UI/UI.context";
@@ -14,7 +19,7 @@ import styles from "./GarageCard.module.css";
 // Components
 import LiveIcon from "@/components/layout/animated/LiveIcon";
 
-export default function GarageCard({ garage, order }) {
+export default function GarageCard({ garage, order, buildingName }) {
   const {
     timeFilterMenu: { type },
   } = useUI();
@@ -189,6 +194,31 @@ export default function GarageCard({ garage, order }) {
           <img src="/icons/notice-icon.svg" />
           <p className={styles.GarageCardStatusLabel}>Test Indicator Message</p>
         </div>
+
+        {garage?.travel && (
+          <div className="flex items-center gap-2 bg-distance-fill-blue rounded-full px-[14px] py-[4px]">
+            <p className="text-sm  text-primary-black">
+              {convertToMiles(garage.travel.distance)} mi
+            </p>
+            <div className="h-1 w-1 bg-primary-black rounded-full" />
+            <div className="flex items-center gap-1">
+              <img src="/icons/walking_icon.svg" className="w-4 h-4" />
+              <p className="text-sm text-primary-black">
+                ~
+                {
+                  formatMinutes(convertToMinutes(garage.travel.duration)).split(
+                    ":"
+                  )[0]
+                }{" "}
+                min. walk
+              </p>
+            </div>
+            <ArrowRightIcon className="w-4 h-4 text-secondary-gray" />
+            <p className="text-sm font-semibold text-primary-black">
+              {buildingName}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className={styles.GarageCardDivider}></div>

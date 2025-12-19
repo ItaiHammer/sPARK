@@ -13,11 +13,12 @@
   --main-blue: #0076b9;
   --occupancy-orange: #ff8800;
   --occupancy-green: #009133;
-  --alert-red: #d00000;
+  --alert-red: rgba(208, 0, 0, 0.03);
   --fill-gray: #f6f6f6;
   --link-blue: #09a4fc;
   --parkmobile-green: #1fa846;
   --sjsu-yellow: #ffb81a;
+  --distance-fill-blue: #fafaff;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -69,6 +70,7 @@
   --color-link-blue: var(--link-blue);
   --color-parkmobile-green: var(--parkmobile-green);
   --color-sjsu-yellow: var(--sjsu-yellow);
+  --color-distance-fill-blue: var(--distance-fill-blue);
 
   /* Font families - Usage: font-geist-sans, font-geist-mono */
   --font-family-geist-sans: var(--font-geist-sans);

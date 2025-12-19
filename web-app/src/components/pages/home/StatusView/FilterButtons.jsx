@@ -1,5 +1,6 @@
 import React from "react";
 import { FILTER_TYPES } from "@/lib/constants/filters";
+import { getSortIcon } from "@/lib/constants/sort";
 
 // Contexts
 import { useUI } from "@/contexts/UI/UI.context";
@@ -14,12 +15,14 @@ function FilterButtons() {
   const {
     timeFilterMenu: { date, type },
     toggleTimeFilter,
+    toggleSortMenu,
+    sortMenu: { type: sortType },
   } = useUI();
 
   return (
     <div className={styles.GarageControlsBar}>
-      <button className={styles.SortButton}>
-        <img src="/icons/emptiest_first_icon.svg" className={styles.SortIcon} />
+      <button className={styles.SortButton} onClick={toggleSortMenu}>
+        <img src={getSortIcon(sortType)} className={styles.SortIcon} />
         Sort
         <img src="/icons/collapse_icon.svg" className={styles.CollapseIcon} />
       </button>

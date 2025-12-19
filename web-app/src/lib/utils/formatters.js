@@ -64,3 +64,13 @@ export const formatCustomTime = (date, time) => {
   }
   return dt.toFormat("h:mm a");
 };
+
+export const formatMinutes = (totalMinutes) => {
+  const mins = Math.floor(totalMinutes);
+  const secs = Math.round((totalMinutes - mins) * 60);
+
+  // Use string padding to ensure "4:05" instead of "4:5"
+  const displaySecs = secs.toString().padStart(2, "0");
+
+  return `${mins}:${displaySecs}`;
+};
