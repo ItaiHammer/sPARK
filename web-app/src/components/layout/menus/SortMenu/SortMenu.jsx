@@ -16,42 +16,25 @@ import BuildingSelectionMenu from "../BuildingSelectionMenu/BuildingSelectionMen
 
 function SortMenu() {
   const {
-    sortMenu: { isOpen, type, buildingName, buildingID },
-    updateSortMenu,
+    sortMenu: { isOpen, type, building },
     toggleSortMenu,
     selectSortOption,
+    openBuildingSelectionMenu,
   } = useUI();
+  const buildingName = building?.buildingName;
+  const sortOptions = Object.values(SORT_TYPES);
 
-  // Hide sort menu when building selection is open
-  const isBuildingSelectionOpen =
-    isOpen && type === SORT_TYPES.DISTANCE_TO_BUILDING.value && !buildingID;
-
-  const shouldShowSortMenu = isOpen && !isBuildingSelectionOpen;
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      toggleSortMenu();
-    }
-  };
-
-  const handleSortOptionClick = (sortType) => {
+  const handleSelection = (sortType) => {
     if (sortType === SORT_TYPES.DISTANCE_TO_BUILDING.value) {
-      updateSortMenu({
-        type: sortType,
-        buildingID: null,
-        buildingName: null,
-      });
-      return;
+      openBuildingSelectionMenu();
     } else {
       selectSortOption(sortType);
     }
   };
-  const sortOptions = Object.values(SORT_TYPES);
-
   return (
     <>
       <AnimatePresence>
-        {shouldShowSortMenu && (
+        {isOpen && (
           <>
             {/* Backdrop */}
             <motion.div
@@ -60,16 +43,21 @@ function SortMenu() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 bg-black/40 z-40"
-              onClick={handleBackdropClick}
+              onClick={toggleSortMenu}
             />
 
             {/* Modal */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-x-0 top-16 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col pb-4"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{
+                type: "spring",
+                stiffness: 200,
+                damping: 16,
+                mass: 0.8,
+              }}
+              className="fixed inset-x-0 top-12 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col pb-4"
             >
               {/* Header - Fixed at top */}
               <SortMenuHeader />
@@ -89,8 +77,8 @@ function SortMenu() {
                           <div className="h-px bg-divider-gray/80" />
                         )}
                         <button
-                          onClick={() => handleSortOptionClick(option.value)}
-                          className={`w-full flex items-center gap-4 px-6 py-6 transition-colors ${
+                          onClick={() => handleSelection(option.value)}
+                          className={`w-full flex items-center gap-4 px-8 py-6 transition-colors ${
                             isSelected
                               ? "bg-main-blue text-white"
                               : "bg-white text-primary-black hover:bg-gray-50"

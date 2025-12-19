@@ -30,8 +30,10 @@ import carAnimation from "@/animations/car_loading_animation.json";
 export default function StatusViewPage({ locationId }) {
   const {
     timeFilterMenu: { date, type },
-    sortMenu: { type: sortType, buildingName },
+    sortMenu: { type: sortType, building },
   } = useUI();
+
+  console.log(sortType, building);
 
   // Get Forecast Points
   const { getLatestOccupancy } = useLocationAPI();
@@ -91,7 +93,7 @@ export default function StatusViewPage({ locationId }) {
         <p className={styles.SortingIndicator}>
           Sorted by{" "}
           <span className="text-main-blue font-semibold">
-            {getSortLabel(sortType, buildingName)}
+            {getSortLabel(sortType, building?.buildingName)}
           </span>
         </p>
       </div>

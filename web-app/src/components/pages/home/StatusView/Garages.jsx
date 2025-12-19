@@ -11,11 +11,11 @@ import GarageCard from "@/components/layout/GarageCard/GarageCard.jsx";
 
 function Garages({ lots, numOfLots }) {
   const {
-    sortMenu: { type, buildingID, buildingName },
+    sortMenu: { type, building },
   } = useUI();
   const sortedLots = getSortedLots(lots, type, {
-    buildingID,
-    buildingName,
+    buildingID: building?.buildingID,
+    buildingName: building?.buildingName,
   });
 
   return (

@@ -18,10 +18,8 @@ const DEFAULT_TIME_FILTER = {
 };
 
 const DEFAULT_SORT_MENU = {
-  isOpen: false,
   type: SORT_TYPES.EMPTIEST_FIRST.value,
-  buildingID: null,
-  buildingName: null,
+  building: null,
 };
 
 // UI Context
@@ -35,12 +33,6 @@ export const UIProvider = ({ children }) => {
   const [timeFilterMenu, setTimeFilterMenu] = useState({
     isOpen: false,
     ...DEFAULT_TIME_FILTER,
-  });
-
-  // Sort Menu
-  const [sortMenu, setSortMenu] = useState({
-    isOpen: false,
-    ...DEFAULT_SORT_MENU,
   });
 
   // Toggle Time Filter
@@ -63,31 +55,62 @@ export const UIProvider = ({ children }) => {
       ...DEFAULT_TIME_FILTER,
     }));
 
+  // Sort Menu
+  const [sortMenu, setSortMenu] = useState({
+    isOpen: false,
+    isBuildingSelectionOpen: false,
+    ...DEFAULT_SORT_MENU,
+  });
+
   // Toggle Sort Menu
   const toggleSortMenu = () =>
-    setSortMenu((prev) => ({ ...prev, isOpen: !prev.isOpen }));
+    setSortMenu((prev) => ({
+      ...prev,
+      isOpen: !prev.isOpen,
+      isBuildingSelectionOpen: false,
+    }));
 
   // Close Sort Menu
   const closeSortMenu = () =>
     setSortMenu((prev) => ({
       ...prev,
       isOpen: false,
-      type: prev.type,
-      buildingID: null,
-      buildingName: null,
+      isBuildingSelectionOpen: false,
     }));
 
-  // Update Sort Menu Status
-  const updateSortMenu = (newState) =>
-    setSortMenu((prev) => ({ ...prev, ...newState }));
-
-  const selectSortOption = (sortType) =>
-    setSortMenu((prev) => ({ ...prev, isOpen: false, type: sortType }));
-
-  const resetSortMenu = () =>
+  // Open Building Selection Menu
+  const openBuildingSelectionMenu = () =>
     setSortMenu((prev) => ({
       ...prev,
-      ...DEFAULT_SORT_MENU,
+      isBuildingSelectionOpen: true,
+    }));
+
+  // Close Building Selection Menu
+  const closeBuildingSelectionMenu = () =>
+    setSortMenu((prev) => ({
+      ...prev,
+      isBuildingSelectionOpen: false,
+      isOpen: true,
+    }));
+
+  // Select Building Option
+  const selectBuildingOption = (building) =>
+    setSortMenu((prev) => ({
+      ...prev,
+      building,
+      isOpen: false,
+      isBuildingSelectionOpen: false,
+      type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
+    }));
+
+  // Select Sort Option
+  const selectSortOption = (sortType) =>
+    setSortMenu((prev) => ({
+      ...prev,
+      isOpen: false,
+      isBuildingSelectionOpen:
+        sortType === SORT_TYPES.DISTANCE_TO_BUILDING.value,
+      type: sortType,
     }));
 
   return (
@@ -103,9 +126,10 @@ export const UIProvider = ({ children }) => {
         sortMenu,
         toggleSortMenu,
         closeSortMenu,
-        updateSortMenu,
+        openBuildingSelectionMenu,
+        closeBuildingSelectionMenu,
+        selectBuildingOption,
         selectSortOption,
-        resetSortMenu,
       }}
     >
       {children}

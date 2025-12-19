@@ -78,11 +78,16 @@ function ForecastFilterMenu() {
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-16 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col p-6"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{
+              type: "spring",
+              stiffness: 200,
+              damping: 16,
+              mass: 0.8,
+            }}
+            className="fixed inset-x-0 top-12 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl flex flex-col p-6"
           >
             {/* Header - Fixed at top */}
             <Header />

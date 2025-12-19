@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, ChevronsUpDown, Search } from "lucide-react";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 
@@ -11,7 +11,6 @@ import {
   DEFAULT_SWR_OPTIONS,
   getInternalAuthHeader,
 } from "@/lib/constants/api.constants";
-import { SORT_TYPES } from "@/lib/constants/sort";
 
 // Contexts
 import { useUI } from "@/contexts/UI/UI.context";
@@ -21,18 +20,13 @@ function BuildingSelectionMenu() {
   const locationId = params?.location_id;
 
   const {
-    sortMenu: { isOpen: sortMenuIsOpen, type, buildingID, buildingName },
-    updateSortMenu,
+    sortMenu: { isBuildingSelectionOpen, building: prevBuilding },
+    closeBuildingSelectionMenu,
+    selectBuildingOption,
   } = useUI();
 
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Check if building selection menu should be open
-  // It should be open when sort menu is open, distance_to_building is selected, and no building is selected yet
-  const isOpen =
-    sortMenuIsOpen &&
-    type === SORT_TYPES.DISTANCE_TO_BUILDING.value &&
-    !buildingID;
+  const resetSearchQuery = () => setSearchQuery("");
 
   // Fetch buildings
   const { data: buildingsData, isLoading } = useSWR(
@@ -70,31 +64,9 @@ function BuildingSelectionMenu() {
     });
   }, [buildings, searchQuery]);
 
-  const handleBackClick = () => {
-    updateSortMenu({
-      type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
-      buildingID: null,
-      buildingName: null,
-    });
-  };
-
-  const handleBuildingClick = (building) => {
-    updateSortMenu({
-      type: SORT_TYPES.DISTANCE_TO_BUILDING.value,
-      buildingID: building.building_id,
-      buildingName: building.abbreviation || building.name,
-    });
-  };
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      handleBackClick();
-    }
-  };
-
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isBuildingSelectionOpen && (
         <>
           {/* Backdrop */}
           <motion.div
@@ -103,57 +75,60 @@ function BuildingSelectionMenu() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/40 z-55"
-            onClick={handleBackdropClick}
+            onClick={() => {
+              resetSearchQuery();
+              closeBuildingSelectionMenu();
+            }}
           />
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-16 bottom-0 bg-white z-60 rounded-t-2xl shadow-2xl flex flex-col p-6"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{
+              type: "spring",
+              stiffness: 180,
+              damping: 26,
+              mass: 1,
+            }}
+            className="fixed inset-x-0 top-12 bottom-0 bg-white z-60 rounded-t-2xl shadow-2xl flex flex-col "
           >
             {/* Header */}
-            <div className="mb-6">
-              <div className="flex items-center gap-4 mb-6">
+            <div className="p-8 pb-6">
+              <div className="flex items-center gap-4 mb-8">
                 <button
-                  onClick={handleBackClick}
+                  onClick={() => {
+                    resetSearchQuery();
+                    closeBuildingSelectionMenu();
+                  }}
                   className="w-8 h-8 flex items-center justify-center text-secondary-gray transition-colors hover:text-primary-black"
                   aria-label="Back"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <h2 className="text-xl font-semibold text-gray-900 flex-1 text-center">
-                  Select Building:
+                  Select Building
                 </h2>
                 <div className="w-8" /> {/* Spacer for centering */}
               </div>
 
               {/* Search Bar */}
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-secondary-gray" />
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-secondary-gray" />
                 <input
                   type="text"
-                  placeholder="search buildings"
+                  placeholder="Search Buildings"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-divider-gray bg-fill-gray text-primary-black placeholder-secondary-gray focus:outline-none focus:ring-2 focus:ring-main-blue/20"
+                  className="w-full pl-8 pr-4 py-3 rounded-lg outline-none bg-fill-gray text-sm text-primary-black placeholder-secondary-gray placeholder:text-sm border-2 border-transparent focus:border-main-blue transition-all duration-200"
                 />
               </div>
 
               {/* Sort Indicator */}
-              <div className="flex items-center gap-2 text-sm text-secondary-gray mb-4">
+              <div className="flex items-center gap-2 text-sm text-secondary-gray">
                 <span>Sorted A-Z</span>
-                <svg
-                  width="8"
-                  height="8"
-                  viewBox="0 0 8 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M4 0L7.4641 6H0.535898L4 0Z" fill="currentColor" />
-                </svg>
+                <ChevronsUpDown className="w-4 h-4" />
               </div>
             </div>
 
@@ -167,28 +142,50 @@ function BuildingSelectionMenu() {
                 <div className="flex items-center justify-center py-12">
                   <p className="text-secondary-gray">
                     {searchQuery
-                      ? "No buildings found"
-                      : "No buildings available"}
+                      ? "No Buildings Found"
+                      : "No Buildings Available"}
                   </p>
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  {filteredBuildings.map((building, index) => (
-                    <button
-                      key={building.building_id}
-                      onClick={() => handleBuildingClick(building)}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-divider-gray/30 last:border-b-0"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-primary-black">
-                          {building.abbreviation || "N/A"}
-                        </span>
-                        <span className="text-sm text-secondary-gray flex-1 truncate">
-                          {building.name}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                  {filteredBuildings.map((building) => {
+                    const isSelected =
+                      building.building_id === prevBuilding?.buildingID;
+
+                    return (
+                      <button
+                        key={building.building_id}
+                        onClick={() => {
+                          resetSearchQuery();
+                          selectBuildingOption({
+                            buildingID: building.building_id,
+                            buildingName:
+                              building.abbreviation || building.name,
+                          });
+                        }}
+                        className={`w-full text-left py-6 ${
+                          isSelected ? "bg-main-blue" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-4 px-8">
+                          <span
+                            className={`font-bold ${
+                              isSelected ? "text-white" : "text-primary-black"
+                            }`}
+                          >
+                            {building.abbreviation || "N/A"}
+                          </span>
+                          <span
+                            className={`text-sm ${
+                              isSelected ? "text-white" : "text-secondary-gray"
+                            } flex-1 truncate`}
+                          >
+                            {building.name}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
