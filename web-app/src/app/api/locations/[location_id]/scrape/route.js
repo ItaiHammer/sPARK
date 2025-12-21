@@ -11,6 +11,8 @@ import { insertLotOccupancy } from "@/lib/supabase/supabase";
 import { getLocationData } from "@/lib/helpers/api.helpers";
 import { scrapeData } from "@/lib/helpers/scraper";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
+import { clearCache } from "@/lib/redis/redis";
+import { getOccupancyKey } from "@/lib/redis/redis.keys";
 
 export async function GET(req, { params }) {
   // Arcjet Protection
@@ -72,7 +74,7 @@ export async function GET(req, { params }) {
     timeout: 1000 * 60, // 60 secs
   });
   const html = response.data;
-  const data = scrapeData(html);
+  const data = scrapeData(html, location_id.toLowerCase());
 
   // Insert data to supabase
   const { error: insertLotOccupancyError } = await insertLotOccupancy(data);
@@ -82,6 +84,18 @@ export async function GET(req, { params }) {
         insertLotOccupancyError?.message,
         insertLotOccupancyError?.code
       ),
+      {
+        status: 500,
+      }
+    );
+  }
+
+  // Clear Cache
+  const { key } = getOccupancyKey(location_id.toLowerCase());
+  const { error: clearCacheError } = await clearCache(key);
+  if (clearCacheError) {
+    return NextResponse.json(
+      errorHandler(clearCacheError?.message, clearCacheError?.code),
       {
         status: 500,
       }

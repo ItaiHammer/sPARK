@@ -87,3 +87,22 @@ export const getCache = async (key) => {
     return redisErrorHandler(error, key);
   }
 };
+
+export const clearCache = async (key) => {
+  const formattedKey = formatKey(key);
+  if (IS_DEV) {
+    console.log("Clearing Redis:", formattedKey);
+  }
+
+  try {
+    const redis = getRedis();
+    await redis.del(formattedKey);
+
+    return {
+      error: null,
+      data: null,
+    };
+  } catch (error) {
+    return redisErrorHandler(error, formattedKey);
+  }
+};
