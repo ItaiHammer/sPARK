@@ -8,10 +8,12 @@ import { getSupabase } from "../../lib/utils/client/supabase";
 
 // Contexts
 import { useUI } from "../UI/UI.context";
+import { useToasts } from "../UI/Toasts.context";
 
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
 import { LIVE_OCCUPANCY_KEY } from "@/lib/constants/SWR.keys";
+import { LOTS } from "@/lib/constants/sjsu";
 
 const SupabaseContext = createContext();
 export const useSupabase = () => useContext(SupabaseContext);
@@ -20,9 +22,21 @@ export const SupabaseContextProvider = ({ children }) => {
     locationID,
     timeFilterMenu: { date, type },
   } = useUI();
+  const { showYellowAlert, showOrangeAlert, showRedAlert } = useToasts();
   const supabase = getSupabase();
   const channelRef = useRef(null);
   const refetchTimeout = useRef(null);
+
+  const checkOccupancy = (lotId, occupancyPct) => {
+    const lotName = LOTS[lotId];
+    if (occupancyPct >= 70) {
+      showYellowAlert(lotName, occupancyPct);
+    } else if (occupancyPct >= 80) {
+      showOrangeAlert(lotName, occupancyPct);
+    } else if (occupancyPct >= 90) {
+      showRedAlert(lotName, occupancyPct);
+    }
+  };
 
   useEffect(() => {
     if (!locationID || channelRef.current) return;
@@ -37,7 +51,12 @@ export const SupabaseContextProvider = ({ children }) => {
           table: "lot_occupancy",
           filter: `location_id=eq.${locationID.toLowerCase()}`,
         },
-        (_) => {
+        (payload) => {
+          const { lot_id, occupancy_pct } = payload.new;
+
+          // Send Alerts
+          checkOccupancy(lot_id, occupancy_pct);
+
           // Clear previous timeout if exists
           if (refetchTimeout.current) clearTimeout(refetchTimeout.current);
 
