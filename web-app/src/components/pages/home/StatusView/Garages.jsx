@@ -5,6 +5,7 @@ import Lottie from "lottie-react";
 // Constants
 import { getSortedLots, SORT_TYPES } from "@/lib/constants/sort";
 import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
+import { BUILDING_DISTANCES_KEY } from "@/lib/constants/SWR.keys";
 
 // Contexts
 import { useUI } from "@/contexts/UI/UI.context";
@@ -29,7 +30,7 @@ function Garages({ locationId, lots }) {
     isLoading,
   } = useSWR(
     type === SORT_TYPES.DISTANCE_TO_BUILDING.value
-      ? [`building-distances`, locationId, building?.buildingID]
+      ? [BUILDING_DISTANCES_KEY, locationId, building?.buildingID]
       : null,
     ([key, locationId, buildingId]) =>
       getBuildingDistances(locationId, buildingId),

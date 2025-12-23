@@ -25,13 +25,14 @@ export default function SimpleForecastPage() {
     },
   ];
 
-  const { activeTab, setActiveTab } = useUI();
+  const { activeTab, setActiveTab, setLocationID } = useUI();
   const active = tabs.find((p) => p.id === activeTab) || tabs[0];
 
   // Set Initial Tab
   useEffect(() => {
     setActiveTab(tabs[0].id);
-  }, []);
+    setLocationID(location_id?.toLowerCase());
+  }, [location_id]);
 
   return (
     <div>
