@@ -9,6 +9,7 @@ import { useUI } from "@/contexts/UI/UI.context";
 
 // Constants
 import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
+import { BUILDINGS_KEY } from "@/lib/constants/SWR.keys";
 
 // Animations
 import carAnimation from "@/animations/car_loading_animation.json";
@@ -29,7 +30,7 @@ function BuildingsList({ searchQuery, resetSearchQuery }) {
     error,
     isLoading,
   } = useSWR(
-    locationId ? [`buildings`, locationId] : null,
+    locationId ? [BUILDINGS_KEY, locationId] : null,
     ([key, id]) => getLocationBuildings(id),
     DEFAULT_SWR_OPTIONS
   );

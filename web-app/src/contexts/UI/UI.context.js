@@ -8,7 +8,7 @@ import {
   getLocalSortType,
   getLocalSortBuilding,
   setLocalSortType,
-} from "@/lib/utils/storage";
+} from "@/lib/utils/client/storage";
 
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
@@ -32,6 +32,8 @@ const DEFAULT_SORT_MENU = {
 const UIContext = createContext();
 export const useUI = () => useContext(UIContext);
 export const UIProvider = ({ children }) => {
+  const [locationID, setLocationID] = useState(null);
+
   // Home Page
   const [activeTab, setActiveTab] = useState(null);
 
@@ -191,6 +193,8 @@ export const UIProvider = ({ children }) => {
   return (
     <UIContext.Provider
       value={{
+        locationID,
+        setLocationID,
         activeTab,
         setActiveTab,
         timeFilterMenu,

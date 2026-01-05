@@ -16,6 +16,10 @@ import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
 
 // Constants
 import { getSortLabel } from "@/lib/constants/sort";
+import {
+  LIVE_OCCUPANCY_KEY,
+  FORECASTED_OCCUPANCY_KEY,
+} from "@/lib/constants/SWR.keys";
 
 // CSS
 import styles from "./StatusViewPage.module.css";
@@ -43,8 +47,8 @@ export default function StatusViewPage({ locationId }) {
   } = useSWR(
     [
       type === FILTER_TYPES.LIVE.value
-        ? "live-occupancy"
-        : "forecasted-occupancy",
+        ? LIVE_OCCUPANCY_KEY
+        : FORECASTED_OCCUPANCY_KEY,
       locationId,
       date,
       type,

@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 // Contexts
 import ContextProvider from "@/contexts/Context.provider";
@@ -72,7 +73,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ContextProvider>{children}</ContextProvider>
+        <ContextProvider>
+          {children}
+          <Toaster position="top-center" />
+        </ContextProvider>
       </body>
     </html>
   );

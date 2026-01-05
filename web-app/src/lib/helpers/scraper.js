@@ -28,7 +28,7 @@ function parsePercentageText(fullness) {
   return null;
 }
 
-export function scrapeData(html) {
+export function scrapeData(html, locationID) {
   const $ = cheerio.load(html);
 
   const garages = $("div.garage").find("span.garage__fullness");
@@ -43,6 +43,7 @@ export function scrapeData(html) {
     const garage = $(element);
     data.push({
       lot_id: parkingLots[index],
+      location_id: locationID,
       occupancy_pct: parsePercentageText(garage.text()),
       scraped_at: DateTime.now({ zone: "America/Los_Angeles" }).toUTC().toISO(),
     });
