@@ -2,7 +2,6 @@
 
 import { createContext, useContext } from "react";
 import { getInternalAuthHeader } from "@/lib/constants/api.constants";
-import { DateTime } from "luxon";
 
 // Forecast Context
 const ForecastAPIContext = createContext();
@@ -16,7 +15,10 @@ export const ForecastAPIProvider = ({ children }) => {
   // Get Forecast Points
   const getForecastPoints = (locationId, date) => {
     return fetch(
-      getAPIURL("points", `location_id=${locationId}&time=${date.toUTC().toISO()}`),
+      getAPIURL(
+        "points",
+        `location_id=${locationId}&time=${date.toUTC().toISO()}`
+      ),
       getInternalAuthHeader()
     )
       .then((res) => {

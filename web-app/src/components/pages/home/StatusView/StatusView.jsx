@@ -27,6 +27,7 @@ import styles from "./StatusViewPage.module.css";
 // Components
 import FilterButtons from "./FilterButtons";
 import Garages from "./Garages";
+import ForecastGraph from "@/components/layout/ForecastGraph/ForecastGraph";
 
 // Animations
 import carAnimation from "@/animations/car_loading_animation.json";
@@ -99,6 +100,9 @@ export default function StatusViewPage({ locationId }) {
           </span>
         </p>
       </div>
+
+      {/* REMOVE THIS */}
+      <ForecastGraph lotID={data?.lots[0].lot_id} />
 
       {numOfLots > 0 ? (
         <Garages locationId={locationId} lots={data.lots} />

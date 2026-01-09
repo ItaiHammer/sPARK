@@ -73,6 +73,21 @@ export const LocationAPIProvider = ({ children }) => {
         return { error: err.message, status: err.status, data: null };
       });
 
+  // Get Lot Forecast Points
+  const getLotForecastPoints = (locationId, lotId, date) =>
+    fetch(
+      getAPIURL(locationId, `lots/forecast`),
+      getInternalAuthHeader("POST", { lot_id: lotId, date })
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText);
+        return res.json();
+      })
+      .catch((err) => {
+        console.error(err);
+        return { error: err.message, status: err.status, data: null };
+      });
+
   return (
     <LocationAPIContext.Provider
       value={{
@@ -81,6 +96,7 @@ export const LocationAPIProvider = ({ children }) => {
         getLatestOccupancy,
         getLocationBuildings,
         getBuildingDistances,
+        getLotForecastPoints,
       }}
     >
       {children}
