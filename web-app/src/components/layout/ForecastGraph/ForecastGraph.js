@@ -12,9 +12,12 @@ import { DEFAULT_SWR_OPTIONS } from "@/lib/constants/api.constants";
 import { useUI } from "@/contexts/UI/UI.context";
 import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
 
+// Components
+import ForecastGraphContent from "./ForecastGraphContent";
+
 function ForecastGraph({ lotID }) {
   const { locationID } = useUI();
-  const [date] = useState(DateTime.utc().toISO());
+  const [date, setDate] = useState(DateTime.utc().toISO());
   const { getLotForecastPoints } = useLocationAPI();
 
   // Fetch forecast points
@@ -31,7 +34,7 @@ function ForecastGraph({ lotID }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="w-full flex items-center justify-center py-12">
         <div className="text-secondary-gray">Loading...</div>
       </div>
     );
@@ -39,9 +42,8 @@ function ForecastGraph({ lotID }) {
 
   if (error || !rawData) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-occupancy-red">
-          Error:{" "}
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="text-secondary-gray">
           {error?.message ||
             "No forecast points found for this lot on this date"}
         </div>
@@ -50,8 +52,23 @@ function ForecastGraph({ lotID }) {
   }
 
   const data = rawData?.data;
-  const forecastedData = data?.forecasted_data;
-  return <div>ForecastGraph</div>;
+  const forecastedData = data?.lots[0]?.forecasted_data || [];
+
+  if (!forecastedData || forecastedData.length === 0) {
+    return (
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="text-secondary-gray">
+          No forecast points found for this lot on this date
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-white rounded-xl p-4 md:p-6 shadow-sm border border-divider-gray">
+      <ForecastGraphContent forecastedData={forecastedData} />
+    </div>
+  );
 }
 
 export default ForecastGraph;
