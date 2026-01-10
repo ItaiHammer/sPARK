@@ -102,7 +102,7 @@ export default function StatusViewPage({ locationId }) {
       </div>
 
       {/* REMOVE THIS */}
-      <ForecastGraph lotID={data?.lots[0].lot_id} />
+      <ForecastGraph lotID={data?.lots[0]?.lot_id} />
 
       {numOfLots > 0 ? (
         <Garages locationId={locationId} lots={data.lots} />

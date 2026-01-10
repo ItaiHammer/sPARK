@@ -14,7 +14,7 @@ import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
 
 function ForecastGraph({ lotID }) {
   const { locationID } = useUI();
-  const [date, setDate] = useState(DateTime.utc().toISO());
+  const [date] = useState(DateTime.utc().toISO());
   const { getLotForecastPoints } = useLocationAPI();
 
   // Fetch forecast points
@@ -30,14 +30,21 @@ function ForecastGraph({ lotID }) {
   );
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-secondary-gray">Loading...</div>
+      </div>
+    );
   }
 
   if (error || !rawData) {
     return (
-      <div>
-        Error:{" "}
-        {error?.message || "No forecast points found for this lot on this date"}
+      <div className="flex items-center justify-center py-8">
+        <div className="text-occupancy-red">
+          Error:{" "}
+          {error?.message ||
+            "No forecast points found for this lot on this date"}
+        </div>
       </div>
     );
   }
