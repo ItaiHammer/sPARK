@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { DateTime } from "luxon";
 
 // Utils
@@ -24,9 +24,16 @@ const DEFAULT_TIME_FILTER = {
 };
 
 const DEFAULT_SORT_MENU = {
-  type: SORT_TYPES.EMPTIEST_FIRST.value,
+  type: SORT_TYPES.MOST_SPACES.value,
   building: null,
 };
+
+const MAIN_PAGE_SORT_TYPES = new Set([
+  SORT_TYPES.MOST_SPACES.value,
+  SORT_TYPES.EMPTIEST_FIRST.value,
+  SORT_TYPES.GARAGE_NAME.value,
+  SORT_TYPES.DISTANCE_TO_BUILDING.value,
+]);
 
 // UI Context
 const UIContext = createContext();
@@ -48,8 +55,8 @@ export const UIProvider = ({ children }) => {
     setTimeFilterMenu((prev) => ({ ...prev, isOpen: !prev.isOpen }));
 
   // Update Time Filter Status
-  const updateTimeFilterMenu = (newState) =>
-    setTimeFilterMenu((prev) => ({ ...prev, ...newState }));
+  const updateTimeFilterMenu = useCallback((newState) =>
+    setTimeFilterMenu((prev) => ({ ...prev, ...newState })), []);
 
   const updateTimeFilterForm = (newState) =>
     setTimeFilterMenu((prev) => ({
@@ -73,15 +80,22 @@ export const UIProvider = ({ children }) => {
 
   // Load sort type from localStorage on client-side mount
   useEffect(() => {
-    const savedSortType = getLocalSortType();
-    if (savedSortType) {
-      const savedBuilding = getLocalSortBuilding();
-      setSortMenu((prev) => ({
-        ...prev,
-        type: savedSortType,
-        building: savedBuilding || DEFAULT_SORT_MENU.building,
-      }));
-    }
+    const frame = requestAnimationFrame(() => {
+      const savedSortType = getLocalSortType();
+      if (savedSortType) {
+        const savedBuilding = getLocalSortBuilding();
+        const supportedSort = MAIN_PAGE_SORT_TYPES.has(savedSortType)
+          && (savedSortType !== SORT_TYPES.DISTANCE_TO_BUILDING.value || savedBuilding);
+        const restoredSortType = supportedSort ? savedSortType : DEFAULT_SORT_MENU.type;
+        if (restoredSortType !== savedSortType) setLocalSortType(restoredSortType);
+        setSortMenu((prev) => ({
+          ...prev,
+          type: restoredSortType,
+          building: savedBuilding || DEFAULT_SORT_MENU.building,
+        }));
+      }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   // Prevent background scrolling when any menu is open
