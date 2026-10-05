@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Calendar } from "lucide-react";
 import { DateTime } from "luxon";
 import { useUI } from "@/contexts/UI/UI.context";
@@ -28,7 +28,7 @@ function freshnessLabel(mode, refreshedAt, selectedAt) {
   return minutesAgo < 1 ? "Updated just now" : minutesAgo < 60 ? `Updated ${minutesAgo}m ago` : `Updated ${observed.setZone(selectedAt.zoneName).toFormat("LLL d · h:mm a")}`;
 }
 
-export default function StatusViewPage({ locationId }) {
+export default function StatusViewPage({ locationId, onReady }) {
   const page = useRef(null);
   const refreshTimer = useRef(null);
   const [sorting, setSorting] = useState(false);
@@ -68,7 +68,11 @@ export default function StatusViewPage({ locationId }) {
   const retry = () => { data.retry().catch(() => {}); };
   const cardsLoading = data.isLoading || data.isBuildingLoading || sorting;
 
-  if (data.isLoading && !data.location && !data.error) return <ParkingLoading fullPage />;
+  useLayoutEffect(() => {
+    // Reveal complete initial data (or recovery UI) before the next paint.
+    // Cached data can become interactive without ever painting the loader.
+    if (!data.isLoading || data.error) onReady?.();
+  }, [data.isLoading, data.error, onReady]);
 
   return (
     <div className={styles.page} ref={page}>
@@ -92,7 +96,7 @@ export default function StatusViewPage({ locationId }) {
           {data.error ? (
             <div className={styles.error} role="alert"><p>Parking information could not load.</p><button className={styles.retryButton} type="button" onClick={retry}>Try again</button></div>
           ) : cardsLoading ? <ParkingLoading /> : lots.length ? (
-            <div className={styles.garages}>{lots.map((garage, index) => <GarageCard key={garage.lot_id || garage.id} garage={garage} mode={picker.displayMode} order={index} buildingName={sortMenu.building?.buildingName} />)}</div>
+            <div className={styles.garages}>{lots.map((garage, index) => <GarageCard key={garage.lot_id || garage.id} garage={garage} mode={picker.displayMode} order={index} sortType={sortMenu.type} buildingName={sortMenu.building?.buildingName} />)}</div>
           ) : <div className={styles.error}><p>No garages are available for this location.</p></div>}
         </section>
       </main>

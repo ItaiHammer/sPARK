@@ -1,6 +1,8 @@
 "use client";
 
 import { useId } from "react";
+import Image from "next/image";
+import { getSpotCategorySort, getSpotCategoryCount } from "@/lib/constants/sort";
 import {
   CalendarClock,
   CircleCheck,
@@ -85,6 +87,7 @@ export default function GarageCard({
   order = 0,
   animateEntrance = true,
   buildingName,
+  sortType,
 }) {
   const titleId = useId();
   const { occupied, spaces } = cardValues(garage);
@@ -110,6 +113,8 @@ export default function GarageCard({
     ? ALERT_ICONS[alert.type]
     : Info;
   const travel = travelValues(garage.travel, buildingName);
+  const categorySort = getSpotCategorySort(sortType);
+  const categoryCount = categorySort ? getSpotCategoryCount(garage, categorySort.category.key) : null;
   const count = closed || spaces == null
     ? "—"
     : spaces === 0
@@ -122,7 +127,7 @@ export default function GarageCard({
       aria-labelledby={titleId}
       data-mode={mode}
       data-status={statusKind}
-      style={{ "--card-delay": `${Math.min(Math.max(order, 0), 8) * 20}ms` }}
+      style={{ "--card-delay": `${Math.min(Math.max(order, 0), 8) * 35}ms` }}
     >
       <div className={styles.summary}>
         <div className={styles.top}>
@@ -174,6 +179,22 @@ export default function GarageCard({
               ~{travel.minutes} min walk{travel.building ? ` to ${travel.building}` : ""}
             </span>
             <span className={styles.travelDistance}>{travel.miles} mi</span>
+          </div>
+        )}
+        {categorySort && (
+          <div className={styles.categoryFooter} data-spot-category={categorySort.category.key}>
+            {categorySort.category.key === "limited_time"
+              ? <Timer className={styles.categoryIcon} aria-hidden="true" strokeWidth={1.7} />
+              : <Image className={styles.categoryIcon} src={categorySort.icon} width={14} height={14} alt="" />}
+            <span className={styles.categoryLabel}>{categorySort.category.label}</span>
+            {categoryCount === null ? (
+              <span className={styles.categoryMissing}>Not available</span>
+            ) : (
+              <span className={styles.categoryTotal}>
+                <strong>{categoryCount.toLocaleString("en-US")}</strong>
+                <span>total</span>
+              </span>
+            )}
           </div>
         )}
       </div>

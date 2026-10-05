@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
 
 // Contexts
 import ContextProvider from "@/contexts/Context.provider";
@@ -56,7 +55,7 @@ export const metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "sPARK",
   },
 };
@@ -76,7 +75,6 @@ export default function RootLayout({ children }) {
       >
         <ContextProvider>
           {children}
-          <Toaster position="top-center" />
         </ContextProvider>
       </body>
     </html>

@@ -8,12 +8,10 @@ import { getSupabase } from "../../lib/utils/client/supabase";
 
 // Contexts
 import { useUI } from "../UI/UI.context";
-import { useToasts } from "../UI/Toasts.context";
 
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
 import { LIVE_OCCUPANCY_KEY } from "@/lib/constants/SWR.keys";
-import { LOTS } from "@/lib/constants/sjsu";
 
 const SupabaseContext = createContext();
 export const useSupabase = () => useContext(SupabaseContext);
@@ -22,7 +20,6 @@ export const SupabaseContextProvider = ({ children }) => {
     locationID,
     timeFilterMenu: { type },
   } = useUI();
-  const { showYellowAlert, showOrangeAlert, showRedAlert } = useToasts();
   const supabase = getSupabase();
 
   useEffect(() => {
@@ -43,19 +40,8 @@ export const SupabaseContextProvider = ({ children }) => {
           table: "lot_occupancy",
           filter: `location_id=eq.${locationID.toLowerCase()}`,
         },
-        (payload) => {
+        () => {
           if (!active) return;
-          const { lot_id, occupancy_pct } = payload.new || {};
-          const occupancyPct = Number(occupancy_pct);
-          const lotName = LOTS[lot_id] || lot_id;
-
-          // Check the strongest warning first; a >=70 check first would mask
-          // both the orange and red variants.
-          if (occupancy_pct !== null && occupancy_pct !== undefined && Number.isFinite(occupancyPct)) {
-            if (occupancyPct >= 90) showRedAlert(lotName, occupancyPct);
-            else if (occupancyPct >= 80) showOrangeAlert(lotName, occupancyPct);
-            else if (occupancyPct >= 70) showYellowAlert(lotName, occupancyPct);
-          }
 
           // Clear previous timeout if exists
           if (refetchTimeout) clearTimeout(refetchTimeout);
@@ -100,7 +86,7 @@ export const SupabaseContextProvider = ({ children }) => {
       if (refetchTimeout) clearTimeout(refetchTimeout);
       supabase.removeChannel(channel);
     };
-  }, [supabase, locationID, type, showYellowAlert, showOrangeAlert, showRedAlert]);
+  }, [supabase, locationID, type]);
 
   return (
     <SupabaseContext.Provider value={{ supabase }}>

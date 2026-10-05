@@ -63,12 +63,26 @@ export default function TimeSelectionSheet({
   const [sheetDragging, setSheetDragging] = useState(false);
   const [rulerDragging, setRulerDragging] = useState(false);
   const [rulerPointerFocus, setRulerPointerFocus] = useState(false);
+  const [handlePointerFocus, setHandlePointerFocus] = useState(false);
   const [settledClosed, setSettledClosed] = useState(!expanded);
   const sheetY = useMotionValue(expanded ? 0 : 214 - SHEET_PEEK);
   const rulerMinutes = useMotionValue(selection.minutes);
   const tickX = useTransform(rulerMinutes, (value) => rulerWidth / 2 - value * PIXELS_PER_MINUTE);
   const travel = Math.max(0, geometry.height - geometry.peek);
   const selectedTime = timeParts(selection.minutes);
+
+  useEffect(() => {
+    // Native pickers can make focus restoration look like keyboard focus.
+    // Remember input modality across the outside toggle and handle refocus.
+    const pointerInput = () => setHandlePointerFocus(true);
+    const keyboardInput = () => setHandlePointerFocus(false);
+    document.addEventListener("pointerdown", pointerInput, true);
+    document.addEventListener("keydown", keyboardInput, true);
+    return () => {
+      document.removeEventListener("pointerdown", pointerInput, true);
+      document.removeEventListener("keydown", keyboardInput, true);
+    };
+  }, []);
 
   useEffect(() => {
     selectionRef.current = selection;
@@ -344,6 +358,7 @@ export default function TimeSelectionSheet({
       <button
         type="button"
         className={styles.handle}
+        data-pointer-focus={handlePointerFocus || undefined}
         aria-label={`${expanded ? "Collapse" : "Expand"} date and time controls`}
         aria-expanded={expanded}
         aria-controls={`${nativeId}-content`}

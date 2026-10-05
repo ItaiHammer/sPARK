@@ -1,3 +1,36 @@
+.initialPage {
+  min-height: 100dvh;
+  background: #f7f7f5;
+}
+.initialPage::before {
+  /* Keep the notch surface white across loading, scrolling, and sheet motion. */
+  content: "";
+  position: fixed;
+  z-index: 110;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--white, #fff);
+  pointer-events: none;
+}
+.initialPage[data-ready="false"] { height: 100dvh; overflow: hidden; }
+.initialPage[data-ready="false"] .initialContent { visibility: hidden; }
+.initialLoading {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: #f7f7f5;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 420ms cubic-bezier(0.4, 0, 0.2, 1), visibility 0s 420ms;
+}
+.initialPage[data-ready="true"] .initialLoading { opacity: 0; visibility: hidden; }
+/* Only the indicator is deferred, never readiness or interaction. */
+.initialLoading .loadingBrand { animation: loading-appear 120ms ease-out 120ms both; }
+.initialLoading .pageLoading > .spinner { animation: spin 700ms linear infinite, loading-appear 120ms ease-out 120ms both; }
+@keyframes loading-appear { from { opacity: 0; } to { opacity: 1; } }
+
 .page {
   --spark-pearl: #f7f7f5;
   --spark-paper: #fff;
@@ -101,7 +134,7 @@
 
 .sortWrapper { position: relative; min-width: 0; }
 .sortWrapper > .topControl { max-width: 100%; }
-.sortLabel { overflow: hidden; text-overflow: ellipsis; }
+.sortLabel { min-width: 0; white-space: normal; text-align: left; }
 .metadata {
   display: flex;
   align-items: center;
@@ -138,7 +171,7 @@
 .sortChoice { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 9px 10px; border-radius: 8px; font: inherit; font-size: 14px; line-height: 20px; text-align: left; cursor: pointer; }
 .sortChoice[aria-checked="true"] { font-weight: 600; }
 .sortChoice > svg { width: 16px; height: 16px; flex: none; }
-.extraSort { border-top: 1px solid var(--spark-line); border-radius: 0 0 8px 8px; margin-top: 5px; padding-top: 12px; }
+.sortDivider { height: 1px; margin: 5px 10px; background: var(--spark-line); }
 .buildingPopup { width: min(280px, calc(100vw - 32px)); padding: 10px; }
 .buildingHeading { display: flex; align-items: center; gap: 2px; margin-bottom: 7px; }
 .buildingHeading h3 { margin: 0; font-size: 15px; font-weight: 600; }
@@ -176,11 +209,15 @@
   .title { font-size: 19px; line-height: 25px; }
   .controls { gap: 6px; }
   .topControl { padding-inline: 10px; gap: 6px; font-size: 13px; }
+  .sortWrapper > .topControl { padding-inline: 8px; gap: 4px; }
   .timeControl { gap: 5px; }
   .topControl > svg { width: 17px; height: 17px; }
   .metadata { gap: 6px; font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .initialLoading { transition: none; }
+  .initialLoading .loadingBrand,
+  .initialLoading .pageLoading > .spinner { animation: loading-appear 0s 120ms both; }
   .spinner { animation-duration: 1600ms; }
   .sortPopup { animation: none; }
   .modeDot, .topControl::before { transition: none; }

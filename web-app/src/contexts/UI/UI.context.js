@@ -28,12 +28,7 @@ const DEFAULT_SORT_MENU = {
   building: null,
 };
 
-const MAIN_PAGE_SORT_TYPES = new Set([
-  SORT_TYPES.MOST_SPACES.value,
-  SORT_TYPES.EMPTIEST_FIRST.value,
-  SORT_TYPES.GARAGE_NAME.value,
-  SORT_TYPES.DISTANCE_TO_BUILDING.value,
-]);
+const MAIN_PAGE_SORT_TYPES = new Set(Object.values(SORT_TYPES).map((type) => type.value));
 
 // UI Context
 const UIContext = createContext();
