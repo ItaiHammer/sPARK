@@ -1,3 +1,24 @@
+.initialPage {
+  min-height: 100dvh;
+  background: #f7f7f5;
+}
+.initialPage[data-ready="false"] { height: 100dvh; overflow: hidden; }
+.initialPage[data-ready="false"] .initialContent { visibility: hidden; }
+.initialLoading {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: #f7f7f5;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 180ms ease-out, visibility 0s 180ms;
+}
+.initialPage[data-ready="true"] .initialLoading { opacity: 0; visibility: hidden; }
+/* Only the indicator is deferred, never readiness or interaction. */
+.initialLoading .loadingBrand { animation: loading-appear 120ms ease-out 120ms both; }
+.initialLoading .pageLoading > .spinner { animation: spin 700ms linear infinite, loading-appear 120ms ease-out 120ms both; }
+@keyframes loading-appear { from { opacity: 0; } to { opacity: 1; } }
+
 .page {
   --spark-pearl: #f7f7f5;
   --spark-paper: #fff;
@@ -181,6 +202,9 @@
   .metadata { gap: 6px; font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .initialLoading { transition: none; }
+  .initialLoading .loadingBrand,
+  .initialLoading .pageLoading > .spinner { animation: loading-appear 0s 120ms both; }
   .spinner { animation-duration: 1600ms; }
   .sortPopup { animation: none; }
   .modeDot, .topControl::before { transition: none; }
