@@ -127,7 +127,7 @@ export default function GarageCard({
       aria-labelledby={titleId}
       data-mode={mode}
       data-status={statusKind}
-      style={{ "--card-delay": `${Math.min(Math.max(order, 0), 8) * 20}ms` }}
+      style={{ "--card-delay": `${Math.min(Math.max(order, 0), 8) * 35}ms` }}
     >
       <div className={styles.summary}>
         <div className={styles.top}>

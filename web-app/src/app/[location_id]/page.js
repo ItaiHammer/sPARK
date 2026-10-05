@@ -24,7 +24,7 @@ function ParkingPageContent({ locationId }) {
         <StatusView locationId={locationId} onReady={onReady} />
       </div>
       <div className={styles.initialLoading} aria-hidden={ready}>
-        {ready ? null : <ParkingLoading fullPage />}
+        <ParkingLoading fullPage />
       </div>
     </div>
   );
