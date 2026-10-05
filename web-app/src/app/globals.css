@@ -77,6 +77,12 @@
   --font-family-geist-mono: var(--font-geist-mono);
 }
 
+html {
+  /* iOS uses the page canvas behind browser-controlled safe areas. */
+  background: var(--white);
+  color-scheme: light;
+}
+
 body {
   background: var(--white);
   color: var(--primary-black);

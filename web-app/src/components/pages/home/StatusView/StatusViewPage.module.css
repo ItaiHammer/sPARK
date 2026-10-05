@@ -2,6 +2,18 @@
   min-height: 100dvh;
   background: #f7f7f5;
 }
+.initialPage::before {
+  /* Keep the notch surface white across loading, scrolling, and sheet motion. */
+  content: "";
+  position: fixed;
+  z-index: 110;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--white, #fff);
+  pointer-events: none;
+}
 .initialPage[data-ready="false"] { height: 100dvh; overflow: hidden; }
 .initialPage[data-ready="false"] .initialContent { visibility: hidden; }
 .initialLoading {
