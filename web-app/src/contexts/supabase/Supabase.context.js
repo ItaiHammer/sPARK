@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { mutate as globalMutate } from "swr";
 
 // Utils
@@ -20,28 +20,20 @@ export const useSupabase = () => useContext(SupabaseContext);
 export const SupabaseContextProvider = ({ children }) => {
   const {
     locationID,
-    timeFilterMenu: { date, type },
+    timeFilterMenu: { type },
   } = useUI();
   const { showYellowAlert, showOrangeAlert, showRedAlert } = useToasts();
   const supabase = getSupabase();
-  const channelRef = useRef(null);
-  const refetchTimeout = useRef(null);
-
-  const checkOccupancy = (lotId, occupancyPct) => {
-    const lotName = LOTS[lotId];
-    if (occupancyPct >= 70) {
-      showYellowAlert(lotName, occupancyPct);
-    } else if (occupancyPct >= 80) {
-      showOrangeAlert(lotName, occupancyPct);
-    } else if (occupancyPct >= 90) {
-      showRedAlert(lotName, occupancyPct);
-    }
-  };
 
   useEffect(() => {
-    if (!locationID || channelRef.current) return;
+    // Subscribing only in Live mode prevents incoming events from changing a
+    // paused snapshot or a selected estimate. The dependency also keeps this
+    // gate current when the person changes modes.
+    if (!supabase || !locationID || type !== FILTER_TYPES.LIVE.value) return;
+    let active = true;
+    let refetchTimeout = null;
 
-    channelRef.current = supabase
+    const channel = supabase
       .channel("parking-realtime")
       .on(
         "postgres_changes",
@@ -52,27 +44,34 @@ export const SupabaseContextProvider = ({ children }) => {
           filter: `location_id=eq.${locationID.toLowerCase()}`,
         },
         (payload) => {
-          const { lot_id, occupancy_pct } = payload.new;
+          if (!active) return;
+          const { lot_id, occupancy_pct } = payload.new || {};
+          const occupancyPct = Number(occupancy_pct);
+          const lotName = LOTS[lot_id] || lot_id;
 
-          // Send Alerts
-          checkOccupancy(lot_id, occupancy_pct);
+          // Check the strongest warning first; a >=70 check first would mask
+          // both the orange and red variants.
+          if (occupancy_pct !== null && occupancy_pct !== undefined && Number.isFinite(occupancyPct)) {
+            if (occupancyPct >= 90) showRedAlert(lotName, occupancyPct);
+            else if (occupancyPct >= 80) showOrangeAlert(lotName, occupancyPct);
+            else if (occupancyPct >= 70) showYellowAlert(lotName, occupancyPct);
+          }
 
           // Clear previous timeout if exists
-          if (refetchTimeout.current) clearTimeout(refetchTimeout.current);
+          if (refetchTimeout) clearTimeout(refetchTimeout);
 
           // Schedule SWR mutate after 100ms
-          refetchTimeout.current = setTimeout(() => {
+          refetchTimeout = setTimeout(() => {
+            if (!active) return;
             if (process.env.NODE_ENV === "development") {
               console.log("[ParkingRealtime]", "refetching");
             }
 
-            // Only refetch if on live mode
-            if (type === FILTER_TYPES.LIVE.value)
-              globalMutate([LIVE_OCCUPANCY_KEY, locationID, date, type], {
-                revalidate: true,
-              });
+            // Calling mutate with only the shared key revalidates the fetcher.
+            // An object in the second position would replace occupancy data.
+            globalMutate([LIVE_OCCUPANCY_KEY, locationID]);
 
-            refetchTimeout.current = null;
+            refetchTimeout = null;
           }, 100);
         }
       )
@@ -97,12 +96,11 @@ export const SupabaseContextProvider = ({ children }) => {
       });
 
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      active = false;
+      if (refetchTimeout) clearTimeout(refetchTimeout);
+      supabase.removeChannel(channel);
     };
-  }, [supabase, locationID]);
+  }, [supabase, locationID, type, showYellowAlert, showOrangeAlert, showRedAlert]);
 
   return (
     <SupabaseContext.Provider value={{ supabase }}>

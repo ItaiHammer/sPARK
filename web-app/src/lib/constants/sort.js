@@ -1,15 +1,13 @@
 export const SORT_TYPES = Object.freeze({
+  MOST_SPACES: { label: "Most spaces", value: "most_spaces", icon: "/icons/emptiest_first_icon.svg" },
   EMPTIEST_FIRST: {
-    label: "Emptiest First",
+    label: "Least full",
     value: "emptiest_first",
     icon: "/icons/emptiest_first_icon.svg",
   },
+  GARAGE_NAME: { label: "Garage name", value: "garage_name", icon: "/icons/building_icon.svg" },
   DISTANCE_TO_BUILDING: {
-    label: (
-      <p>
-        Distance to <span className="text-secondary-gray">select building</span>
-      </p>
-    ),
+    label: "Distance to building",
     value: "distance_to_building",
     icon: "/icons/building_icon.svg",
   },
@@ -48,7 +46,7 @@ export const getSortLabel = (sortType, buildingName = null) => {
   return (
     SORT_TYPES[
       Object.keys(SORT_TYPES).find((key) => SORT_TYPES[key].value === sortType)
-    ]?.label || "Emptiest first"
+    ]?.label || "Most spaces"
   );
 };
 
@@ -61,58 +59,58 @@ export const getSortIcon = (sortType) => {
 };
 
 export const getSortedLots = (lots, sortType) => {
+  const occupancy = (lot) => lot.occupied ?? lot.point ?? lot.occupancy_pct;
+  const spaces = (lot) => lot.spaces ?? (Number.isFinite(occupancy(lot)) ? (1 - occupancy(lot) / 100) * (lot.spot_count || 0) : -1);
+  const copy = [...lots];
+  const nameOrder = (a, b) => (a.name || "").localeCompare(b.name || "");
   switch (sortType) {
+    case SORT_TYPES.MOST_SPACES.value:
+      return copy.sort((a, b) => Number(a.closed) - Number(b.closed) || spaces(b) - spaces(a) || nameOrder(a, b));
+    case SORT_TYPES.GARAGE_NAME.value:
+      return copy.sort(nameOrder);
     case SORT_TYPES.EMPTIEST_FIRST.value:
-      return lots.sort((a, b) => {
-        const occupancyPctA = a.point || a.occupancy_pct || 0;
-        const occupancyPctB = b.point || b.occupancy_pct || 0;
-        return occupancyPctA - occupancyPctB;
-      });
+      return copy.sort((a, b) => Number(a.closed) - Number(b.closed) || (occupancy(a) ?? Infinity) - (occupancy(b) ?? Infinity) || nameOrder(a, b));
 
     case SORT_TYPES.MOST_DISABLED.value:
-      return lots.sort((a, b) => {
-        const disabledA = a.spot_categories.disabled || 0;
-        const disabledB = b.spot_categories.disabled || 0;
+      return copy.sort((a, b) => {
+        const disabledA = a.spot_categories?.disabled || 0;
+        const disabledB = b.spot_categories?.disabled || 0;
         return disabledB - disabledA;
       });
 
     case SORT_TYPES.MOST_EMPLOYEE.value:
-      return lots.sort((a, b) => {
-        const employeeA = a.spot_categories.employee || 0;
-        const employeeB = b.spot_categories.employee || 0;
+      return copy.sort((a, b) => {
+        const employeeA = a.spot_categories?.employee || 0;
+        const employeeB = b.spot_categories?.employee || 0;
         return employeeB - employeeA;
       });
 
     case SORT_TYPES.MOST_LIMITED_TIME.value:
-      return lots.sort((a, b) => {
-        const limitedTimeA = a.spot_categories.limited_time || 0;
-        const limitedTimeB = b.spot_categories.limited_time || 0;
+      return copy.sort((a, b) => {
+        const limitedTimeA = a.spot_categories?.limited_time || 0;
+        const limitedTimeB = b.spot_categories?.limited_time || 0;
         return limitedTimeB - limitedTimeA;
       });
 
     case SORT_TYPES.MOST_MOTORCYCLE.value:
-      return lots.sort((a, b) => {
-        const motorcycleA = a.spot_categories.motorcycle || 0;
-        const motorcycleB = b.spot_categories.motorcycle || 0;
+      return copy.sort((a, b) => {
+        const motorcycleA = a.spot_categories?.motorcycle || 0;
+        const motorcycleB = b.spot_categories?.motorcycle || 0;
         return motorcycleB - motorcycleA;
       });
 
     case SORT_TYPES.MOST_EV_CHARGING.value:
-      return lots.sort((a, b) => {
-        const evChargingA = a.spot_categories.ev_charging || 0;
-        const evChargingB = b.spot_categories.ev_charging || 0;
+      return copy.sort((a, b) => {
+        const evChargingA = a.spot_categories?.ev_charging || 0;
+        const evChargingB = b.spot_categories?.ev_charging || 0;
         return evChargingB - evChargingA;
       });
 
     case SORT_TYPES.DISTANCE_TO_BUILDING.value:
-      return lots.sort((a, b) => {
-        const distanceA = a.travel?.distance || 0;
-        const distanceB = b.travel?.distance || 0;
-        return distanceA - distanceB;
-      });
+      return copy.sort((a, b) => (a.travel?.meters ?? a.travel?.distance ?? Infinity) - (b.travel?.meters ?? b.travel?.distance ?? Infinity) || nameOrder(a, b));
 
     default:
-      return lots;
+      return copy;
   }
 };
 
