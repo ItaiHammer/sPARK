@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { SORT_TYPES, getSortLabel } from "@/lib/constants/sort";
 import styles from "./StatusViewPage.module.css";
 
-const options = [
-  SORT_TYPES.MOST_SPACES,
-  SORT_TYPES.EMPTIEST_FIRST,
-  SORT_TYPES.GARAGE_NAME,
-  SORT_TYPES.DISTANCE_TO_BUILDING,
-];
+const options = Object.values(SORT_TYPES);
+const firstCategoryOption = options.find((option) => option.category)?.value;
 
 export default function SortControls({ sortType, building, buildings, isBuildingsLoading, buildingError, onRetry, onSort, onBuilding }) {
   const [open, setOpen] = useState(false);
@@ -92,15 +88,18 @@ export default function SortControls({ sortType, building, buildings, isBuilding
               </div>
             </>
           ) : options.map((option) => (
-            <button className={styles.sortChoice} key={option.value} type="button" role="menuitemradio" aria-checked={sortType === option.value} onClick={() => {
-              if (option.value === SORT_TYPES.DISTANCE_TO_BUILDING.value) { setQuery(""); setChoosingBuilding(true); return; }
-              onSort(option.value);
-              close();
-              trigger.current?.focus({ preventScroll: true });
-            }}>
-              <span>{option.label}</span>
-              {sortType === option.value ? <Check aria-hidden="true" /> : null}
-            </button>
+            <Fragment key={option.value}>
+              {option.value === firstCategoryOption && <div className={styles.sortDivider} role="separator" />}
+              <button className={styles.sortChoice} type="button" role="menuitemradio" aria-checked={sortType === option.value} onClick={() => {
+                if (option.value === SORT_TYPES.DISTANCE_TO_BUILDING.value) { setQuery(""); setChoosingBuilding(true); return; }
+                onSort(option.value);
+                close();
+                trigger.current?.focus({ preventScroll: true });
+              }}>
+                <span>{option.label}</span>
+                {sortType === option.value ? <Check aria-hidden="true" /> : null}
+              </button>
+            </Fragment>
           ))}
         </div>
       ) : null}

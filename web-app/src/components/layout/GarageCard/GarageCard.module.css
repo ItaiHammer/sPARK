@@ -193,6 +193,7 @@
 }
 
 .indicator > svg,
+.categoryIcon,
 .travel > svg {
   display: block;
   flex: none;
@@ -219,6 +220,49 @@
   flex: none;
   margin-left: auto;
   color: var(--spark-secondary, #686868);
+  white-space: nowrap;
+}
+
+.categoryFooter {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--spark-line, #e5e5e1);
+  font-size: 13px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.categoryLabel {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.categoryTotal {
+  display: inline-flex;
+  flex: none;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.categoryTotal > strong {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 20px;
+}
+
+.categoryTotal > span,
+.categoryMissing {
+  color: var(--spark-secondary, #686868);
+  font-size: 12px;
+}
+
+.categoryMissing {
+  flex: none;
   white-space: nowrap;
 }
 

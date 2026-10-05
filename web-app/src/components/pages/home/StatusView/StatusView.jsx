@@ -96,7 +96,7 @@ export default function StatusViewPage({ locationId, onReady }) {
           {data.error ? (
             <div className={styles.error} role="alert"><p>Parking information could not load.</p><button className={styles.retryButton} type="button" onClick={retry}>Try again</button></div>
           ) : cardsLoading ? <ParkingLoading /> : lots.length ? (
-            <div className={styles.garages}>{lots.map((garage, index) => <GarageCard key={garage.lot_id || garage.id} garage={garage} mode={picker.displayMode} order={index} buildingName={sortMenu.building?.buildingName} />)}</div>
+            <div className={styles.garages}>{lots.map((garage, index) => <GarageCard key={garage.lot_id || garage.id} garage={garage} mode={picker.displayMode} order={index} sortType={sortMenu.type} buildingName={sortMenu.building?.buildingName} />)}</div>
           ) : <div className={styles.error}><p>No garages are available for this location.</p></div>}
         </section>
       </main>

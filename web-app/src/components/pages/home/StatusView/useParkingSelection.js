@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DateTime } from "luxon";
 import { selectionDateTime } from "@/lib/utils/client/parking";
+import { SORT_TYPES, getSpotCategoryCount } from "@/lib/constants/sort";
 
 const STORAGE_VERSION = 1;
 const DEFAULT_ZONE = "America/Los_Angeles";
@@ -74,9 +75,10 @@ export function copyPausedParkingSnapshot(value) {
     if (typeof lot["24_hour"] === "boolean") copy["24_hour"] = lot["24_hour"];
     if (lot.spot_categories && typeof lot.spot_categories === "object") {
       copy.spot_categories = {};
-      for (const key of ["disabled", "employee", "limited_time", "motorcycle", "ev_charging"]) {
-        const count = lot.spot_categories[key];
-        if (Number.isFinite(count) && count >= 0) copy.spot_categories[key] = count;
+      for (const { category } of Object.values(SORT_TYPES)) {
+        if (!category) continue;
+        const count = getSpotCategoryCount(lot, category.key);
+        if (count !== null) copy.spot_categories[category.key] = count;
       }
     }
     const indicator = snapshotAlert(lot.alert || lot.indicator);
