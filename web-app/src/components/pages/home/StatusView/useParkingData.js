@@ -33,7 +33,7 @@ const forecastOptions = {
   revalidateOnReconnect: true,
 };
 
-export default function useParkingData({ locationId, selection, buildingId = null, pausedSnapshot = null }) {
+export default function useParkingData({ locationId, selection, buildingId = null, pausedSnapshot = null, loadBuildings = true }) {
   const { getLocationInfo, getLocationLots, getLatestOccupancy, getLocationBuildings, getBuildingDistances } = useLocationAPI();
   const selectedAt = selectionDateTime(selection);
 
@@ -41,7 +41,7 @@ export default function useParkingData({ locationId, selection, buildingId = nul
     ([, id]) => getLocationInfo(id).then(apiData), cachedOptions);
   const metadataRequest = useSWR(locationId ? ["parking-lots", locationId] : null,
     ([, id]) => getLocationLots(id).then(apiData), cachedOptions);
-  const buildingsRequest = useSWR(locationId ? [BUILDINGS_KEY, locationId] : null,
+  const buildingsRequest = useSWR(locationId && loadBuildings ? [BUILDINGS_KEY, locationId] : null,
     ([, id]) => getLocationBuildings(id).then(apiData), cachedOptions);
   const buildingRequest = useSWR(locationId && buildingId ? [BUILDING_DISTANCES_KEY, locationId, buildingId] : null,
     ([, id, destination]) => getBuildingDistances(id, destination).then(apiData), cachedOptions);
@@ -105,6 +105,10 @@ export default function useParkingData({ locationId, selection, buildingId = nul
 
   return {
     lots,
+    metadataLots: metadataRequest.data || [],
+    isMetadataLoading: metadataRequest.isLoading,
+    metadataError: metadataRequest.error || null,
+    forecastByLot,
     location: locationRequest.data || null,
     buildings: buildingsRequest.data || [],
     isBuildingsLoading: buildingsRequest.isLoading,
@@ -112,6 +116,7 @@ export default function useParkingData({ locationId, selection, buildingId = nul
     isLoading: locationRequest.isLoading || metadataRequest.isLoading || (live ? occupancyRequest.isLoading : !frozen && selectedRequests.some((request) => request.isLoading)),
     error,
     isForecastLoading,
+    isForecastSettled: frozen || dayRequests.every((request) => request.data !== undefined || Boolean(request.error)),
     forecastError,
     isBuildingLoading: buildingRequest.isLoading,
     buildingError: buildingRequest.error || buildingsRequest.error || null,
