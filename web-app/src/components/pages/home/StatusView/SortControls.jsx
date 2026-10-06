@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
-import { SORT_TYPES, getSortLabel } from "@/lib/constants/sort";
+import { DEFAULT_SORT_TYPE, SORT_TYPES, getSortLabel } from "@/lib/constants/sort";
 import styles from "./StatusViewPage.module.css";
 
 const options = Object.values(SORT_TYPES);
@@ -96,7 +96,10 @@ export default function SortControls({ sortType, building, buildings, isBuilding
                 close();
                 trigger.current?.focus({ preventScroll: true });
               }}>
-                <span>{option.label}</span>
+                <span className={styles.sortChoiceLabel}>
+                  <span>{option.label}</span>
+                  {option.value === DEFAULT_SORT_TYPE ? <span className={styles.sortDefaultBadge}>Default</span> : null}
+                </span>
                 {sortType === option.value ? <Check aria-hidden="true" /> : null}
               </button>
             </Fragment>

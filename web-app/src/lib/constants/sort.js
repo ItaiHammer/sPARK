@@ -43,6 +43,8 @@ export const SORT_TYPES = Object.freeze({
   },
 });
 
+export const DEFAULT_SORT_TYPE = SORT_TYPES.MOST_SPACES.value;
+
 export const getSpotCategorySort = (sortType) =>
   Object.values(SORT_TYPES).find((type) => type.value === sortType && type.category) || null;
 
