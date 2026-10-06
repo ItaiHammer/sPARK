@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import { Calendar, ChevronLeft, ChevronRight, Clock3 } from "lucide-react";
 import { DateTime } from "luxon";
+import { openNativePicker } from "@/lib/utils/client/nativePicker";
 import styles from "./TimeSelectionSheet.module.css";
 
 const STEP = 15;
@@ -390,14 +391,14 @@ export default function TimeSelectionSheet({
           ))}
           <label className={styles.nativeDate} data-selected={quickIndex < 0 || undefined}>
             {quickIndex < 0 ? <span className={styles.customDateLabel} aria-hidden="true"><span>{selectedDay.toFormat("LLL")}</span><strong>{selectedDay.day}</strong></span> : <Calendar size={18} aria-hidden="true" />}
-            <input id={`${nativeId}-date`} className={styles.nativeInput} type="date" max={maxDateISO} value={selection.dateISO} onInput={chooseDate} onChange={chooseDate} aria-label="Selected date" />
+            <input id={`${nativeId}-date`} className={styles.nativeInput} type="date" max={maxDateISO} value={selection.dateISO} onClick={openNativePicker} onInput={chooseDate} onChange={chooseDate} aria-label="Selected date" />
           </label>
         </div>
         <div className={styles.timeHeading}>
           <label className={styles.nativeTime}>
             <Clock3 size={16} aria-hidden="true" />
             <span className={styles.timeLabel} aria-hidden="true">{selectedTime.time} <span>{selectedTime.period}</span></span>
-            <input id={`${nativeId}-time`} className={styles.nativeInput} type="time" min="00:00" max="23:59" step="60" value={`${String(Math.floor(selection.minutes / 60)).padStart(2, "0")}:${String(selection.minutes % 60).padStart(2, "0")}`} onInput={chooseTime} onChange={chooseTime} aria-label="Selected time" />
+            <input id={`${nativeId}-time`} className={styles.nativeInput} type="time" min="00:00" max="23:59" step="60" value={`${String(Math.floor(selection.minutes / 60)).padStart(2, "0")}:${String(selection.minutes % 60).padStart(2, "0")}`} onClick={openNativePicker} onInput={chooseTime} onChange={chooseTime} aria-label="Selected time" />
           </label>
           <button type="button" className={styles.now} role="switch" aria-checked={selection.mode === "live"} aria-label="Now, live updates" disabled={selection.mode === "live" && !canPauseLive} onClick={onToggleLive}>
             <span className={styles.nowDot} aria-hidden="true" /><span>Now</span>
