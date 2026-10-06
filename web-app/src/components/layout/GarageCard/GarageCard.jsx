@@ -8,7 +8,6 @@ import {
   CircleCheck,
   CircleParking,
   DoorOpen,
-  Footprints,
   Hourglass,
   Info,
   Timer,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import styles from "./GarageCard.module.css";
 import { animateGarageValues, cardEntranceDelay, CARD_ENTRANCE_MS, formatEntranceNumber } from "./garageEntrance";
+import { walkingDirectionsUrl } from "./walkingDirections";
 
 function EntranceNumber({ value, fractionDigits = 0 }) {
   const formatted = formatEntranceNumber(value, fractionDigits);
@@ -98,6 +98,7 @@ export default function GarageCard({
   mode = "live",
   order = 0,
   animateEntrance = true,
+  building,
   buildingName,
   sortType,
 }) {
@@ -125,6 +126,8 @@ export default function GarageCard({
     ? ALERT_ICONS[alert.type]
     : Info;
   const travel = travelValues(garage.travel, buildingName);
+  const directionsUrl = walkingDirectionsUrl(garage, building);
+  const TravelContainer = directionsUrl ? "a" : "div";
   const categorySort = getSpotCategorySort(sortType);
   const categoryCount = categorySort ? getSpotCategoryCount(garage, categorySort.category.key) : null;
   const card = useRef(null);
@@ -199,13 +202,28 @@ export default function GarageCard({
         )}
 
         {travel && (
-          <div className={styles.travel}>
-            <Footprints aria-hidden="true" strokeWidth={1.7} />
+          <TravelContainer
+            className={styles.travel}
+            href={directionsUrl || undefined}
+            target={directionsUrl ? "_blank" : undefined}
+            rel={directionsUrl ? "noopener noreferrer" : undefined}
+            aria-label={directionsUrl ? `Walk to ${travel.building || building?.name || "the building"}, about ${travel.minutes} minutes, ${travel.miles} miles — Google Maps walking directions from ${garage.name} (opens in a new tab)` : undefined}
+          >
+            <span className={styles.travelIcon} aria-hidden="true" />
             <span className={styles.travelText}>
-              ~<EntranceNumber value={travel.minutes} /> min walk{travel.building ? ` to ${travel.building}` : ""}
+              <span>Walk{travel.building ? ` to ${travel.building}` : " to building"}</span>
+              {directionsUrl && (
+                <svg className={styles.travelLinkIcon} aria-hidden="true" viewBox="2 2 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 7l-10 10" />
+                  <path d="M8 7h9v9" />
+                </svg>
+              )}
             </span>
-            <span className={styles.travelDistance}><EntranceNumber value={Number(travel.miles)} fractionDigits={2} /> mi</span>
-          </div>
+            <span className={styles.travelMetrics}>
+              <strong className={styles.travelTime}>~<EntranceNumber value={travel.minutes} /> min</strong>
+              <span className={styles.travelDistance}><EntranceNumber value={Number(travel.miles)} fractionDigits={2} /> mi</span>
+            </span>
+          </TravelContainer>
         )}
         {categorySort && (
           <div className={styles.categoryFooter} data-spot-category={categorySort.category.key}>

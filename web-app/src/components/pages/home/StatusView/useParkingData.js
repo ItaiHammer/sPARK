@@ -70,7 +70,18 @@ export default function useParkingData({ locationId, selection, buildingId = nul
   const forecastByLot = useMemo(() => indexForecastRows([firstDayRequest.data, secondDayRequest.data, thirdDayRequest.data]),
     [firstDayRequest.data, secondDayRequest.data, thirdDayRequest.data]);
   const lots = useMemo(() => {
-    if (frozen) return frozenLots.map((lot) => ({ ...lot, travel: travelForLot(lot.lot_id || lot.id, buildingRequest.data) }));
+    if (frozen) return frozenLots.map((lot) => {
+      const id = lot.lot_id || lot.id;
+      const metadata = metadataRequest.data?.find((item) => item.lot_id === id);
+      // Routing metadata can refresh without changing paused counts or alerts.
+      return {
+        ...lot,
+        address: metadata?.address ?? lot.address,
+        latitude: metadata?.latitude ?? lot.latitude,
+        longitude: metadata?.longitude ?? lot.longitude,
+        travel: travelForLot(id, buildingRequest.data),
+      };
+    });
     return normalizeParkingLots({
       metadataLots: metadataRequest.data || [],
       occupancyLots: live ? occupancyRequest.data?.lots || []
