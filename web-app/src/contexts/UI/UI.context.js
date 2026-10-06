@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { DateTime } from "luxon";
+import { usePathname } from "next/navigation";
 
 // Utils
 import {
@@ -34,6 +35,13 @@ const MAIN_PAGE_SORT_TYPES = new Set(Object.values(SORT_TYPES).map((type) => typ
 const UIContext = createContext();
 export const useUI = () => useContext(UIContext);
 export const UIProvider = ({ children }) => {
+  const pathname = usePathname();
+  const [loadingPathname, setLoadingPathname] = useState(pathname);
+  // Startup belongs to this document's first screen. Navigation ends it even
+  // if that screen's data has not finished loading; returning cannot restart it.
+  if (loadingPathname !== null && loadingPathname !== pathname) setLoadingPathname(null);
+  const completeInitialPageLoading = useCallback(() => setLoadingPathname(null), []);
+  const isInitialPageLoading = loadingPathname !== null && loadingPathname === pathname;
   const [locationID, setLocationID] = useState(null);
 
   // Home Page
@@ -202,6 +210,8 @@ export const UIProvider = ({ children }) => {
   return (
     <UIContext.Provider
       value={{
+        isInitialPageLoading,
+        completeInitialPageLoading,
         locationID,
         setLocationID,
         activeTab,

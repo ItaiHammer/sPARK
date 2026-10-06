@@ -1,5 +1,5 @@
 .initialPage {
-  min-height: 100dvh;
+  min-height: calc(100dvh - 58px - env(safe-area-inset-top, 0px));
   background: #f7f7f5;
 }
 .initialPage::before {
@@ -14,7 +14,7 @@
   background: var(--white, #fff);
   pointer-events: none;
 }
-.initialPage[data-ready="false"] { height: 100dvh; overflow: hidden; }
+.initialPage[data-ready="false"] { height: calc(100dvh - 58px - env(safe-area-inset-top, 0px)); overflow: hidden; }
 .initialPage[data-ready="false"] .initialContent { visibility: hidden; }
 .initialLoading {
   position: fixed;
@@ -51,6 +51,8 @@
   --spark-pill-radius: 12px;
   --spark-field-radius: 12px;
   --spark-main-width: 560px;
+  --spark-content-top: 21px;
+  --spark-card-gap: 10px;
   --spark-sheet-visible-height: 214px;
   color-scheme: light;
   min-height: 100dvh;
@@ -60,10 +62,20 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.page ::selection { background: var(--spark-accent-soft); color: var(--spark-ink); }
+
+.pageContent { min-height: calc(100dvh - 58px - env(safe-area-inset-top, 0px)); }
+.pageIntro { display: flow-root; position: relative; z-index: 2; }
+.pageEntrance { animation: page-ready 1200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes page-ready {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .main {
   max-width: var(--spark-main-width);
   margin-inline: auto;
-  padding: 21px 16px calc(var(--spark-sheet-visible-height) + 18px);
+  padding: var(--spark-content-top) 16px calc(var(--spark-sheet-visible-height) + 18px);
 }
 
 .title {
@@ -127,6 +139,7 @@
 .sortChoice:focus-visible,
 .backButton:focus-visible,
 .buildingChoice:focus-visible,
+.notice button:focus-visible,
 .retryButton:focus-visible {
   outline: 2px solid var(--spark-ink);
   outline-offset: 3px;
@@ -146,12 +159,12 @@
   font-weight: 500;
   line-height: 16px;
 }
-.mode { display: inline-flex; align-items: center; gap: 7px; flex: none; font-size: 12px; font-weight: 600; }
+.mode { display: inline-flex; align-items: center; gap: 7px; flex: none; color: var(--spark-ink); font-size: 12px; font-weight: 600; }
 .modeDot { width: 7px; height: 7px; border-radius: 50%; background: var(--spark-paused); transition: background-color 220ms ease; }
 .mode[data-mode="live"] .modeDot { background: var(--spark-live); }
 .mode[data-mode="predicted"] .modeDot { background: var(--spark-forecast); }
 .freshness { text-align: right; }
-.garages { display: grid; gap: 10px; }
+.garages { display: grid; gap: var(--spark-card-gap); }
 .sortPopup {
   position: absolute;
   z-index: 40;
@@ -188,6 +201,7 @@
 .buildingChoice > span:first-child { color: var(--spark-secondary); font-size: 13px; font-weight: 600; }
 .menuMessage { padding: 14px 8px; color: var(--spark-secondary); font-size: 13px; }
 .notice { margin: 0 3px 12px; color: var(--spark-secondary); font-size: 12px; line-height: 18px; }
+.notice button { color: var(--spark-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .error { min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; font-size: 14px; color: var(--spark-secondary); }
 .retryButton { min-height: 44px; padding: 8px 16px; border: 1px solid var(--spark-line); border-radius: 10px; color: var(--spark-ink); background: var(--spark-paper); font: inherit; font-size: 14px; cursor: pointer; }
 .pageLoading,
@@ -217,6 +231,7 @@
   .metadata { gap: 6px; font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .pageEntrance { animation: none; }
   .initialLoading { transition: none; }
   .initialLoading .loadingBrand,
   .initialLoading .pageLoading > .spinner { animation: loading-appear 0s 120ms both; }

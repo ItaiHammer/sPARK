@@ -2,6 +2,7 @@
 
 import { useId, useLayoutEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { getSpotCategorySort, getSpotCategoryCount } from "@/lib/constants/sort";
 import {
   CalendarClock,
@@ -101,6 +102,7 @@ export default function GarageCard({
   building,
   buildingName,
   sortType,
+  href,
 }) {
   const titleId = useId();
   const { occupied, spaces } = cardValues(garage);
@@ -161,7 +163,7 @@ export default function GarageCard({
           <div className={styles.title}>
             <h3 className={styles.name} id={titleId}>
               <span className={styles.modeDot} aria-hidden="true" />
-              {garage.name}
+              {href ? <Link className={styles.detailLink} href={href}>{garage.name}</Link> : garage.name}
             </h3>
             <div className={styles.occupancy}>
               <span className={styles.occupied}>

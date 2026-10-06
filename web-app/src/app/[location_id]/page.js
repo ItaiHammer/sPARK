@@ -9,23 +9,35 @@ import styles from "@/components/pages/home/StatusView/StatusViewPage.module.css
 
 const StatusView = dynamic(() => import("@/components/pages/home/StatusView/StatusView"), {
   ssr: false,
-  loading: () => null,
+  loading: () => (
+    <div className={styles.pageContent}>
+      <main className={styles.main}><ParkingLoading /></main>
+    </div>
+  ),
 });
 
 function ParkingPageContent({ locationId }) {
+  const { isInitialPageLoading, completeInitialPageLoading } = useUI();
+  const [showStartupLoader] = useState(isInitialPageLoading);
   const [ready, setReady] = useState(false);
-  const onReady = useCallback(() => setReady(true), []);
+  const pageReady = ready || !isInitialPageLoading;
+  const onReady = useCallback(() => {
+    setReady(true);
+    completeInitialPageLoading();
+  }, [completeInitialPageLoading]);
 
-  // Keep one loading surface across both the code and initial data requests.
-  // Readiness is one-way: later refreshes use the existing card loading state.
+  // Only a direct visit uses the startup overlay. Client navigation and later
+  // refreshes keep the page visible and use the existing content loading state.
   return (
-    <div className={styles.initialPage} data-ready={ready}>
-      <div className={styles.initialContent} inert={!ready} aria-hidden={!ready}>
+    <div className={styles.initialPage} data-ready={pageReady}>
+      <div className={styles.initialContent} inert={!pageReady} aria-hidden={!pageReady}>
         <StatusView locationId={locationId} onReady={onReady} />
       </div>
-      <div className={styles.initialLoading} aria-hidden={ready}>
-        <ParkingLoading fullPage />
-      </div>
+      {showStartupLoader ? (
+        <div className={styles.initialLoading} aria-hidden={pageReady}>
+          <ParkingLoading fullPage />
+        </div>
+      ) : null}
     </div>
   );
 }

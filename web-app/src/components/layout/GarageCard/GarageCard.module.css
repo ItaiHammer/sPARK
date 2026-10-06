@@ -1,4 +1,5 @@
 .card {
+  position: relative;
   --card-occupancy-color: var(--spark-good, #267d55);
   --card-status-color: var(--spark-good, #267d55);
   width: 100%;
@@ -9,6 +10,12 @@
   background: var(--spark-paper, #fff);
   color: var(--spark-ink, #242424);
 }
+
+.detailLink { color: inherit; text-decoration: none; }
+.detailLink::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 16px; }
+.detailLink:focus-visible { outline: none; }
+.card:has(.detailLink:focus-visible) { outline: 2px solid var(--spark-ink, #242424); outline-offset: 3px; }
+a.travel { position: relative; z-index: 2; }
 
 .card[data-status="busy"] {
   --card-occupancy-color: var(--spark-busy, #c87524);
