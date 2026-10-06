@@ -1,0 +1,2 @@
+.body { position: relative; min-height: 320px; }
+.updating { position: absolute; top: 18px; right: 0; color: var(--spark-secondary); font-size: 11px; line-height: 16px; }
