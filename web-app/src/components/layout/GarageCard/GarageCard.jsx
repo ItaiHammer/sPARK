@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import { getSpotCategorySort, getSpotCategoryCount } from "@/lib/constants/sort";
 import {
@@ -18,6 +18,18 @@ import {
   Users,
 } from "lucide-react";
 import styles from "./GarageCard.module.css";
+import { animateGarageValues, cardEntranceDelay, CARD_ENTRANCE_MS, formatEntranceNumber } from "./garageEntrance";
+
+function EntranceNumber({ value, fractionDigits = 0 }) {
+  const formatted = formatEntranceNumber(value, fractionDigits);
+  return (
+    <span className={styles.entranceNumber}>
+      <span className={styles.numberSize} aria-hidden="true">{formatted}</span>
+      <span className={styles.numberDisplay} aria-hidden="true" data-entrance-value={value} data-fraction-digits={fractionDigits}>{formatted}</span>
+      <span className={styles.srOnly}>{formatted}</span>
+    </span>
+  );
+}
 
 const ALERT_ICONS = Object.freeze({
   opening: DoorOpen,
@@ -115,19 +127,31 @@ export default function GarageCard({
   const travel = travelValues(garage.travel, buildingName);
   const categorySort = getSpotCategorySort(sortType);
   const categoryCount = categorySort ? getSpotCategoryCount(garage, categorySort.category.key) : null;
-  const count = closed || spaces == null
-    ? "—"
-    : spaces === 0
-      ? "0"
-      : `~${spaces.toLocaleString("en-US")}`;
+  const card = useRef(null);
+  const delay = cardEntranceDelay(order);
+  const valueKey = JSON.stringify([closed, occupied, spaces, categoryCount, travel?.minutes, travel?.miles]);
+  const initialValues = useRef(valueKey);
+  const completedEntrance = useRef(false);
+
+  useLayoutEffect(() => {
+    // A data update settles immediately instead of counting from zero again.
+    // Strict Mode's setup/cleanup/setup can still replay the initial sequence.
+    if (valueKey !== initialValues.current) completedEntrance.current = true;
+    return animateGarageValues(card.current, {
+      enabled: animateEntrance && !completedEntrance.current,
+      delay,
+      onComplete: () => { completedEntrance.current = true; },
+    });
+  }, [animateEntrance, delay, valueKey]);
 
   return (
     <article
+      ref={card}
       className={`${styles.card}${animateEntrance ? ` ${styles.entering}` : ""}`}
       aria-labelledby={titleId}
       data-mode={mode}
       data-status={statusKind}
-      style={{ "--card-delay": `${Math.min(Math.max(order, 0), 8) * 35}ms` }}
+      style={{ "--card-delay": `${delay}ms`, "--card-entrance-duration": `${CARD_ENTRANCE_MS}ms` }}
     >
       <div className={styles.summary}>
         <div className={styles.top}>
@@ -142,21 +166,23 @@ export default function GarageCard({
                   ? "Outside open hours"
                   : occupied == null
                     ? "Availability unavailable"
-                    : `${occupied}% occupied`}
+                    : <><EntranceNumber value={occupied} />% occupied</>}
               </span>
               {(closed || occupied != null) && <span className={styles.status}>{status}</span>}
             </div>
           </div>
 
           <div className={styles.numbers}>
-            <span className={styles.count}>{count}</span>
+            <span className={styles.count}>
+              {closed || spaces == null ? "—" : <>{spaces > 0 ? "~" : ""}<EntranceNumber value={spaces} /></>}
+            </span>
             {!closed && spaces != null && <span className={styles.caption}>spaces left</span>}
           </div>
         </div>
 
         {!closed && occupied != null && (
           <div className={styles.meter} aria-hidden="true">
-            <span style={{ width: `${occupied}%` }} />
+            <span data-entrance-bar style={{ width: `${occupied}%` }} />
           </div>
         )}
 
@@ -176,9 +202,9 @@ export default function GarageCard({
           <div className={styles.travel}>
             <Footprints aria-hidden="true" strokeWidth={1.7} />
             <span className={styles.travelText}>
-              ~{travel.minutes} min walk{travel.building ? ` to ${travel.building}` : ""}
+              ~<EntranceNumber value={travel.minutes} /> min walk{travel.building ? ` to ${travel.building}` : ""}
             </span>
-            <span className={styles.travelDistance}>{travel.miles} mi</span>
+            <span className={styles.travelDistance}><EntranceNumber value={Number(travel.miles)} fractionDigits={2} /> mi</span>
           </div>
         )}
         {categorySort && (
@@ -191,7 +217,7 @@ export default function GarageCard({
               <span className={styles.categoryMissing}>Not available</span>
             ) : (
               <span className={styles.categoryTotal}>
-                <strong>{categoryCount.toLocaleString("en-US")}</strong>
+                <strong><EntranceNumber value={categoryCount} /></strong>
                 <span>total</span>
               </span>
             )}
