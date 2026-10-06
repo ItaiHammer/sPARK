@@ -2,88 +2,25 @@
 
 import { createContext, useContext } from "react";
 import { getInternalAuthHeader } from "@/lib/constants/api.constants";
+import { parkingRequest } from "@/lib/utils/client/parkingRequest";
 
-// Location Context
 const LocationAPIContext = createContext();
 export const useLocationAPI = () => useContext(LocationAPIContext);
-export const LocationAPIProvider = ({ children }) => {
-  const getAPIURL = (locationId, slug = "") =>
-    `/api/locations/${locationId}${slug ? `/${slug}` : ""}`;
 
-  // Get Location Info
-  const getLocationInfo = (locationId) =>
-    fetch(getAPIURL(locationId), getInternalAuthHeader())
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
-      .catch((err) => {
-        console.error(err);
-        return { error: err.message, status: err.status, data: null };
-      });
+const getAPIURL = (locationId, slug = "") =>
+  "/api/locations/" + encodeURIComponent(locationId) + (slug ? "/" + slug : "");
+const request = (locationId, slug) =>
+  parkingRequest(getAPIURL(locationId, slug), getInternalAuthHeader());
 
-  // Get Location Lots
-  const getLocationLots = (locationId) =>
-    fetch(getAPIURL(locationId, "lots"), getInternalAuthHeader())
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
-      .catch((err) => {
-        console.error(err);
-        return { error: err.message, status: err.status, data: null };
-      });
-
-  // Get Latest Occupancy
-  const getLatestOccupancy = (locationId) =>
-    fetch(getAPIURL(locationId, "occupancy"), getInternalAuthHeader())
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
-      .catch((err) => {
-        console.error(err);
-        return { error: err.message, status: err.status, data: null };
-      });
-
-  // Get Location Buildings
-  const getLocationBuildings = (locationId) =>
-    fetch(getAPIURL(locationId, "buildings"), getInternalAuthHeader())
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
-      .catch((err) => {
-        console.error(err);
-        return { error: err.message, status: err.status, data: null };
-      });
-
-  // Get Building Distances
-  const getBuildingDistances = (locationId, buildingId) =>
-    fetch(
-      getAPIURL(locationId, `buildings/${buildingId}/calculate`),
-      getInternalAuthHeader()
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
-      .catch((err) => {
-        console.error(err);
-        return { error: err.message, status: err.status, data: null };
-      });
-
-  return (
-    <LocationAPIContext.Provider
-      value={{
-        getLocationInfo,
-        getLocationLots,
-        getLatestOccupancy,
-        getLocationBuildings,
-        getBuildingDistances,
-      }}
-    >
-      {children}
-    </LocationAPIContext.Provider>
-  );
+const locationAPI = {
+  getLocationInfo: (locationId) => request(locationId),
+  getLocationLots: (locationId) => request(locationId, "lots"),
+  getLatestOccupancy: (locationId) => request(locationId, "occupancy"),
+  getLocationBuildings: (locationId) => request(locationId, "buildings"),
+  getBuildingDistances: (locationId, buildingId) =>
+    request(locationId, "buildings/" + encodeURIComponent(buildingId) + "/calculate"),
 };
+
+export function LocationAPIProvider({ children }) {
+  return <LocationAPIContext.Provider value={locationAPI}>{children}</LocationAPIContext.Provider>;
+}
