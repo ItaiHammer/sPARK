@@ -170,6 +170,8 @@
 }
 .sortChoice { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 9px 10px; border-radius: 8px; font: inherit; font-size: 14px; line-height: 20px; text-align: left; cursor: pointer; }
 .sortChoice[aria-checked="true"] { font-weight: 600; }
+.sortChoiceLabel { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.sortDefaultBadge { padding: 1px 5px; border-radius: 4px; color: var(--spark-secondary); background: var(--spark-accent-soft); font-size: 11px; font-weight: 500; line-height: 16px; white-space: nowrap; }
 .sortChoice > svg { width: 16px; height: 16px; flex: none; }
 .sortDivider { height: 1px; margin: 5px 10px; background: var(--spark-line); }
 .buildingPopup { width: min(280px, calc(100vw - 32px)); padding: 10px; }

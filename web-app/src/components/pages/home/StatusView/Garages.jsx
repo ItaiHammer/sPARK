@@ -60,6 +60,7 @@ function Garages({ locationId, lots }) {
       {sortedLots.map((garage, i) => (
         <GarageCard
           buildingName={data?.building?.abbreviation || ""}
+          building={data?.building}
           garage={garage}
           order={i}
           key={"garage-card-" + garage.lot_id}

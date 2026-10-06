@@ -12,7 +12,7 @@ import {
 
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
-import { SORT_TYPES } from "@/lib/constants/sort";
+import { DEFAULT_SORT_TYPE, SORT_TYPES } from "@/lib/constants/sort";
 
 const DEFAULT_TIME_FILTER = {
   type: FILTER_TYPES.LIVE.value,
@@ -24,7 +24,7 @@ const DEFAULT_TIME_FILTER = {
 };
 
 const DEFAULT_SORT_MENU = {
-  type: SORT_TYPES.MOST_SPACES.value,
+  type: DEFAULT_SORT_TYPE,
   building: null,
 };
 
