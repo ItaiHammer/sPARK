@@ -1,0 +1,52 @@
+{
+  "all_hours": {
+    "rows": 2424,
+    "mae_pp": 14.70354390361589,
+    "rmse_pp": 20.79032824563354,
+    "actual_mean_pct": 14.624587458745875,
+    "predicted_mean_pct": 28.142820683960345,
+    "mean_signed_error_pp": 13.51823322521447
+  },
+  "daytime": {
+    "rows": 1516,
+    "mae_pp": 19.615966326339166,
+    "rmse_pp": 25.621294125138878,
+    "actual_mean_pct": 16.844327176781004,
+    "predicted_mean_pct": 35.73814219789706,
+    "mean_signed_error_pp": 18.89381502111606
+  },
+  "daytime_by_lot": {
+    "sjsu-north-garage": {
+      "rows": 379,
+      "mae_pp": 28.182600701476087,
+      "rmse_pp": 33.77116564390257,
+      "actual_mean_pct": 16.61741424802111,
+      "predicted_mean_pct": 44.800014949497196,
+      "mean_signed_error_pp": 28.182600701476087
+    },
+    "sjsu-south-campus-garage": {
+      "rows": 379,
+      "mae_pp": 9.574632631075719,
+      "rmse_pp": 11.404304592908245,
+      "actual_mean_pct": 1.878627968337731,
+      "predicted_mean_pct": 9.739640541814904,
+      "mean_signed_error_pp": 7.861012573477172
+    },
+    "sjsu-south-garage": {
+      "rows": 379,
+      "mae_pp": 11.978752029516544,
+      "rmse_pp": 16.386713634395218,
+      "actual_mean_pct": 37.78627968337731,
+      "predicted_mean_pct": 48.59004654959996,
+      "mean_signed_error_pp": 10.80376686622265
+    },
+    "sjsu-west-garage": {
+      "rows": 379,
+      "mae_pp": 28.72787994328832,
+      "rmse_pp": 32.96556801658506,
+      "actual_mean_pct": 11.094986807387862,
+      "predicted_mean_pct": 39.82286675067619,
+      "mean_signed_error_pp": 28.72787994328832
+    }
+  }
+}
