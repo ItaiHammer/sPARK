@@ -47,8 +47,12 @@ Training currently runs locally on CPU. Application export and integration are s
 ```text
 lab/
 ├── training/              Shared training code
+│   ├── train.py           Training entry point
+│   ├── data/              Database loading and data preparation
+│   ├── features/          Time, holiday, and academic features
 │   ├── algorithms/        Model implementations and settings
-│   └── tests/             Tests for the training workflow
+│   ├── evaluation/        Error metrics and run reports
+│   └── tests/             Tests grouped by the same categories
 ├── local_experiments/     Private training runs and results
 ├── experiments/           Unfinished models and their documentation
 ├── models/                Official model releases (currently empty)
@@ -60,16 +64,21 @@ lab/
 
 | File                                            | Purpose                                                                |
 | ----------------------------------------------- | ---------------------------------------------------------------------- |
-| [data.py](training/data.py)                     | Load occupancy observations from Supabase.                             |
-| [features.py](training/features.py)             | Derive time, holiday, and academic-calendar features.                  |
-| [dataset.py](training/dataset.py)               | Clean observations and prepare features (`X`) and labels (`y`).        |
+| [data/loader.py](training/data/loader.py) | Load occupancy observations from Supabase. |
+| [data/preparation.py](training/data/preparation.py) | Clean observations and prepare features (`X`) and labels (`y`). |
+| [features/builder.py](training/features/builder.py) | Combine the selected features into a feature table. |
+| [features/time.py](training/features/time.py) | Calculate weekday and minute of day. |
+| [features/holidays.py](training/features/holidays.py) | Check observed U.S. federal holidays. |
+| [features/academic.py](training/features/academic.py) | Load term dates and calculate academic features. |
 | [algorithms/hgb.py](training/algorithms/hgb.py) | Configure and fit the Histogram Gradient Boosting model.               |
 | [train.py](training/train.py)                   | Run training, validation, and an average-based baseline; save the run. |
-| [evaluate.py](training/evaluate.py)             | Calculate MAE and RMSE.                                                |
-| [report.py](training/report.py)                 | Generate a README for each run.                                        |
+| [evaluation/metrics.py](training/evaluation/metrics.py) | Calculate MAE and RMSE. |
+| [evaluation/report.py](training/evaluation/report.py) | Generate a README for each run. |
 | [export.py](training/export.py)                 | Placeholder for exporting models to the application.                   |
 
 **Local files:** credentials, the contents of `local_experiments/`, and `plan.md` are ignored by Git. The folder placeholder is retained. Unfinished models in `experiments/` can be reviewed in the repository. Data comes from the database; there is no separate data folder.
+
+**Workflow:** `train.py` calls data loading and preparation, which builds features; it then fits the algorithm, calculates metrics, and saves the run and report. Small `__init__.py` files make these folders importable Python packages.
 
 ---
 
@@ -116,8 +125,8 @@ Dates use **`YYYY-MM-DD` in Pacific time**:
 Each run saves **the fitted model, predictions, scores, settings, and a README** under `local_experiments/<name>/runs/`.
 
 - **Model settings:** edit [hgb.py](training/algorithms/hgb.py).
-- **Feature selection:** edit `DEFAULT_FEATURES` in [dataset.py](training/dataset.py).
-- **Current defaults:** include `days_since_instruction_start`; the saved Flint prototype uses seven features without it. This command trains with the current defaults, rather than reproducing Flint's exact recipe.
+- **Feature selection:** edit `DEFAULT_FEATURES` in [preparation.py](training/data/preparation.py).
+- **Current defaults:** use Flint's seven features. `days_since_instruction_start` remains available for experiments but is excluded from the default selection.
 
 ---
 

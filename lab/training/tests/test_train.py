@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from training import train
-from training.dataset import TrainingData
+from training.data.preparation import TrainingData
 
 
 def test_named_experiment_creates_separate_runs_without_overwriting(tmp_path, monkeypatch):

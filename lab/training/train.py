@@ -9,10 +9,10 @@ import joblib
 import pandas as pd
 
 from .algorithms.hgb import fit_model
-from .data import load_occupancy
-from .dataset import prepare_training_data
-from .evaluate import score_predictions
-from .report import write_run_readme
+from .data.loader import load_occupancy
+from .data.preparation import prepare_training_data
+from .evaluation.metrics import score_predictions
+from .evaluation.report import write_run_readme
 
 
 def run_experiment(
