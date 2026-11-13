@@ -3,6 +3,7 @@
 import { useId, useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { getSpotCategorySort, getSpotCategoryCount } from "@/lib/constants/sort";
 import {
   CalendarClock,
@@ -207,6 +208,10 @@ export default function GarageCard({
           <TravelContainer
             className={styles.travel}
             href={directionsUrl || undefined}
+            onClick={directionsUrl ? () => posthog.capture("directions_clicked", {
+              travel_mode: "walking",
+              garage_id: garage.lot_id || garage.id,
+            }) : undefined}
             target={directionsUrl ? "_blank" : undefined}
             rel={directionsUrl ? "noopener noreferrer" : undefined}
             aria-label={directionsUrl ? `Walk to ${travel.building || building?.name || "the building"}, about ${travel.minutes} minutes, ${travel.miles} miles — Google Maps walking directions from ${garage.name} (opens in a new tab)` : undefined}

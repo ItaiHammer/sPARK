@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
+import posthog from "posthog-js";
 import { DEFAULT_SORT_TYPE, SORT_TYPES, getSortLabel } from "@/lib/constants/sort";
 import styles from "./StatusViewPage.module.css";
 
@@ -77,6 +78,9 @@ export default function SortControls({ sortType, building, buildings, isBuilding
                 {matchingBuildings.map((item) => (
                   <button className={styles.buildingChoice} type="button" key={item.building_id} onClick={() => {
                     onBuilding({ buildingID: item.building_id, buildingName: item.abbreviation || item.name });
+                    if (sortType !== SORT_TYPES.DISTANCE_TO_BUILDING.value || building?.buildingID !== item.building_id) {
+                      posthog.capture("garage_sort_changed", { sort_type: SORT_TYPES.DISTANCE_TO_BUILDING.value });
+                    }
                     close();
                     trigger.current?.focus({ preventScroll: true });
                   }}>
@@ -93,6 +97,9 @@ export default function SortControls({ sortType, building, buildings, isBuilding
               <button className={styles.sortChoice} type="button" role="menuitemradio" aria-checked={sortType === option.value} onClick={() => {
                 if (option.value === SORT_TYPES.DISTANCE_TO_BUILDING.value) { setQuery(""); setChoosingBuilding(true); return; }
                 onSort(option.value);
+                if (option.value !== sortType) {
+                  posthog.capture("garage_sort_changed", { sort_type: option.value });
+                }
                 close();
                 trigger.current?.focus({ preventScroll: true });
               }}>

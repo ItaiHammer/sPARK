@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Calendar, Cloud, ChevronDown } from "lucide-react";
 import { DateTime } from "luxon";
+import posthog from "posthog-js";
 import useParkingData from "../home/StatusView/useParkingData";
 import { selectionDateTime } from "@/lib/utils/client/parking";
 import { openNativePicker } from "@/lib/utils/client/nativePicker";
@@ -13,6 +14,7 @@ import transitionStyles from "./GarageForecastSection.module.css";
 
 export default function GarageForecastSection({ locationId, garage, currentAt }) {
   const [chosenDate, setChosenDate] = useState(null);
+  const lastDateChange = useRef(null);
   const todayISO = currentAt.toISODate();
   const maxDateISO = currentAt.plus({ days: 6 }).toISODate();
   const dateISO = chosenDate && chosenDate >= todayISO && chosenDate <= maxDateISO ? chosenDate : todayISO;
@@ -47,7 +49,13 @@ export default function GarageForecastSection({ locationId, garage, currentAt })
       event.target.value = dateISO;
       return;
     }
+    if (value === dateISO) return;
     setChosenDate(value === todayISO ? null : value);
+    const last = lastDateChange.current;
+    if (last?.from !== dateISO || last.to !== value) {
+      lastDateChange.current = { from: dateISO, to: value };
+      posthog.capture("forecast_selection_changed", { surface: "garage_detail", change: "date" });
+    }
   };
 
   return (

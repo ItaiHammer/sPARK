@@ -4,7 +4,9 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import { Calendar, ChevronLeft, ChevronRight, Clock3 } from "lucide-react";
 import { DateTime } from "luxon";
+import posthog from "posthog-js";
 import { openNativePicker } from "@/lib/utils/client/nativePicker";
+import { SHEET_SPRING } from "./sheetMotion";
 import styles from "./TimeSelectionSheet.module.css";
 
 const STEP = 15;
@@ -58,6 +60,7 @@ export default function TimeSelectionSheet({
   const suppressedClickUntil = useRef(0);
   const hapticTime = useRef(0);
   const selectionRef = useRef(selection);
+  const lastForecastChange = useRef(null);
   const heightCallback = useRef(onVisibleHeightChange);
   const [geometry, setGeometry] = useState({ height: 214, peek: SHEET_PEEK });
   const [rulerWidth, setRulerWidth] = useState(200);
@@ -111,7 +114,7 @@ export default function TimeSelectionSheet({
       setSettledClosed(!open);
     } else {
       sheetAnimation.current = animate(sheetY, target, {
-        type: "spring", stiffness: 410, damping: 34, mass: 0.8,
+        ...SHEET_SPRING,
         onComplete: () => setSettledClosed(!open),
       });
     }
@@ -200,8 +203,23 @@ export default function TimeSelectionSheet({
     }
   }
 
-  function selectMinutes(minutes, continuous = false) {
-    return onSelect(selectionRef.current.dateISO, clamp(Math.round(minutes), 0, LAST_MINUTE), { continuous });
+  function selectForecast(dateISO, minutes, { change = "date", continuous = false, previous = selectionRef.current } = {}) {
+    const accepted = onSelect(dateISO, minutes, { continuous });
+    if (accepted === false || continuous) return accepted;
+
+    if (dateISO === previous.dateISO && minutes === previous.minutes && previous.mode === "forecast") return accepted;
+
+    // Native inputs can report the same selection through both input and change.
+    const last = lastForecastChange.current;
+    if (last?.previous !== previous || last.dateISO !== dateISO || last.minutes !== minutes) {
+      lastForecastChange.current = { previous, dateISO, minutes };
+      posthog.capture("forecast_selection_changed", { surface: "parking_list", change });
+    }
+    return accepted;
+  }
+
+  function selectMinutes(minutes, continuous = false, previous) {
+    return selectForecast(selectionRef.current.dateISO, clamp(Math.round(minutes), 0, LAST_MINUTE), { change: "time", continuous, previous });
   }
 
   function beginSheetDrag(event) {
@@ -270,7 +288,7 @@ export default function TimeSelectionSheet({
     event.currentTarget.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     rulerAnimation.current?.stop();
-    rulerGesture.current = { pointer: event.pointerId, x: event.clientX, y: event.clientY, minutes: selectionRef.current.minutes, axis: null, moved: false, lastMinutes: selectionRef.current.minutes };
+    rulerGesture.current = { pointer: event.pointerId, x: event.clientX, y: event.clientY, minutes: selectionRef.current.minutes, previous: selectionRef.current, axis: null, moved: false, lastMinutes: selectionRef.current.minutes };
   }
 
   function moveRulerDrag(event) {
@@ -307,7 +325,7 @@ export default function TimeSelectionSheet({
       minutes = snap(gesture.minutes + (event.clientX - bounds.left - bounds.width / 2) / PIXELS_PER_MINUTE);
       if (selectMinutes(minutes) === false) minutes = selectionRef.current.minutes;
     }
-    if (!cancelled && gesture.moved && selectMinutes(minutes) === false) minutes = selectionRef.current.minutes;
+    if (!cancelled && gesture.moved && selectMinutes(minutes, false, gesture.previous) === false) minutes = selectionRef.current.minutes;
     rulerAnimation.current?.stop();
     if (reducedMotion) rulerMinutes.set(minutes);
     else rulerAnimation.current = animate(rulerMinutes, minutes, { duration: 0.19, ease: [0.2, 0.9, 0.3, 1] });
@@ -329,14 +347,14 @@ export default function TimeSelectionSheet({
       event.target.value = selection.dateISO;
       return;
     }
-    if (onSelect(value, selection.minutes) === false) event.target.value = selection.dateISO;
+    if (selectForecast(value, selection.minutes) === false) event.target.value = selection.dateISO;
   }
 
   function chooseTime(event) {
     const match = /^(\d{2}):(\d{2})$/.exec(event.target.value);
     if (!match || Number(match[1]) > 23 || Number(match[2]) > 59) return;
     const minutes = Number(match[1]) * 60 + Number(match[2]);
-    if (onSelect(selection.dateISO, minutes) === false) event.target.value = `${String(Math.floor(selection.minutes / 60)).padStart(2, "0")}:${String(selection.minutes % 60).padStart(2, "0")}`;
+    if (selectForecast(selection.dateISO, minutes, { change: "time" }) === false) event.target.value = `${String(Math.floor(selection.minutes / 60)).padStart(2, "0")}:${String(selection.minutes % 60).padStart(2, "0")}`;
   }
 
   return (
@@ -385,7 +403,7 @@ export default function TimeSelectionSheet({
             aria-hidden="true"
           />
           {days.map((day) => (
-            <button key={day.iso} className={styles.day} type="button" aria-label={`${day.label === "Today" ? "Today, " : ""}${day.accessible}`} aria-pressed={selection.dateISO === day.iso} onClick={() => onSelect(day.iso, selection.minutes)}>
+            <button key={day.iso} className={styles.day} type="button" aria-label={`${day.label === "Today" ? "Today, " : ""}${day.accessible}`} aria-pressed={selection.dateISO === day.iso} onClick={() => selectForecast(day.iso, selection.minutes)}>
               <span>{day.label}</span><strong>{day.day}</strong>
             </button>
           ))}
