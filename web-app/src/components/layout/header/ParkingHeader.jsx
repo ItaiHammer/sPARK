@@ -64,8 +64,8 @@ export default function ParkingHeader() {
       <AppHeader
         inert={isInitialPageLoading}
         aria-hidden={isInitialPageLoading}
-        start={garagePath ? <Link className={styles.action} href={`/${encodeURIComponent(locationId)}`} aria-label="Back to all garages"><ArrowLeft aria-hidden="true" size={20} /></Link> : null}
-        end={garagePath ? <button className={styles.action} type="button" onClick={shareGarage} aria-label="Share garage"><Share2 aria-hidden="true" size={19} /></button> : null}
+        start={garagePath ? <Link className={styles.action} href={`/${encodeURIComponent(locationId)}`} aria-label="Back to all garages"><ArrowLeft aria-hidden="true" size={18} /></Link> : null}
+        end={garagePath ? <button className={styles.action} type="button" onClick={shareGarage} aria-label="Share garage"><Share2 aria-hidden="true" size={23} strokeWidth={1.6} /></button> : null}
       />
       <AnimatePresence>
         {notice ? (
