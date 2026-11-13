@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import posthog from "posthog-js";
 import { Clock3, Navigation, ArrowUpRight, CircleParking, Smartphone, CreditCard, Ticket, WalletCards, Timer } from "lucide-react";
 import { DateTime } from "luxon";
 import { useUI } from "@/contexts/UI/UI.context";
@@ -34,9 +35,9 @@ function dayMinutes(value) {
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
-function ExternalLink({ href, children, className, showIcon = true }) {
+function ExternalLink({ href, children, className, onClick, showIcon = true }) {
   return (
-    <a className={className || styles.textLink} href={href} target="_blank" rel="noopener noreferrer">
+    <a className={className || styles.textLink} href={href} target="_blank" rel="noopener noreferrer" onClick={onClick}>
       {children}{showIcon ? <ArrowUpRight aria-hidden="true" size={14} /> : null}
       <span className={styles.srOnly}> (opens in a new tab)</span>
     </a>
@@ -147,7 +148,12 @@ export default function GarageDetail({ locationId, lotId, onReady }) {
           <section className={styles.mapPanel} aria-label={"Map of " + garage.name}>
             <div className={styles.map}>
               <iframe title={"Map of " + garage.name} src={maps.embed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-              <ExternalLink className={styles.mapDirections} href={maps.directions} showIcon={false}><Navigation aria-hidden="true" size={15} />Navigate to garage</ExternalLink>
+              <ExternalLink
+                className={styles.mapDirections}
+                href={maps.directions}
+                onClick={() => posthog.capture("directions_clicked", { travel_mode: "driving", garage_id: lotId })}
+                showIcon={false}
+              ><Navigation aria-hidden="true" size={15} />Navigate to garage</ExternalLink>
             </div>
           </section>
         ) : null}
