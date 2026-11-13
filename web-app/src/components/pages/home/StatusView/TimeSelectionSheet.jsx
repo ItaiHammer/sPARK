@@ -6,6 +6,7 @@ import { Calendar, ChevronLeft, ChevronRight, Clock3 } from "lucide-react";
 import { DateTime } from "luxon";
 import posthog from "posthog-js";
 import { openNativePicker } from "@/lib/utils/client/nativePicker";
+import { SHEET_SPRING } from "./sheetMotion";
 import styles from "./TimeSelectionSheet.module.css";
 
 const STEP = 15;
@@ -113,7 +114,7 @@ export default function TimeSelectionSheet({
       setSettledClosed(!open);
     } else {
       sheetAnimation.current = animate(sheetY, target, {
-        type: "spring", stiffness: 410, damping: 34, mass: 0.8,
+        ...SHEET_SPRING,
         onComplete: () => setSettledClosed(!open),
       });
     }

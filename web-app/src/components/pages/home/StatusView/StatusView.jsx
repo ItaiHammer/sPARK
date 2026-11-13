@@ -9,6 +9,7 @@ import { getSortedLots, SORT_TYPES } from "@/lib/constants/sort";
 import { selectionDateTime } from "@/lib/utils/client/parking";
 import { freshnessLabel } from "@/lib/utils/client/parkingFreshness";
 import GarageCard from "@/components/layout/GarageCard/GarageCard";
+import FeedbackNote from "./FeedbackNote";
 import ParkingLoading from "./ParkingLoading";
 import SortControls from "./SortControls";
 import TimeSelectionSheet from "./TimeSelectionSheet";
@@ -82,6 +83,7 @@ export default function StatusViewPage({ locationId, onReady }) {
             <span className={styles.freshness}>{data.isLoading && picker.displayMode === "live" ? "Updating…" : freshnessLabel(picker.displayMode, data.refreshedAt, selectedAt)}</span>
           </div>
         </div>
+        <FeedbackNote />
         {distanceSort && data.buildingError ? <p className={styles.notice}>Walking distances could not load. <button type="button" onClick={retry}>Try again</button></p> : null}
         <section aria-label="Garage availability" aria-busy={cardsLoading}>
           {data.error ? (
