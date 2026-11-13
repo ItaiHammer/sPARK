@@ -58,6 +58,7 @@ function pickFeedbackExample(previous) {
 
 export default function FeedbackNote() {
   const dialog = useRef(null);
+  const title = useRef(null);
   const sheet = useRef(null);
   const sheetY = useMotionValue(0);
   const reducedMotion = useReducedMotion();
@@ -110,6 +111,7 @@ export default function FeedbackNote() {
     setExample(pickFeedbackExample(example));
     const form = dialog.current;
     form.showModal();
+    title.current?.focus({ preventScroll: true });
     sheetY.jump(reducedMotion ? 0 : form.offsetHeight);
     if (!reducedMotion) animate(sheetY, 0, SHEET_SPRING);
     posthog.capture("survey shown", surveyProperties);
@@ -259,7 +261,7 @@ export default function FeedbackNote() {
           </button>
           {!sent && (
             <div className={styles.formContent}>
-              <h2 id={titleId}>
+              <h2 ref={title} id={titleId} tabIndex={-1}>
                 <Heart size={20} strokeWidth={1.75} aria-hidden="true" />
                 Help shape sPARK
               </h2>
