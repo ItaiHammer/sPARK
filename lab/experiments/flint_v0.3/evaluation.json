@@ -1,0 +1,29 @@
+{
+  "status": "retrospective",
+  "scored_rows": 32135,
+  "scorecard": {
+    "all": {"mae_pp": 5.5746529295166045, "caught": 1668, "false_alarms": 209},
+    "campus_holidays": {"mae_pp": 4.768169751776408, "caught": 0, "false_alarms": 0},
+    "ordinary_class_days": {"mae_pp": 4.1067329427138795, "caught": 1253, "false_alarms": 185},
+    "spring_2026_week_1": {"mae_pp": 20.0405891429111, "caught": 17, "false_alarms": 0},
+    "fall_2026_first_day": {"mae_pp": 7.454166666666667, "caught": 33, "false_alarms": 3},
+    "fall_2026_week_1": {"mae_pp": 7.779749769099138, "caught": 130, "false_alarms": 9}
+  },
+  "examples": [
+    {
+      "lot_id": "sjsu-south-garage", "slot_dt": "2026-09-07 12:00:00",
+      "occupancy_pct": 1.0, "tree_forecast": 6.31748389855013,
+      "opening_forecast": 6.31748389855013, "forecast": 6.31748389855013
+    },
+    {
+      "lot_id": "sjsu-west-garage", "slot_dt": "2026-08-19 09:30:00",
+      "occupancy_pct": 100.0, "tree_forecast": 22.01289662524216,
+      "opening_forecast": 94.5, "forecast": 94.5
+    },
+    {
+      "lot_id": "sjsu-south-garage", "slot_dt": "2026-08-19 17:00:00",
+      "occupancy_pct": 75.0, "tree_forecast": 54.378164890286115,
+      "opening_forecast": 100.0, "forecast": 89.0
+    }
+  ]
+}

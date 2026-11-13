@@ -26,7 +26,7 @@
 - [✨ Features](#features)
 - [⚙️ Parameters](#parameters)
 - [📚 Training Data](#training-data)
-- [📊 Evaluation Results](#evaluation)
+- [📊 Evaluation](#evaluation)
 - [📝 Notes](#notes)
 - [📦 Model Files](#model-files)
 
@@ -36,15 +36,17 @@
 
 ## 📖 About
 
-A parking occupancy forecaster for sPARK, using a lot and target time to predict occupancy from 0–100%.
+A parking occupancy forecaster for sPARK, using the features below to predict occupancy from 0-100%.
 
-| Model      | Details                                                    |
-| ---------- | ---------------------------------------------------------- |
-| Name       | flint_v0.1                                                 |
-| Algorithm  | Histogram Gradient Boosting (scikit-learn)                 |
-| Saved size | 7.62 MiB (7,992,352 bytes)                                 |
-| Training   | Python, CPU                                                |
-| Status     | Promising in limited [local validation tests](#evaluation) |
+[Flint v0.2](../flint_v0.2/README.md) documents the next experimental recipe.
+
+| Model      | Details                                                             |
+| ---------- | ------------------------------------------------------------------- |
+| Name       | flint_v0.1                                                          |
+| Algorithm  | Histogram Gradient Boosting (scikit-learn)                          |
+| Saved size | 7.62 MiB (7,992,352 bytes)                                          |
+| Training   | Python, CPU                                                         |
+| Status     | Experimental prototype with limited [local validation](#evaluation) |
 
 ---
 
@@ -103,7 +105,7 @@ Preparation data workflows remove missing occupancy values, values outside the 0
 
 - **Training:** used to fit the model.
 - **Validation:** used to compare and select models.
-- **Dedicated test:** September 28–October 4; evaluated using the saved model without retraining.
+- **Dedicated test:** September 28-October 4; evaluated using the saved model without retraining.
 
 ---
 
@@ -121,7 +123,7 @@ $$
 
 > Take the absolute error of each prediction, then average those errors.
 
-**Purpose:** measure average error across the evaluated set against our target error.
+**Purpose:** measure average error across the evaluated set against my target error.
 
 ### RMSE: Root Mean Squared Error
 
@@ -138,7 +140,7 @@ $$
 Results for the `September 28, 2026` to `October 4, 2026` test set, using the `flint_v0.1` model.
 
 - **All hours:** all valid recorded slots (1,328 predictions).
-- **Daytime:** 07:00–21:30 Pacific, inclusive (832 predictions).
+- **Daytime:** 07:00-21:30 Pacific, inclusive (832 predictions).
 
 **Totals across all garages**
 

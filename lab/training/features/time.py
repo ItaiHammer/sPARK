@@ -1,5 +1,7 @@
 from datetime import datetime
 
+ZONE = "America/Los_Angeles"
+
 
 def minute_of_day(hour: int, minute: int) -> int:
     return hour * 60 + minute

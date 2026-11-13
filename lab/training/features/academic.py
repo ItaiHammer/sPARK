@@ -41,10 +41,11 @@ def days_since_instruction_start(target_date: date, instruction_start: date) -> 
     return (target_date - instruction_start).days
 
 
-def calendar_features(target_times: pd.Series) -> pd.DataFrame:
+def calendar_features(target_times: pd.Series, *, terms: pd.DataFrame | None = None) -> pd.DataFrame:
     """Derive features from term ranges; dates beyond stored coverage stay unknown."""
     dates = target_times.dt.tz_convert("America/Los_Angeles").dt.date
-    terms = load_terms()
+    if terms is None:
+        terms = load_terms()
     calendar = pd.DataFrame(
         index=pd.Index(dates.unique(), name="date"),
         columns=["calendar", "days_into_calendar", "days_until_term_end", "days_since_instruction_start"],

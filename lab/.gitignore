@@ -26,5 +26,6 @@ env.lab
 /local_experiments/*
 !/local_experiments/.gitkeep
 
-# Prototype artifact for review; official releases belong in models/.
+# Model artifacts selected for publication.
 !/experiments/flint_v0.1/model.joblib
+!/models/flint_v0.3/model.joblib

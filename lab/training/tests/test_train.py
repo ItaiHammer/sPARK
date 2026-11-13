@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+import sys
 from unittest.mock import Mock
 
 import numpy as np
@@ -8,6 +9,7 @@ import pytest
 
 from training import train
 from training.data.preparation import TrainingData
+from training.recipes import load_recipe
 
 
 def test_named_experiment_creates_separate_runs_without_overwriting(tmp_path, monkeypatch):
@@ -19,11 +21,13 @@ def test_named_experiment_creates_separate_runs_without_overwriting(tmp_path, mo
     })
     data = TrainingData(X=X, y=pd.Series([80, 85]), targets=targets, summary={})
     monkeypatch.setattr(train, "load_occupancy", lambda start, end: None)
-    monkeypatch.setattr(train, "prepare_training_data", lambda rows: data)
+    prepare = Mock(return_value=data)
+    monkeypatch.setattr(train, "prepare_training_data", prepare)
     model = Mock()
     model.predict.return_value = np.array([82.0])
     model.get_params.return_value = {"max_leaf_nodes": 15}
-    monkeypatch.setattr(train, "fit_model", lambda X, y: model)
+    fit = Mock(return_value=model)
+    monkeypatch.setattr(train, "fit_model", fit)
     monkeypatch.setattr(train.joblib, "dump", lambda model, path: path.write_bytes(b"test-model"))
     dates = [datetime(2026, 9, day, tzinfo=timezone.utc) for day in (21, 22, 23)]
 
@@ -31,6 +35,9 @@ def test_named_experiment_creates_separate_runs_without_overwriting(tmp_path, mo
     original_metrics = (first / "metrics.json").read_bytes()
     second = train.run_experiment(*dates, experiment="flint_v0.1")
 
+    recipe = load_recipe("flint_v0.1")
+    prepare.assert_called_with(None, features=tuple(recipe["features"]))
+    assert fit.call_args.kwargs["parameters"] == recipe["model_parameters"]
     assert first != second
     assert first.parent == second.parent == tmp_path / "lab" / "local_experiments" / "flint_v0.1" / "runs"
     assert (first / "metrics.json").read_bytes() == original_metrics
@@ -52,3 +59,11 @@ def test_experiment_name_cannot_escape_experiments_folder(name, monkeypatch):
     with pytest.raises(ValueError, match="Experiment names"):
         train.run_experiment(*dates, experiment=name)
     load.assert_not_called()
+
+
+def test_cli_reports_unknown_recipe(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["train.py", "--recipe", "missing_recipe"])
+    with pytest.raises(SystemExit) as exit_info:
+        train.main()
+    assert exit_info.value.code == 2
+    assert "Unknown training recipe: missing_recipe" in capsys.readouterr().err
