@@ -1,0 +1,187 @@
+{
+  "training": {
+    "mae_pp": 2.7842917537441085,
+    "rmse_pp": 4.922825390185938
+  },
+  "validation": {
+    "model_all_hours": {
+      "mae_pp": 4.074999782030853,
+      "rmse_pp": 5.358725253812238
+    },
+    "baseline_all_hours": {
+      "mae_pp": 15.510275597718932,
+      "rmse_pp": 19.393889916943277
+    },
+    "model_daytime": {
+      "mae_pp": 3.981876200985889,
+      "rmse_pp": 5.419991804323968
+    },
+    "baseline_daytime": {
+      "mae_pp": 18.59372692572837,
+      "rmse_pp": 22.66727879066633
+    }
+  },
+  "breakdown": {
+    "source_run_id": "run-20261009T235827305683Z",
+    "model_sha256": "96e5ed11fef35f76ec38e9d73cb38b7fad832effab11b2a92012ed1ebad57ada",
+    "scope": "Saved artifact reloaded; predictions reproduced against source validation CSV. Pacific September 21-27, 2026. No retraining or database reads.",
+    "all_hours": {
+      "rows": 1336,
+      "mae_pp": 4.074999782030853,
+      "rmse_pp": 5.358725253812238,
+      "baseline_mae_pp": 15.510275597718932,
+      "mean_signed_error_pp": 0.03778999856197663,
+      "p90_absolute_error_pp": 8.170506342326213,
+      "fraction_within_5_pp": 0.6467065868263473
+    },
+    "daytime": {
+      "rows": 836,
+      "mae_pp": 3.981876200985889,
+      "rmse_pp": 5.419991804323968,
+      "baseline_mae_pp": 18.59372692572837,
+      "mean_signed_error_pp": 0.12778640630484325,
+      "p90_absolute_error_pp": 8.262886532546194,
+      "fraction_within_5_pp": 0.6913875598086124
+    },
+    "daytime_by_lot": {
+      "sjsu-north-garage": {
+        "rows": 209,
+        "mae_pp": 3.463177732626056,
+        "rmse_pp": 4.450590387886274,
+        "baseline_mae_pp": 25.586261140533583,
+        "mean_signed_error_pp": -2.1546995382603322,
+        "p90_absolute_error_pp": 7.740733705287081,
+        "fraction_within_5_pp": 0.6985645933014354
+      },
+      "sjsu-south-campus-garage": {
+        "rows": 209,
+        "mae_pp": 4.360809763420262,
+        "rmse_pp": 5.605613307193983,
+        "baseline_mae_pp": 7.057479128615502,
+        "mean_signed_error_pp": 2.2388897332261615,
+        "p90_absolute_error_pp": 8.822988070374441,
+        "fraction_within_5_pp": 0.6124401913875598
+      },
+      "sjsu-south-garage": {
+        "rows": 209,
+        "mae_pp": 5.119462599863584,
+        "rmse_pp": 7.148860464316406,
+        "baseline_mae_pp": 15.713035225836721,
+        "mean_signed_error_pp": 2.5971142050643694,
+        "p90_absolute_error_pp": 8.818932880596336,
+        "fraction_within_5_pp": 0.6172248803827751
+      },
+      "sjsu-west-garage": {
+        "rows": 209,
+        "mae_pp": 2.9840547080336526,
+        "rmse_pp": 3.8946608770153213,
+        "baseline_mae_pp": 26.01813220792767,
+        "mean_signed_error_pp": -2.170158774810826,
+        "p90_absolute_error_pp": 6.179242640599438,
+        "fraction_within_5_pp": 0.8373205741626795
+      }
+    },
+    "daytime_weekdays": {
+      "rows": 596,
+      "mae_pp": 3.5213559735737108,
+      "rmse_pp": 4.462687470932253,
+      "baseline_mae_pp": 21.719528672056686,
+      "mean_signed_error_pp": 0.28399420136748377,
+      "p90_absolute_error_pp": 7.537970045729123,
+      "fraction_within_5_pp": 0.7399328859060402
+    },
+    "daytime_weekends": {
+      "rows": 240,
+      "mae_pp": 5.1255014323928,
+      "rmse_pp": 7.271207708259457,
+      "baseline_mae_pp": 10.83131925567972,
+      "mean_signed_error_pp": -0.26012961810071417,
+      "p90_absolute_error_pp": 9.352158026579104,
+      "fraction_within_5_pp": 0.5708333333333333
+    }
+  },
+  "test": {
+    "audit_id": "test-20261011T001151955653Z",
+    "model": "flint_v0.1",
+    "model_sha256": "96e5ed11fef35f76ec38e9d73cb38b7fad832effab11b2a92012ed1ebad57ada",
+    "source_run_id": "run-20261009T235827305683Z",
+    "evaluation_role": "dedicated test",
+    "retrained": false,
+    "start_inclusive": "2026-09-28T00:00:00-07:00",
+    "end_exclusive": "2026-10-05T00:00:00-07:00",
+    "features": [
+      "lot_id",
+      "weekday",
+      "minute_of_day",
+      "is_us_holiday",
+      "calendar",
+      "days_into_calendar",
+      "days_until_term_end"
+    ],
+    "test_rows": 1328,
+    "daytime_test_rows": 832,
+    "model_all_hours": {
+      "mae_pp": 4.165475906108661,
+      "rmse_pp": 6.034070423179532
+    },
+    "model_daytime": {
+      "mae_pp": 3.9768761012549634,
+      "rmse_pp": 6.350661369505614
+    },
+    "daytime_by_lot": {
+      "sjsu-north-garage": {
+        "mae_pp": 3.3313940974943272,
+        "rmse_pp": 4.242607382799956
+      },
+      "sjsu-south-campus-garage": {
+        "mae_pp": 5.4691804648776365,
+        "rmse_pp": 10.109500633701277
+      },
+      "sjsu-south-garage": {
+        "mae_pp": 4.228621873037711,
+        "rmse_pp": 5.16548841667847
+      },
+      "sjsu-west-garage": {
+        "mae_pp": 2.878307969610179,
+        "rmse_pp": 3.799948456267403
+      }
+    },
+    "preparation": {
+      "input_rows": 1328,
+      "missing_occupancy_rows": 0,
+      "out_of_range_rows": 0,
+      "known_frozen_rows": 0,
+      "excluded_rows": 0,
+      "duplicate_slot_rows": 0,
+      "training_rows": 1328,
+      "missing_features": {
+        "lot_id": 0,
+        "weekday": 0,
+        "minute_of_day": 0,
+        "is_us_holiday": 0,
+        "calendar": 0,
+        "days_into_calendar": 0,
+        "days_until_term_end": 0
+      }
+    },
+    "scope": "Valid observed half-hour slots; missing outcomes are not scored. Current academic terms are used.",
+    "all_hours_by_lot": {
+      "sjsu-north-garage": {
+        "mae_pp": 4.806561120833043,
+        "rmse_pp": 5.711002195170422
+      },
+      "sjsu-south-campus-garage": {
+        "mae_pp": 3.9207303459078373,
+        "rmse_pp": 8.205374822027172
+      },
+      "sjsu-south-garage": {
+        "mae_pp": 5.030158769866826,
+        "rmse_pp": 5.680619697979571
+      },
+      "sjsu-west-garage": {
+        "mae_pp": 2.904453387826938,
+        "rmse_pp": 3.664268179498846
+      }
+    }
+  }
+}

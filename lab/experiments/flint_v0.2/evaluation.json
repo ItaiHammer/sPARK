@@ -1,0 +1,83 @@
+{
+  "evaluation_role": "historical_validation",
+  "training": {
+    "start_inclusive": "2025-10-21T00:00:00-07:00",
+    "end_exclusive": "2026-08-31T00:00:00-07:00",
+    "rows": 55283,
+    "mae_pp": 2.640712302644748,
+    "rmse_pp": 4.6037034224273565
+  },
+  "validation": {
+    "start_inclusive": "2026-08-31T00:00:00-07:00",
+    "end_exclusive": "2026-09-21T00:00:00-07:00",
+    "all_hours": {
+      "rows": 3696,
+      "mae_pp": 8.516263004182989,
+      "rmse_pp": 13.493610203816957
+    },
+    "daytime": {
+      "rows": 2340,
+      "mae_pp": 9.046305974602147,
+      "rmse_pp": 15.290024883573528
+    },
+    "daytime_hours_pacific": "07:00 through 21:30",
+    "by_garage": {
+      "sjsu-north-garage": {
+        "all_hours": {
+          "rows": 924,
+          "mae_pp": 8.351260827115535,
+          "rmse_pp": 12.48284077456341
+        },
+        "daytime": {
+          "rows": 585,
+          "mae_pp": 8.0900835780539,
+          "rmse_pp": 13.98189623253427
+        }
+      },
+      "sjsu-south-campus-garage": {
+        "all_hours": {
+          "rows": 924,
+          "mae_pp": 5.195309862872235,
+          "rmse_pp": 8.540098457595718
+        },
+        "daytime": {
+          "rows": 585,
+          "mae_pp": 7.163951989079432,
+          "rmse_pp": 9.779419251142842
+        }
+      },
+      "sjsu-south-garage": {
+        "all_hours": {
+          "rows": 924,
+          "mae_pp": 13.734828087706227,
+          "rmse_pp": 18.83415997004233
+        },
+        "daytime": {
+          "rows": 585,
+          "mae_pp": 13.51213161296366,
+          "rmse_pp": 20.97256733269379
+        }
+      },
+      "sjsu-west-garage": {
+        "all_hours": {
+          "rows": 924,
+          "mae_pp": 6.783653239037959,
+          "rmse_pp": 12.034528993048955
+        },
+        "daytime": {
+          "rows": 585,
+          "mae_pp": 7.419056718311601,
+          "rmse_pp": 14.288470880043004
+        }
+      }
+    },
+    "labor_day_daytime": {
+      "mae_pp": 45.49436927382541,
+      "rmse_pp": 54.34589853945739
+    }
+  },
+  "original_model": {
+    "bytes": 7894144,
+    "sha256": "9780755dec11c6888b60de9cd7b3f6cc2b71cd5488faeeea8e7ce4b1bdee402a"
+  }
+}

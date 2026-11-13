@@ -1,0 +1,11 @@
+{
+  "experiment": "flint_v0.2",
+  "status": "experimental",
+  "parent": "flint_v0.1",
+  "training_start": "2025-10-21",
+  "reference_fit": "2026-09-20",
+  "model_parameters": {
+    "l2_regularization": 1.0,
+    "min_samples_leaf": 20
+  }
+}
