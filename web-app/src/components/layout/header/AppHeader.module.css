@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   height: calc(58px + env(safe-area-inset-top, 0px));
-  padding: env(safe-area-inset-top, 0px) 20px 8px;
+  padding: env(safe-area-inset-top, 0px) 20px 0;
   background: var(--spark-paper, #fff);
   box-shadow: 0 4px 12px -6px rgb(36 36 36 / 14%);
 }
@@ -27,7 +27,7 @@
   inset-inline-start: calc(100% + 2px);
   transform: translateY(-50%);
 }
-.start, .end { position: absolute; top: env(safe-area-inset-top, 0px); bottom: 8px; display: flex; align-items: center; }
+.start, .end { position: absolute; top: env(safe-area-inset-top, 0px); bottom: 0; display: flex; align-items: center; }
 .start { left: max(10px, calc((100% - 560px) / 2 + 10px)); }
 .end { right: max(10px, calc((100% - 560px) / 2 + 10px)); }
 
