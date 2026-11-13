@@ -31,9 +31,18 @@
 .start { left: max(10px, calc((100% - 560px) / 2 + 10px)); }
 .end { right: max(10px, calc((100% - 560px) / 2 + 10px)); }
 
-.action { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 12px; color: var(--spark-secondary); background: transparent; text-decoration: none; cursor: pointer; transition: background-color 150ms ease-out; }
+.action { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 12px; color: var(--spark-secondary); background: transparent; text-decoration: none; cursor: pointer; }
+.action::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  pointer-events: none;
+  transition: background-color 150ms ease-out;
+}
 .action:focus-visible { outline: 2px solid var(--spark-ink); outline-offset: 2px; }
-.action > svg { transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1); }
+.action > svg { grid-area: 1 / 1; position: relative; transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1); }
 .action:active > svg { transform: scale(.86); }
 .shareToast { position: fixed; z-index: 12; top: calc(65px + env(safe-area-inset-top, 0px)); left: 50%; width: max-content; max-width: calc(100vw - 32px); margin: 0; padding: 10px 16px; border: 1px solid var(--spark-line); border-radius: 12px; background: var(--spark-paper); box-shadow: 0 4px 12px rgb(0 0 0 / 8%); font-size: 13px; text-align: center; pointer-events: none; }
 .shareFallbackWrapper { max-width: var(--spark-main-width); margin: 20px auto 0; padding-inline: 16px; }
@@ -41,7 +50,7 @@
 .shareFallback textarea { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--spark-line); border-radius: 8px; font: inherit; resize: vertical; caret-color: var(--spark-ink); }
 .shareFallback button { min-height: 44px; cursor: pointer; }
 .shareFallback textarea:focus-visible, .shareFallback button:focus-visible { outline: 2px solid var(--spark-ink); outline-offset: 3px; }
-@media (hover: hover) { .action:hover { background: var(--spark-accent-soft); } }
+@media (hover: hover) { .action:hover::before { background: var(--spark-accent-soft); } }
 @media (prefers-reduced-motion: reduce) {
   .action > svg { transition: none; }
   .action:active > svg { transform: none; }
