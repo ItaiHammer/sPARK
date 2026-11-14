@@ -28,10 +28,10 @@ export const metadata = {
   openGraph: {
     title: "sPARK - Parking Made Simple",
     description:
-      "Real-time parking availability, forecasting, and smart navigation",
+      "Parking forecasts for SJSU parking lots. Built and maintained by a student, independent of San Jose State University.",
     images: [
       {
-        url: "/icons/logos/spark-link-preview.png",
+        url: "/icons/logos/spark-wordmark-preview.png",
         width: 512,
         height: 512,
         alt: "sPARK logo",
