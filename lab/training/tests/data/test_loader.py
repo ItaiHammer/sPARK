@@ -5,8 +5,10 @@ from unittest.mock import Mock
 from zoneinfo import ZoneInfo
 
 import httpx
+import dotenv
 import pandas as pd
 import pytest
+import supabase
 from postgrest import SyncPostgrestClient
 from postgrest.exceptions import APIError
 
@@ -21,9 +23,9 @@ SETTINGS = {"SUPABASE_URL": "https://example.invalid", "SUPABASE_KEY": "test-key
 @pytest.fixture(autouse=True)
 def isolate_client(monkeypatch):
     data.create_lab_client.cache_clear()
-    monkeypatch.setattr(data, "dotenv_values", lambda path: SETTINGS)
+    monkeypatch.setattr(dotenv, "dotenv_values", lambda path: SETTINGS)
     monkeypatch.setattr(
-        data,
+        supabase,
         "create_client",
         lambda *args: pytest.fail("This test must provide a simulated client."),
     )
@@ -42,7 +44,7 @@ def connect_mock_database(monkeypatch):
             "https://example.invalid/rest/v1", http_client=session
         )
         client = SimpleNamespace(table=database.from_)
-        monkeypatch.setattr(data, "create_client", lambda url, key: client)
+        monkeypatch.setattr(supabase, "create_client", lambda url, key: client)
         return client
 
     yield connect
@@ -54,8 +56,8 @@ def test_client_is_created_once_using_lab_credentials(monkeypatch):
     client = object()
     read_settings = Mock(return_value=SETTINGS)
     build_client = Mock(return_value=client)
-    monkeypatch.setattr(data, "dotenv_values", read_settings)
-    monkeypatch.setattr(data, "create_client", build_client)
+    monkeypatch.setattr(dotenv, "dotenv_values", read_settings)
+    monkeypatch.setattr(supabase, "create_client", build_client)
 
     assert data.create_lab_client() is client
     assert data.create_lab_client() is client
@@ -141,7 +143,7 @@ def test_repeated_loads_reuse_the_client_but_fetch_fresh_rows(
     ])
     client = connect_mock_database(respond)
     build_client = Mock(return_value=client)
-    monkeypatch.setattr(data, "create_client", build_client)
+    monkeypatch.setattr(supabase, "create_client", build_client)
 
     first = data.load_occupancy(START, END)
     second = data.load_occupancy(START, END)

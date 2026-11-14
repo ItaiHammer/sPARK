@@ -1,15 +1,47 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "regions": ["iad1"],
-  "functions": {
-    "src/app/**/*.js": {
-      "maxDuration": 30
+  "services": {
+    "spark": {
+      "root": ".",
+      "framework": "nextjs",
+      "buildCommand": "npm run build",
+      "outputDirectory": ".next",
+      "installCommand": "npm install",
+      "devCommand": "npm run dev",
+      "functions": {
+        "src/app/**/*.js": {
+          "maxDuration": 30
+        }
+      },
+      "rewrites": [
+        {
+          "source": "/robots.txt",
+          "destination": "/api/robots"
+        }
+      ],
+      "bindings": [
+        {
+          "type": "service",
+          "service": "flint",
+          "format": "url",
+          "env": "FLINT_SERVICE_URL"
+        }
+      ]
+    },
+    "flint": {
+      "root": "flint",
+      "framework": "flask",
+      "entrypoint": "app:app",
+      "functions": {
+        "app.py": {
+          "includeFiles": "lab/**",
+          "excludeFiles": "{.env*,**/.env*}"
+        }
+      }
     }
   },
+  "regions": [
+    "iad1"
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -80,8 +112,10 @@
   ],
   "rewrites": [
     {
-      "source": "/robots.txt",
-      "destination": "/api/robots"
+      "source": "/(.*)",
+      "destination": {
+        "service": "spark"
+      }
     }
   ]
 }

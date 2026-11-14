@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 from datetime import datetime
 from functools import cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pandas as pd
-from dotenv import dotenv_values
-from supabase import Client, create_client
+
+if TYPE_CHECKING:
+    from supabase import Client
 
 
 SNAPSHOT_COLUMNS = [
@@ -15,6 +19,9 @@ SNAPSHOT_COLUMNS = [
 
 @cache
 def create_lab_client() -> Client:
+    from dotenv import dotenv_values
+    from supabase import create_client
+
     settings = dotenv_values(Path(__file__).resolve().parents[2] / ".env.lab")
     return create_client(settings["SUPABASE_URL"], settings["SUPABASE_KEY"])
 
