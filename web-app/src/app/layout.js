@@ -41,12 +41,12 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: "/icons/logos/spark-logo-192.png",
+        url: "/icons/logos/spark-logo-192.png?v=open-spark",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        url: "/icons/logos/spark-logo-512.png",
+        url: "/icons/logos/spark-logo-512.png?v=open-spark",
         sizes: "512x512",
         type: "image/png",
       },
