@@ -11,7 +11,6 @@ export async function generateMetadata({ params }, parent) {
     openGraph: {
       ...openGraph,
       title: `${garageName} - sPARK`,
-      description: "Parking forecasts for SJSU parking lots. Built and maintained by a student, independent of San Jose State University.",
     },
   };
 }
