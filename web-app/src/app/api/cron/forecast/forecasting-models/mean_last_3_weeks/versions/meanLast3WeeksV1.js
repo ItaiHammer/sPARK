@@ -1,68 +1,36 @@
 import { DateTime } from 'luxon';
 
-// Model: use the mean of the observed occupancy from the last 3 weeks on that same weekday.
 function floorSlotIndex(dt, intervalMin) {
-    const m = dt.hour * 60 + dt.minute;
-    return Math.max(0, Math.floor(m / intervalMin));
+    return Math.floor((dt.hour * 60 + dt.minute) / intervalMin);
 }
-function minutesToNearestBoundary(dt, intervalMin) {
-    const m = dt.hour * 60 + dt.minute;
-    const r = m % intervalMin;
-    return Math.min(r, intervalMin - r);
-}
-export default {
-    // Build per-slot means from the last 3 weeks for the same weekday.
-    // Returns a map {slotIndex -> meanPct} in context.bySlotMean.
-    async prepare({ supabase, lot, tz, intervalMin, tomorrowStartTZ }) {
-        const targetWeekday = tomorrowStartTZ.weekday; // 1..7
-        const rangeStart = tomorrowStartTZ.minus({ weeks: 3 }).startOf('day');
-        const rangeEnd = tomorrowStartTZ.endOf('day');
 
-        const { data, error } = await supabase
-            .from('lot_occupancy')
-            .select('scraped_at, occupancy_pct')
-            .eq('lot_id', lot.lot_id)
-            .gte('scraped_at', rangeStart.toUTC().toISO())
-            .lt('scraped_at', rangeEnd.toUTC().toISO())
-            .order('scraped_at', { ascending: true });
-
-        if (error) throw error;
-
-        const half = intervalMin / 2;
+const meanLast3Weeks = {
+    // Readings come from the same issue-time snapshot Flint uses.
+    prepare({ readings, tz, intervalMin, tomorrowStartTZ }) {
+        const start = tomorrowStartTZ.minus({ weeks: 3 });
         const sums = new Map();
         const counts = new Map();
-
-        for (const r of data || []) {
-            const local = DateTime.fromISO(r.scraped_at, {
-                zone: 'utc',
-            }).setZone(tz);
-            if (local.weekday !== targetWeekday) continue;
-
-            // only keep samples near slot boundaries to reduce noise
-            if (minutesToNearestBoundary(local, intervalMin) > half) continue;
-
+        for (const reading of readings) {
+            const local = DateTime.fromISO(reading.scraped_at, { zone: tz });
+            if (local < start || local >= tomorrowStartTZ || local.weekday !== tomorrowStartTZ.weekday) continue;
+            if (reading.occupancy_pct == null) continue;
+            const value = Number(reading.occupancy_pct);
+            if (!Number.isFinite(value)) continue;
             const slot = floorSlotIndex(local, intervalMin);
-            const v = Number(r.occupancy_pct);
-            if (!Number.isFinite(v)) continue;
-
-            sums.set(slot, (sums.get(slot) || 0) + v);
+            sums.set(slot, (sums.get(slot) || 0) + value);
             counts.set(slot, (counts.get(slot) || 0) + 1);
         }
 
         const bySlotMean = new Map();
-        for (const [slot, sum] of sums.entries()) {
-            const mean = sum / (counts.get(slot) || 1);
-            bySlotMean.set(slot, Math.max(0, Math.min(100, mean)));
+        for (const [slot, sum] of sums) {
+            bySlotMean.set(slot, Math.max(0, Math.min(100, sum / counts.get(slot))));
         }
-
         return { bySlotMean };
     },
 
-    // Return the mean for the slot, or undefined when missing so caller may skip.
-    async predict({ tsLocal, intervalMin, context }) {
-        const m = context?.bySlotMean;
-        if (!m) return undefined;
-        const slot = floorSlotIndex(tsLocal, intervalMin);
-        return m.has(slot) ? m.get(slot) : undefined;
+    predict({ tsLocal, intervalMin, context }) {
+        return context.bySlotMean.get(floorSlotIndex(tsLocal, intervalMin));
     },
 };
+
+export default meanLast3Weeks;

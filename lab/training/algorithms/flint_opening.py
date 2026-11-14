@@ -46,7 +46,7 @@ def blend_opening_curve(targets: pd.DataFrame, history: pd.DataFrame, starts: pd
     return targets
 
 
-def adjust_after_clearing(targets: pd.DataFrame, scrapes: pd.DataFrame) -> pd.DataFrame:
+def adjust_after_clearing(targets: pd.DataFrame, scrapes: pd.DataFrame, *, issued_at=None) -> pd.DataFrame:
     """Adjust a batch of opening forecasts using readings before each target's issue.
 
     Include earlier unadjusted forecasts for the same garage and day in targets.
@@ -66,8 +66,9 @@ def adjust_after_clearing(targets: pd.DataFrame, scrapes: pd.DataFrame) -> pd.Da
         ]
         for row in rows.itertuples():
             issue = row.slot_dt - pd.Timedelta(minutes=30)
-            targets.at[row.Index, "clearing_issue_at"] = issue
-            before_issue = available.loc[available.local_timestamp.lt(issue)
+            cutoff = min(issue, issued_at) if issued_at is not None else issue
+            targets.at[row.Index, "clearing_issue_at"] = cutoff
+            before_issue = available.loc[available.local_timestamp.lt(cutoff)
                                          & available.slot_dt.lt(row.slot_dt)]
             completed = before_issue.groupby("slot_dt").agg(
                 observed=("occupancy_pct", "mean"), scraped_at=("local_timestamp", "max"))
