@@ -165,6 +165,13 @@
 .mode[data-mode="predicted"] .modeDot { background: var(--spark-forecast); }
 .freshness { text-align: right; }
 .garages { display: grid; gap: var(--spark-card-gap); }
+.projectFooter {
+  margin-top: 24px;
+  color: var(--spark-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
 .sortPopup {
   position: absolute;
   z-index: 40;
