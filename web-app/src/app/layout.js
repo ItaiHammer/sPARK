@@ -31,10 +31,10 @@ export const metadata = {
       "Real-time parking availability, forecasting, and smart navigation",
     images: [
       {
-        url: "/icons/logos/spark-logo-1200x630.png",
-        width: 1200,
-        height: 630,
-        alt: "sPARK",
+        url: "/icons/logos/spark-link-preview.png",
+        width: 512,
+        height: 512,
+        alt: "sPARK logo",
       },
     ],
   },
