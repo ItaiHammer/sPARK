@@ -92,6 +92,10 @@ export default function StatusViewPage({ locationId, onReady }) {
             <div className={styles.garages}>{lots.map((garage, index) => <GarageCard key={garage.lot_id || garage.id} href={`/${encodeURIComponent(locationId)}/garages/${encodeURIComponent(garage.lot_id || garage.id)}`} garage={garage} mode={picker.displayMode} order={index} sortType={sortMenu.type} building={data.building} buildingName={sortMenu.building?.buildingName} />)}</div>
           ) : <div className={styles.error}><p>No garages are available for this location.</p></div>}
         </section>
+        <footer className={styles.projectFooter}>
+          Built and maintained by a student.<br />
+          Independent of San Jose State University.
+        </footer>
       </main>
       <TimeSelectionSheet selection={picker.selection} todayISO={picker.todayISO} maxDateISO={picker.maxDateISO} expanded={picker.expanded} onExpandedChange={picker.setExpanded} onSelect={picker.select} canPauseLive={!data.isLoading && !data.error && data.lots.length > 0} onToggleLive={() => picker.toggleLive({ lots: data.lots, refreshedAt: data.refreshedAt })} onVisibleHeightChange={setSheetHeight} zone={zone} />
     </div>
