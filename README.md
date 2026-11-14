@@ -1,8 +1,9 @@
-<p align="center">
-  <img src="./web-app/public/spark-logo.svg" alt="sPARK Logo" width="200">
-</p>
-
-<h1 align="center">sPARK</h1>
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./web-app/public/icons/logos/spark-readme-dark.svg">
+    <img src="./web-app/public/icons/logos/spark-readme-light.svg" alt="sPARK" width="150">
+  </picture>
+</h1>
 <p align="center">
   <strong>Park Smart - Made by students for students.</strong>
 </p>
