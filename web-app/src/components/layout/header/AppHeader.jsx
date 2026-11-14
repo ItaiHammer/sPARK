@@ -6,7 +6,8 @@ export default function AppHeader({ start, end, ...props }) {
     <header {...props} className={styles.header}>
       {start ? <div className={styles.start}>{start}</div> : null}
       <h1 className={styles.brand}>
-        <span>SPARK</span>
+        <Image src="/spark-logo.svg" width={25} height={19} alt="" />
+        <span className={styles.wordmark}>SPARK</span>
         <Image
           className={styles.betaBadge}
           src="/icons/beta-badge.svg"
