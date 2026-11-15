@@ -13,11 +13,7 @@
 }
 
 .header {
-  position: sticky;
-  z-index: 50;
-  top: 0;
-  padding: env(safe-area-inset-top, 0px) var(--guide-inset) 0;
-  background: var(--welcome-paper);
+  padding-inline: max(var(--guide-inset), var(--safe-inline));
 }
 
 .navigation {
@@ -25,7 +21,7 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: min(100%, var(--guide-width));
-  min-height: 62px;
+  min-height: clamp(44px, 7.4dvh, 62px);
   margin-inline: auto;
 }
 
@@ -82,13 +78,12 @@
 
 .lesson {
   display: grid;
-  flex: 1;
   align-content: start;
-  gap: clamp(22px, 4svh, 36px);
+  gap: clamp(12px, 3dvh, 30px);
   width: min(100%, 510px);
   min-width: 0;
   margin-inline: auto;
-  padding: clamp(30px, 8.2svh, 70px) var(--guide-inset) clamp(38px, 7svh, 70px);
+  padding: clamp(12px, 6dvh, 62px) max(var(--guide-inset), var(--safe-inline)) 10px;
   animation: lesson-enter 260ms var(--welcome-ease);
 }
 
@@ -101,7 +96,7 @@
 
 .intro h1 {
   margin: 0;
-  font-size: clamp(30px, 8.2vw, 42px);
+  font-size: clamp(25px, min(7.8vw, 5dvh), 42px);
   font-weight: 850;
   line-height: 1.12;
   letter-spacing: -0.035em;
@@ -111,10 +106,10 @@
 
 .intro p {
   max-width: 33ch;
-  margin: 13px auto 0;
+  margin: clamp(6px, 1.5dvh, 13px) auto 0;
   color: var(--welcome-secondary);
-  font-size: clamp(16px, 4.4vw, 18px);
-  line-height: 1.45;
+  font-size: clamp(14px, min(4.4vw, 2.7dvh), 18px);
+  line-height: 1.35;
   text-wrap: pretty;
 }
 
@@ -122,9 +117,9 @@
 
 .examplePanel {
   display: grid;
-  gap: 10px;
+  gap: clamp(6px, 1.2dvh, 10px);
   min-width: 0;
-  padding: clamp(10px, 3.3vw, 16px);
+  padding: clamp(8px, 1.8dvh, 16px);
   border: 1px solid #e8e0d8;
   border-radius: 23px;
   background: #faf6f1;
@@ -178,13 +173,6 @@
 .mode[data-mode="live"]::before { background: var(--spark-live); }
 .mode[data-mode="predicted"]::before { background: var(--spark-forecast); }
 
-.actions {
-  position: sticky;
-  z-index: 2;
-  bottom: 0;
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
-}
-
 @media (min-width: 860px) {
   .lesson {
     grid-template-columns: 0.9fr 1.1fr;
@@ -192,12 +180,52 @@
     align-items: center;
     gap: clamp(40px, 7vw, 90px);
     width: min(100%, var(--guide-width));
-    padding-block: 32px 60px;
+    padding-block: 12px;
   }
 
   .intro { text-align: left; }
   .intro h1 { font-size: clamp(47px, 5.15vw, 64px); text-wrap: initial; }
   .intro p { max-width: 27ch; margin-inline: 0; font-size: 21px; }
+}
+
+@container onboarding (max-height: 670px) {
+  .brand { padding-block: 3px 0; }
+  .lesson { padding-block-start: clamp(10px, 3dvh, 26px); }
+}
+
+@container onboarding (max-height: 555px) {
+  .brand { display: none; }
+  .lesson { padding-block-start: 6px; gap: 9px; }
+  .examplePanel { padding: 6px 8px; }
+}
+
+@container onboarding (max-height: 465px) and (min-width: 520px) {
+  .lesson {
+    grid-template-columns: minmax(0, 0.58fr) minmax(0, 1.42fr);
+    align-items: center;
+    align-content: center;
+    width: min(100%, 960px);
+    gap: clamp(12px, 3vw, 30px);
+    padding-block: 4px;
+    --garage-compact-columns: minmax(0, 1fr);
+  }
+
+  .intro { text-align: left; }
+  .intro h1 { font-size: clamp(23px, 4vw, 38px); }
+  .intro p { margin-inline: 0; font-size: 14px; }
+
+  .guide[data-step="2"] .examplePanel {
+    grid-template-columns: minmax(0, .7fr) minmax(170px, 1.3fr);
+    align-items: center;
+  }
+
+  .guide[data-step="3"] .examplePanel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .exampleHeader,
+  .exampleNotice { grid-column: 1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

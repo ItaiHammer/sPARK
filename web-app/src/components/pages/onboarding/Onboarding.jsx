@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { DM_Sans } from "next/font/google";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import ExampleGarageCard from "./ExampleGarageCard";
@@ -48,7 +48,7 @@ function subscribeToOnboardingCompletion(onChange) {
 export default function Onboarding() {
   const router = useRouter();
   const reducedMotion = useReducedMotion();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(null);
   const completed = useSyncExternalStore(
     subscribeToOnboardingCompletion,
     getOnboardingCompletion,
@@ -64,20 +64,25 @@ export default function Onboarding() {
     router.replace("/sjsu");
   }
 
-  if (completed !== false) return <div className={styles.screen} />;
+  if (completed !== false) return <div className={styles.transitionSurface} />;
 
-  const welcome = step === 0;
+  const welcome = !step;
   return (
     <div className={styles.transitionSurface}>
       <AnimatePresence initial={false} mode="wait">
         <motion.div
+          className={styles.stage}
           key={welcome ? "welcome" : "guide"}
           initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 10 }}
           animate={{ opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.38, ease: screenEase } }}
           exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : -6, transition: { duration: reducedMotion ? 0 : 0.18, ease: "easeIn" } }}
         >
           {welcome ? (
-            <WelcomeScreen onStart={() => setStep(1)} onFinish={finish} />
+            <WelcomeScreen
+              restoreFocus={step === 0}
+              onStart={() => setStep(1)}
+              onFinish={finish}
+            />
           ) : (
             <OnboardingGuide
               step={step}
@@ -93,7 +98,8 @@ export default function Onboarding() {
   );
 }
 
-function WelcomeScreen({ onStart, onFinish }) {
+function WelcomeScreen({ restoreFocus, onStart, onFinish }) {
+  const heading = useRef(null);
   const [logoReady, setLogoReady] = useState(false);
   const [mapState, setMapState] = useState("pending");
   const [artworkTimedOut, setArtworkTimedOut] = useState(false);
@@ -106,6 +112,10 @@ function WelcomeScreen({ onStart, onFinish }) {
     const timeout = window.setTimeout(() => setArtworkTimedOut(true), ARTWORK_WAIT_MS);
     return () => window.clearTimeout(timeout);
   }, [ready]);
+
+  useEffect(() => {
+    if (ready && restoreFocus) heading.current?.focus({ preventScroll: true });
+  }, [ready, restoreFocus]);
 
   return (
     <main className={styles.screen} data-ready={ready} aria-busy={!ready}>
@@ -128,8 +138,8 @@ function WelcomeScreen({ onStart, onFinish }) {
 
       <div className={styles.content}>
         <div className={`${styles.intro} ${introFont.className}`}>
-          <h1>Find parking at <span>SJSU</span></h1>
-          <p>Check live and predicted parking availability at SJSU, so you can plan ahead and park with less stress.</p>
+          <h1 ref={heading} tabIndex={-1}>Find parking at <span>SJSU</span></h1>
+          <p>Check live garage availability and plan ahead with parking forecasts.</p>
         </div>
 
         <section className={styles.example} aria-labelledby="onboarding-example-label">

@@ -1,23 +1,36 @@
-.screen,
 .transitionSurface {
   --welcome-paper: #f8f4ef;
+  position: fixed;
+  inset: 0;
+  block-size: 100%;
+  block-size: 100dvh;
+  container: onboarding / size;
+  overflow: clip;
+  background: var(--welcome-paper);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
-.transitionSurface {
-  min-height: 100svh;
-  background: var(--welcome-paper);
+:global(html):has(.transitionSurface),
+:global(body):has(.transitionSurface) {
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #f8f4ef;
 }
+
+.stage { height: 100%; }
 
 .screen {
   --welcome-ink: #252321;
   --welcome-secondary: #585451;
   --welcome-footer: #ede7e0;
   --welcome-ease: cubic-bezier(0.22, 0.68, 0.24, 1);
-  display: flex;
-  flex-direction: column;
-  min-height: 100svh;
+  --safe-inline: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
   isolation: isolate;
-  overflow: clip;
   background: radial-gradient(ellipse at 50% 40%, #fcf9f6, var(--welcome-paper) 78%);
   color: var(--welcome-ink);
   font-family: "Avenir Next", var(--font-manrope), system-ui, sans-serif;
@@ -75,7 +88,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: calc(clamp(28px, 8svh, 84px) + env(safe-area-inset-top)) 20px 0;
+  padding: clamp(14px, 5dvh, 72px) 20px 0;
   font-size: 20px;
   font-weight: 850;
   letter-spacing: 0.26em;
@@ -85,29 +98,32 @@
 
 .content {
   display: grid;
-  flex: 1;
   align-content: center;
-  gap: clamp(19px, 3.6svh, 40px);
+  justify-items: center;
+  gap: clamp(10px, 2.8dvh, 36px);
   width: min(100%, 520px);
   margin-inline: auto;
-  padding: clamp(26px, 5.6svh, 64px) clamp(24px, 8vw, 52px) 18px;
+  padding: 8px max(clamp(18px, 7vw, 46px), var(--safe-inline));
 }
+
+.intro { width: 100%; }
 
 .intro h1 {
   margin: 0;
-  font-size: clamp(36px, 10.25vw, 54px);
+  font-size: clamp(29px, min(10.25vw, 5.8dvh), 54px);
   font-weight: 850;
   line-height: 1.15;
   letter-spacing: -0.025em;
+  outline: none;
 }
 
 .intro h1 span { display: inline-block; }
 
 .intro p {
   max-width: 28ch;
-  margin: 17px 0 0;
+  margin: clamp(8px, 2dvh, 17px) 0 0;
   color: var(--welcome-secondary);
-  font-size: clamp(17px, 4.7vw, 21px);
+  font-size: clamp(15px, min(4.7vw, 2.7dvh), 21px);
   font-weight: 450;
   line-height: 1.4;
 }
@@ -116,6 +132,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: min(100%, clamp(218px, 49dvh, 420px));
 }
 
 .exampleLabel {
@@ -131,17 +148,16 @@
   position: relative;
   display: grid;
   align-items: start;
-  min-height: clamp(228px, 69vw, 334px);
-  margin-inline: -7px;
-  padding-block: 14px 60px;
+  min-height: clamp(172px, 32dvh, 325px);
+  padding-block: clamp(5px, 1.5dvh, 14px) clamp(23px, 5dvh, 55px);
   isolation: isolate;
 }
 
 .map {
   position: absolute;
   z-index: -1;
-  inset: auto -6% -4% auto;
-  width: 104%;
+  inset: auto -3% 0 auto;
+  width: 98%;
   aspect-ratio: 480 / 330;
   transform-origin: 72% 85%;
 }
@@ -179,7 +195,7 @@
 
 .cards {
   display: grid;
-  gap: 11px;
+  gap: clamp(6px, 1.3dvh, 11px);
   width: min(87%, 365px);
   transform: rotate(-4deg);
 }
@@ -260,11 +276,12 @@
 }
 
 .footer {
+  --wave-height: clamp(10px, 3.6dvh, 38px);
   position: relative;
   isolation: isolate;
   display: grid;
   justify-items: center;
-  padding: 14px max(26px, env(safe-area-inset-right), env(safe-area-inset-left)) max(30px, env(safe-area-inset-bottom));
+  padding: calc(var(--wave-height) + 8px) max(20px, var(--safe-inline)) max(12px, env(safe-area-inset-bottom));
 }
 
 .footer.welcomeFooter {
@@ -275,7 +292,7 @@
 .footerBackdrop {
   position: absolute;
   z-index: -1;
-  inset: 0;
+  inset: var(--wave-height) 0 0;
   background: var(--welcome-footer);
   pointer-events: none;
 }
@@ -284,7 +301,7 @@
   position: absolute;
   inset: auto 0 calc(100% - 1px);
   width: 100%;
-  height: clamp(24px, 4.5svh, 52px);
+  height: var(--wave-height);
   color: var(--welcome-footer);
   pointer-events: none;
 }
@@ -329,18 +346,51 @@
     grid-template-columns: 0.95fr 1.05fr;
     gap: clamp(30px, 6vw, 90px);
     width: min(100%, 1130px);
-    padding-block: 40px 50px;
   }
 
   .intro h1 { font-size: clamp(52px, 4.9vw, 70px); }
   .intro p { font-size: 22px; }
 
-  .illustration {
-    min-height: clamp(345px, 33vw, 410px);
-    padding-top: clamp(46px, 5vw, 70px);
+  .example { width: min(100%, clamp(270px, 60dvh, 540px)); }
+  .illustration { padding-top: clamp(14px, 5dvh, 52px); }
+}
+
+@container onboarding (max-height: 650px) {
+  .brand { padding-top: clamp(8px, 2.3dvh, 16px); }
+  .start { min-height: 46px; padding-block: 7px; }
+  .footer { --wave-height: clamp(8px, 2.4dvh, 16px); }
+  .card { padding: 7px 10px 8px; }
+  .cardName { font-size: clamp(12px, 3.8vw, 16px); gap: 5px; line-height: 18px; }
+  .cardCount { font-size: clamp(20px, 6vw, 27px); line-height: 1.1; }
+  .cardOccupied, .cardCaption { font-size: 11px; line-height: 15px; }
+  .cardOccupied, .cardMeter { margin-top: 3px; }
+}
+
+@container onboarding (max-height: 520px) {
+  .brand { padding-top: 6px; }
+  .content { gap: 8px; padding-block: 4px; }
+  .illustration { min-height: 145px; padding-block: 2px 15px; }
+  .footer { padding-block: calc(var(--wave-height) + 5px) max(8px, env(safe-area-inset-bottom)); }
+  .footer.welcomeFooter { gap: 0; }
+}
+
+@container onboarding (max-height: 430px) and (min-width: 520px) {
+  .content {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 16px;
+    width: min(100%, 790px);
+    padding-inline: max(18px, var(--safe-inline));
   }
 
-  .footer { padding-block: 22px max(42px, env(safe-area-inset-bottom)); }
+  .intro h1 { font-size: clamp(29px, 5vw, 40px); }
+  .intro p { font-size: 15px; }
+  .example { width: min(100%, 248px); }
+  .illustration { min-height: 0; padding-block: 0 22px; }
+  .cards { width: 94%; }
+  .map { width: min(98%, 205px); }
+  .footer.welcomeFooter { grid-template-columns: auto auto; justify-content: center; gap: 14px; }
+  .welcomeFooter .start { width: min(34vw, 280px); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
