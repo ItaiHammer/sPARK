@@ -89,7 +89,26 @@ export default function StatusViewPage({ locationId, onReady }) {
           {data.error ? (
             <div className={styles.error} role="alert"><p>Parking information could not load.</p><button className={styles.retryButton} type="button" onClick={retry}>Try again</button></div>
           ) : cardsLoading ? <ParkingLoading /> : lots.length ? (
-            <div className={styles.garages}>{lots.map((garage, index) => <GarageCard key={garage.lot_id || garage.id} href={`/${encodeURIComponent(locationId)}/garages/${encodeURIComponent(garage.lot_id || garage.id)}`} garage={garage} mode={picker.displayMode} order={index} sortType={sortMenu.type} building={data.building} buildingName={sortMenu.building?.buildingName} />)}</div>
+            <div className={styles.garages}>
+              {lots.map((garage, index) => {
+                const lotId = garage.lot_id || garage.id;
+                return (
+                  <GarageCard
+                    key={lotId}
+                    href={{
+                      pathname: `/${encodeURIComponent(locationId)}/garages/${encodeURIComponent(lotId)}`,
+                      query: { date: picker.selection.dateISO },
+                    }}
+                    garage={garage}
+                    mode={picker.displayMode}
+                    order={index}
+                    sortType={sortMenu.type}
+                    building={data.building}
+                    buildingName={sortMenu.building?.buildingName}
+                  />
+                );
+              })}
+            </div>
           ) : <div className={styles.error}><p>No garages are available for this location.</p></div>}
         </section>
         <footer className={styles.projectFooter}>

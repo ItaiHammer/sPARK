@@ -12,12 +12,15 @@ import timeStyles from "../home/StatusView/TimeSelectionSheet.module.css";
 import styles from "./GaragePage.module.css";
 import transitionStyles from "./GarageForecastSection.module.css";
 
-export default function GarageForecastSection({ locationId, garage, currentAt }) {
-  const [chosenDate, setChosenDate] = useState(null);
+export default function GarageForecastSection({ locationId, garage, currentAt, initialDate }) {
+  const [chosenDate, setChosenDate] = useState(initialDate);
   const lastDateChange = useRef(null);
   const todayISO = currentAt.toISODate();
   const maxDateISO = currentAt.plus({ days: 6 }).toISODate();
-  const dateISO = chosenDate && chosenDate >= todayISO && chosenDate <= maxDateISO ? chosenDate : todayISO;
+  const isSupportedDate = (value) => typeof value === "string"
+    && value >= todayISO && value <= maxDateISO
+    && DateTime.fromISO(value, { zone: currentAt.zoneName }).toISODate() === value;
+  const dateISO = isSupportedDate(chosenDate) ? chosenDate : todayISO;
   const isToday = dateISO === todayISO;
   const selection = useMemo(() => ({
     mode: "forecast",
@@ -44,8 +47,7 @@ export default function GarageForecastSection({ locationId, garage, currentAt })
 
   const chooseDate = (event) => {
     const value = event.target.value;
-    const date = DateTime.fromISO(value, { zone: currentAt.zoneName });
-    if (!date.isValid || date.toISODate() !== value || value < todayISO || value > maxDateISO) {
+    if (!isSupportedDate(value)) {
       event.target.value = dateISO;
       return;
     }
