@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
-import https from "https";
 import {
+  errorCodes,
   errorHandler,
   successHandler,
   authValidator,
@@ -9,7 +8,7 @@ import {
 import { validateRoute, locationIDSchema } from "@/lib/helpers/validator";
 import { insertLotOccupancy } from "@/lib/supabase/supabase";
 import { getLocationData } from "@/lib/helpers/api.helpers";
-import { scrapeData } from "@/lib/helpers/scraper";
+import { fetchParkingOccupancy } from "@/lib/helpers/scraper";
 import { decisionHandler } from "@/lib/arcjet/arcjet";
 import { clearCache } from "@/lib/redis/redis";
 import { getOccupancyKey } from "@/lib/redis/redis.keys";
@@ -62,19 +61,20 @@ export async function GET(req, { params }) {
     );
   }
 
-  // Fetch Location Site
-  const locationSite = locationData.scraping_url;
-  const response = await axios.get(locationSite, {
-    httpsAgent: new https.Agent({
-      rejectUnauthorized: false, // Bypass SSL certificate verification
-    }),
-    headers: {
-      "User-Agent": process.env.SCRAPER_USER_AGENT,
-    },
-    timeout: 1000 * 60, // 60 secs
-  });
-  const html = response.data;
-  const data = scrapeData(html, location_id.toLowerCase());
+  let data;
+  try {
+    data = await fetchParkingOccupancy(locationData.scraping_url, location_id.toLowerCase(), process.env.SCRAPER_USER_AGENT);
+  } catch (error) {
+    console.error("Parking occupancy refresh failed", {
+      locationId: location_id,
+      code: error.code ?? "invalid-parking-feed",
+      upstreamStatus: error.response?.status,
+    });
+    return NextResponse.json(
+      errorHandler("The parking source could not be read.", errorCodes.SERVER_ERROR),
+      { status: 502 }
+    );
+  }
 
   // Insert data to supabase
   const { error: insertLotOccupancyError } = await insertLotOccupancy(data);
