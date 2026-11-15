@@ -206,6 +206,55 @@
 .buildingList { margin-top: 7px; max-height: 242px; overflow-y: auto; overscroll-behavior: contain; }
 .buildingChoice { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; width: 100%; min-height: 52px; padding: 8px 10px; border-radius: 8px; font: inherit; font-size: 14px; line-height: 19px; text-align: left; cursor: pointer; }
 .buildingChoice > span:first-child { color: var(--spark-secondary); font-size: 13px; font-weight: 600; }
+.sortWrapper:has(> .modalSortTrigger) { flex: none; }
+.modalSortTrigger { gap: 5px; padding-inline: 8px; }
+.modalSortTrigger .sortLabel { white-space: nowrap; }
+
+.sortDialog {
+  --sort-top-inset: max(12px, env(safe-area-inset-top, 0px));
+  --sort-bottom-inset: max(12px, env(safe-area-inset-bottom, 0px));
+  --sort-room: calc(var(--sort-viewport-height, 100dvh) - var(--sort-top-inset) - var(--sort-bottom-inset));
+  position: fixed;
+  inset: calc(var(--sort-viewport-top, 0px) + var(--sort-top-inset) + var(--sort-room) / 2) max(12px, env(safe-area-inset-right, 0px)) auto max(12px, env(safe-area-inset-left, 0px));
+  translate: 0 -50%;
+  width: min(360px, calc(100% - max(12px, env(safe-area-inset-left, 0px)) - max(12px, env(safe-area-inset-right, 0px))));
+  max-height: min(440px, var(--sort-room));
+  margin: 0 auto;
+  padding: 10px;
+  overflow: hidden;
+  border: 1px solid var(--spark-line);
+  border-radius: 16px;
+  background: var(--spark-paper);
+  color: var(--spark-ink);
+  font: inherit;
+  box-shadow: 0 12px 36px rgb(36 36 36 / 16%);
+}
+
+.sortDialog[open] { display: flex; flex-direction: column; }
+.sortDialog::backdrop { background: rgb(36 36 36 / 32%); }
+.sortDialog .buildingHeading { min-height: 44px; padding-inline-end: 44px; }
+.sortDialog .buildingHeading > button { flex: none; }
+.sortDialog .buildingSearch { flex: none; }
+.sortDialog .buildingList { min-height: 0; max-height: none; }
+.sortDialog .buildingChoice > span { overflow-wrap: anywhere; }
+.sortDialog button:focus-visible { outline-offset: -3px; }
+.closeSortDialog { position: absolute; top: 10px; right: 10px; }
+.modalSortChoices { overflow-y: auto; overscroll-behavior: contain; }
+.modalSortHeading { flex: none; display: flex; align-items: center; min-height: 44px; margin: 0 44px 7px 10px; font-size: 15px; font-weight: 600; }
+
+@media (orientation: landscape) and (min-width: 550px) {
+  .sortDialog[open]:has(.buildingList) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 7px;
+    width: min(470px, calc(100% - 64px));
+  }
+
+  .sortDialog .buildingHeading { margin: 0; padding: 0; }
+  .sortDialog .buildingSearch { margin-inline-end: 44px; }
+  .sortDialog .buildingList { grid-column: 1 / -1; margin: 0; }
+}
 .menuMessage { padding: 14px 8px; color: var(--spark-secondary); font-size: 13px; }
 .notice { margin: 0 3px 12px; color: var(--spark-secondary); font-size: 12px; line-height: 18px; }
 .notice button { color: var(--spark-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

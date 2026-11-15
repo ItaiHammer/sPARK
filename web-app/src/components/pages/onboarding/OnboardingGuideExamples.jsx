@@ -100,6 +100,7 @@ export function WalkingExample() {
         onBuilding={setBuilding}
         sortOptions={sortOptions}
         trackChanges={false}
+        modal
       />
     )}>
       {building && !hasWalkingEstimates && (
