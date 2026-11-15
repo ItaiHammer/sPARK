@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { Clock3, Navigation, ArrowUpRight, CircleParking, Smartphone, CreditCard, Ticket, WalletCards, Timer } from "lucide-react";
 import { DateTime } from "luxon";
@@ -58,10 +59,11 @@ function HoursStrip({ periods, tone = "general", permit = false }) {
 }
 
 export default function GarageDetail({ locationId, lotId, onReady }) {
+  const initialForecastDate = useSearchParams().get("date");
   const [zone, setZone] = useState("America/Los_Angeles");
   const [now, setNow] = useState(() => Date.now());
   const { sortMenu, updateTimeFilterMenu } = useUI();
-  // Detail pages always use the current time; the list's saved picker stays intact.
+  // The live card uses the current time independently of the forecast chart.
   const selection = useMemo(() => liveParkingSelection(zone, now), [zone, now]);
   const distanceSort = sortMenu.type === SORT_TYPES.DISTANCE_TO_BUILDING.value;
   const data = useParkingData({
@@ -214,7 +216,7 @@ export default function GarageDetail({ locationId, lotId, onReady }) {
           </section>
         ) : null}
 
-        <GarageForecastSection key={lotId} locationId={locationId} garage={cardGarage} currentAt={selectedAt} />
+        <GarageForecastSection key={initialForecastDate ?? "today"} locationId={locationId} garage={cardGarage} currentAt={selectedAt} initialDate={initialForecastDate} />
 
         {isSjsu ? <footer className={styles.footer}><ExternalLink href={PARKING_LINKS.services}>SJSU Parking Services</ExternalLink></footer> : null}
       </div>
