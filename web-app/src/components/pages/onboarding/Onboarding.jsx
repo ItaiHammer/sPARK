@@ -1,23 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DM_Sans } from "next/font/google";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import ExampleGarageCard from "./ExampleGarageCard";
+import OnboardingFooter from "./OnboardingFooter";
+import OnboardingGuide from "./OnboardingGuide";
+import { sampleGarages } from "./sampleGarages";
 import styles from "./Onboarding.module.css";
 
 const introFont = DM_Sans({ subsets: ["latin"], display: "swap" });
 const getServerSnapshot = () => null;
 const COMPLETION_KEY = "spark:onboarding-complete";
 const ARTWORK_WAIT_MS = 2500;
-
-const exampleGarages = [
-  { name: "South Garage", spaces: 1358, occupied: 6, delay: 1060 },
-  { name: "North Garage", spaces: 812, occupied: 42, delay: 1460 },
-];
+const screenEase = [0.22, 0.68, 0.24, 1];
 
 function getOnboardingCompletion() {
   try {
@@ -48,6 +47,8 @@ function subscribeToOnboardingCompletion(onChange) {
 
 export default function Onboarding() {
   const router = useRouter();
+  const reducedMotion = useReducedMotion();
+  const [step, setStep] = useState(0);
   const completed = useSyncExternalStore(
     subscribeToOnboardingCompletion,
     getOnboardingCompletion,
@@ -58,12 +59,41 @@ export default function Onboarding() {
     if (completed) router.replace("/sjsu");
   }, [completed, router]);
 
-  if (completed === false) return <WelcomeScreen />;
+  function finish() {
+    completeOnboarding();
+    router.replace("/sjsu");
+  }
 
-  return <div className={styles.screen} />;
+  if (completed !== false) return <div className={styles.screen} />;
+
+  const welcome = step === 0;
+  return (
+    <div className={styles.transitionSurface}>
+      <AnimatePresence initial={false} mode="wait">
+        <motion.div
+          key={welcome ? "welcome" : "guide"}
+          initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.38, ease: screenEase } }}
+          exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : -6, transition: { duration: reducedMotion ? 0 : 0.18, ease: "easeIn" } }}
+        >
+          {welcome ? (
+            <WelcomeScreen onStart={() => setStep(1)} onFinish={finish} />
+          ) : (
+            <OnboardingGuide
+              step={step}
+              fontClassName={introFont.className}
+              onBack={() => setStep(step - 1)}
+              onNext={() => setStep(step + 1)}
+              onFinish={finish}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
 }
 
-function WelcomeScreen() {
+function WelcomeScreen({ onStart, onFinish }) {
   const [logoReady, setLogoReady] = useState(false);
   const [mapState, setMapState] = useState("pending");
   const [artworkTimedOut, setArtworkTimedOut] = useState(false);
@@ -130,8 +160,8 @@ function WelcomeScreen() {
             )}
             {ready && (
               <div className={styles.cards}>
-                {exampleGarages.map((garage) => (
-                  <ExampleGarageCard key={garage.name} {...garage} />
+                {sampleGarages.map((garage, index) => (
+                  <ExampleGarageCard key={garage.lot_id} {...garage} delay={1060 + 400 * index} />
                 ))}
               </div>
             )}
@@ -139,14 +169,12 @@ function WelcomeScreen() {
         </section>
       </div>
 
-      <div className={styles.footer}>
-        <svg className={styles.wave} viewBox="0 0 480 56" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 37C58 12 105 9 174 29S270 54 335 31 432 2 480 8V56H0Z" fill="currentColor" />
-        </svg>
-        <Link className={styles.start} href="/sjsu" replace onNavigate={completeOnboarding}>
+      <OnboardingFooter className={styles.welcomeFooter}>
+        <button className={styles.start} type="button" onClick={onStart}>
           Get started <ArrowRight className={styles.startArrow} size={22} aria-hidden="true" />
-        </Link>
-      </div>
+        </button>
+        <button className={styles.secondaryAction} type="button" onClick={onFinish}>Skip onboarding</button>
+      </OnboardingFooter>
     </main>
   );
 }

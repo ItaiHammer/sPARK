@@ -1,5 +1,14 @@
-.screen {
+.screen,
+.transitionSurface {
   --welcome-paper: #f8f4ef;
+}
+
+.transitionSurface {
+  min-height: 100svh;
+  background: var(--welcome-paper);
+}
+
+.screen {
   --welcome-ink: #252321;
   --welcome-secondary: #585451;
   --welcome-footer: #ede7e0;
@@ -15,6 +24,23 @@
 }
 
 .screen[data-ready="false"] > * { visibility: hidden; }
+.screen[data-ready="false"] .secondaryAction { visibility: visible; }
+
+.secondaryAction {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--welcome-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondaryAction:focus-visible {
+  outline: 2px solid var(--welcome-ink);
+  outline-offset: 2px;
+}
 
 @keyframes welcome-enter {
   from {
@@ -235,10 +261,23 @@
 
 .footer {
   position: relative;
+  isolation: isolate;
   display: grid;
   justify-items: center;
   padding: 14px max(26px, env(safe-area-inset-right), env(safe-area-inset-left)) max(30px, env(safe-area-inset-bottom));
+}
+
+.footer.welcomeFooter {
+  gap: 2px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.footerBackdrop {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
   background: var(--welcome-footer);
+  pointer-events: none;
 }
 
 .wave {
@@ -265,6 +304,7 @@
   font-weight: 800;
   text-align: center;
   transition: background-color 160ms ease;
+  cursor: pointer;
 }
 
 .start:focus-visible {
@@ -275,6 +315,7 @@
 .start:active { background: #151412; }
 
 @media (hover: hover) {
+  .secondaryAction:hover { background: #efe9e2; }
   .start:hover { background: #3d3935; }
 }
 
@@ -303,7 +344,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .screen[data-ready="true"] :is(.brandMark, .wordmark, .intro h1, .intro p, .map, .exampleLabel, .footer, .start, .startArrow) {
+  .screen[data-ready="true"] :is(.brandMark, .wordmark, .intro h1, .intro p, .map, .exampleLabel, .footerBackdrop, .start, .startArrow) {
     animation: welcome-enter var(--welcome-enter-duration, 1150ms) var(--welcome-ease) var(--welcome-enter-delay, 0ms) backwards;
   }
 
@@ -340,7 +381,7 @@
     --welcome-enter-duration: 850ms;
     --welcome-enter-from: translateY(5px);
   }
-  .footer {
+  .footerBackdrop {
     --welcome-enter-delay: 380ms;
     --welcome-enter-from: none;
   }
@@ -355,7 +396,7 @@
     --welcome-enter-from: translateX(-5px);
   }
 
-  .screen[data-ready="true"] .footer:focus-within,
+  .screen[data-ready="true"] .footer:focus-within .footerBackdrop,
   .screen[data-ready="true"] .start:focus-visible,
   .screen[data-ready="true"] .start:focus-visible .startArrow {
     animation: none;

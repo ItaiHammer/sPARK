@@ -41,7 +41,8 @@ export default function TimeSelectionSheet({
   selection,
   todayISO,
   maxDateISO,
-  expanded,
+  embedded = false,
+  expanded = embedded,
   onExpandedChange,
   onSelect,
   onToggleLive,
@@ -76,6 +77,7 @@ export default function TimeSelectionSheet({
   const selectedTime = timeParts(selection.minutes);
 
   useEffect(() => {
+    if (embedded) return;
     // Native pickers can make focus restoration look like keyboard focus.
     // Remember input modality across the outside toggle and handle refocus.
     const pointerInput = () => setHandlePointerFocus(true);
@@ -86,7 +88,7 @@ export default function TimeSelectionSheet({
       document.removeEventListener("pointerdown", pointerInput, true);
       document.removeEventListener("keydown", keyboardInput, true);
     };
-  }, []);
+  }, [embedded]);
 
   useEffect(() => {
     selectionRef.current = selection;
@@ -125,19 +127,22 @@ export default function TimeSelectionSheet({
     const ruler = rulerRef.current;
     if (!sheet || !ruler) return;
     const measure = () => {
-      const safeArea = Math.max(0, (Number.parseFloat(getComputedStyle(sheet).paddingBottom) || 12) - 12);
-      const next = { height: sheet.offsetHeight, peek: SHEET_PEEK + safeArea };
-      setGeometry((previous) => previous.height === next.height && previous.peek === next.peek ? previous : next);
+      if (!embedded) {
+        const safeArea = Math.max(0, (Number.parseFloat(getComputedStyle(sheet).paddingBottom) || 12) - 12);
+        const next = { height: sheet.offsetHeight, peek: SHEET_PEEK + safeArea };
+        setGeometry((previous) => previous.height === next.height && previous.peek === next.peek ? previous : next);
+      }
       setRulerWidth(ruler.clientWidth);
     };
     measure();
     const observer = new ResizeObserver(measure);
-    observer.observe(sheet);
+    if (!embedded) observer.observe(sheet);
     observer.observe(ruler);
     return () => observer.disconnect();
-  }, []);
+  }, [embedded]);
 
   useEffect(() => {
+    if (embedded) return;
     const frame = requestAnimationFrame(() => {
       if (!sheetGesture.current) {
         if (!expanded && sheetRef.current?.querySelector(`.${styles.content}`)?.contains(document.activeElement)) {
@@ -147,9 +152,10 @@ export default function TimeSelectionSheet({
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [expanded, settleSheet]);
+  }, [embedded, expanded, settleSheet]);
 
   useEffect(() => {
+    if (embedded) return;
     let frame;
     const publishHeight = () => {
       cancelAnimationFrame(frame);
@@ -158,7 +164,7 @@ export default function TimeSelectionSheet({
     publishHeight();
     const unsubscribe = sheetY.on("change", publishHeight);
     return () => { unsubscribe(); cancelAnimationFrame(frame); };
-  }, [geometry.height, sheetY, travel]);
+  }, [embedded, geometry.height, sheetY, travel]);
 
   useEffect(() => {
     if (rulerGesture.current) return;
@@ -205,7 +211,7 @@ export default function TimeSelectionSheet({
 
   function selectForecast(dateISO, minutes, { change = "date", continuous = false, previous = selectionRef.current } = {}) {
     const accepted = onSelect(dateISO, minutes, { continuous });
-    if (accepted === false || continuous) return accepted;
+    if (accepted === false || continuous || embedded) return accepted;
 
     if (dateISO === previous.dateISO && minutes === previous.minutes && previous.mode === "forecast") return accepted;
 
@@ -357,24 +363,28 @@ export default function TimeSelectionSheet({
     if (selectForecast(selection.dateISO, minutes, { change: "time" }) === false) event.target.value = `${String(Math.floor(selection.minutes / 60)).padStart(2, "0")}:${String(selection.minutes % 60).padStart(2, "0")}`;
   }
 
+  const drawerEvents = embedded ? undefined : {
+    onPointerDown: beginSheetDrag,
+    onPointerMove: moveSheetDrag,
+    onPointerUp: (event) => finishSheetDrag(event),
+    onPointerCancel: (event) => finishSheetDrag(event, true),
+    onLostPointerCapture: (event) => {
+      if (sheetGesture.current?.captureTarget === event.target) finishSheetDrag(event, true);
+    },
+    onKeyDown: (event) => { if (event.key === "Escape" && expanded) onExpandedChange(false); },
+  };
+
   return (
     <motion.section
       ref={sheetRef}
-      id={SHEET_ID}
-      className={styles.sheet}
-      style={{ y: sheetY }}
+      id={embedded ? undefined : SHEET_ID}
+      className={embedded ? styles.sheet : `${styles.sheet} ${styles.drawer}`}
+      style={embedded ? undefined : { y: sheetY }}
       aria-label="Choose a day and time"
       data-dragging={sheetDragging || undefined}
-      onPointerDown={beginSheetDrag}
-      onPointerMove={moveSheetDrag}
-      onPointerUp={(event) => finishSheetDrag(event)}
-      onPointerCancel={(event) => finishSheetDrag(event, true)}
-      onLostPointerCapture={(event) => {
-        if (sheetGesture.current?.captureTarget === event.target) finishSheetDrag(event, true);
-      }}
-      onKeyDown={(event) => { if (event.key === "Escape" && expanded) onExpandedChange(false); }}
+      {...drawerEvents}
     >
-      <button
+      {!embedded && <button
         type="button"
         className={styles.handle}
         data-pointer-focus={handlePointerFocus || undefined}
@@ -388,7 +398,7 @@ export default function TimeSelectionSheet({
             onExpandedChange(event.key === "ArrowUp");
           }
         }}
-      ><span /></button>
+      ><span /></button>}
       <div
         id={`${nativeId}-content`}
         className={styles.content}
