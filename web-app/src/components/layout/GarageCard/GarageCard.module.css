@@ -405,6 +405,45 @@ a.travel:focus-visible {
   }
 }
 
+.compact .summary { padding: 8px 10px; }
+.compact .top {
+  grid-template-columns: var(--garage-compact-columns, minmax(0, 1fr) auto);
+  gap: 3px 5px;
+}
+.compact .name { font-size: clamp(14px, 3.8vw, 18px); line-height: 19px; gap: 5px; }
+.compact .modeDot { margin-top: 6px; }
+.compact .numbers { min-width: 0; }
+.compact .count { font-size: clamp(23px, 6vw, 30px); line-height: 1; }
+.compact :is(.occupancy, .caption, .foot) { font-size: 12px; line-height: 16px; }
+.compact .occupancy { margin-top: 2px; gap: 0 4px; }
+.compact :is(.meter, .foot) { margin-top: 5px; }
+.compact .travel {
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  column-gap: 6px;
+  min-height: 30px;
+  margin-top: 5px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+.compact .travelIcon { width: 16px; height: 16px; }
+.compact .travelMetrics { flex-direction: row; align-items: baseline; gap: 5px; }
+.compact .travelTime,
+.compact .travelDistance { font-size: 12px; line-height: 16px; }
+
+@container onboarding (max-height: 520px) {
+  .compact .summary { padding-block: 6px; }
+}
+
+@container onboarding (max-height: 465px) and (min-width: 520px) {
+  .compact .name { font-size: 14px; }
+  .compact .numbers { flex-direction: row; align-items: baseline; gap: 4px; }
+  .compact .count { font-size: 20px; }
+  .compact :is(.occupancy, .caption) { font-size: 11px; }
+  .compact .travel { grid-template-columns: minmax(0, 1fr) auto; }
+  .compact .travelIcon { display: none; }
+  .compact .travelMetrics { flex-direction: column; align-items: end; gap: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .entering {
     animation: none;

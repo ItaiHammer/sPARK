@@ -41,7 +41,7 @@ function Mode({ mode, spaces }) {
 export function AvailabilityExample() {
   return (
     <ExamplePanel activity={<Mode mode="live" spaces={southGarage.spaces} />}>
-      <GarageCard garage={{ ...southGarage, hours: "Open 24h" }} animateEntrance={false} />
+      <GarageCard garage={{ ...southGarage, hours: "Open 24h" }} animateEntrance={false} compact />
     </ExamplePanel>
   );
 }
@@ -59,7 +59,7 @@ export function ArrivalExample() {
 
   return (
     <ExamplePanel activity={<Mode mode={mode} spaces={garage.spaces} />}>
-      <GarageCard garage={garage} mode={mode} animateEntrance={false} />
+      <GarageCard garage={garage} mode={mode} animateEntrance={false} compact />
       <TimeSelectionSheet
         embedded
         selection={selection}
@@ -109,7 +109,7 @@ export function WalkingExample() {
       )}
       {getSortedLots(garages, hasWalkingEstimates ? sortType : DEFAULT_SORT_TYPE).map((garage) => (
         <motion.div key={garage.lot_id} layout={reducedMotion ? false : "position"} transition={{ duration: 0.28 }}>
-          <GarageCard garage={garage} buildingName={building?.buildingName} animateEntrance={false} />
+          <GarageCard garage={garage} buildingName={building?.buildingName} animateEntrance={false} compact />
         </motion.div>
       ))}
     </ExamplePanel>
