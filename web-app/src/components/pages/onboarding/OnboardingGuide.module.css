@@ -1,13 +1,13 @@
 .guide {
   --guide-width: 1020px;
   --guide-inset: clamp(16px, 5vw, 42px);
-  --spark-paper: #fffdf9;
-  --spark-pearl: #f5f0eb;
+  --spark-paper: var(--white);
+  --spark-pearl: #f5f5f5;
   --spark-ink: var(--welcome-ink);
   --spark-secondary: var(--welcome-secondary);
-  --spark-line: #e8e0d8;
+  --spark-line: #e6e6e6;
   --spark-accent: var(--welcome-ink);
-  --spark-accent-soft: #f0ebe5;
+  --spark-accent-soft: #efefef;
   --spark-live: #b94759;
   --spark-forecast: #3e65b8;
 }
@@ -43,7 +43,7 @@
 }
 
 @media (hover: hover) {
-  .back:hover { background: #efe9e2; }
+  .back:hover { background: var(--spark-accent-soft); }
 }
 
 .progress {
@@ -56,11 +56,11 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: #d9d0c7;
+  background: #ddd;
   transition: width 200ms var(--welcome-ease), background-color 200ms ease;
 }
 
-.progressDot[data-state="visited"] { background: #9c9187; }
+.progressDot[data-state="visited"] { background: #929292; }
 .progressDot[data-state="current"] { width: 21px; background: var(--welcome-ink); }
 
 .brand {
@@ -120,10 +120,10 @@
   gap: clamp(6px, 1.2dvh, 10px);
   min-width: 0;
   padding: clamp(8px, 1.8dvh, 16px);
-  border: 1px solid #e8e0d8;
+  border: 1px solid var(--spark-line);
   border-radius: 23px;
-  background: #faf6f1;
-  box-shadow: 0 16px 34px rgb(72 55 41 / 8%), 0 2px 4px rgb(72 55 41 / 4%);
+  background: #f8f8f8;
+  box-shadow: 0 16px 34px rgb(36 36 36 / 7%), 0 2px 4px rgb(36 36 36 / 4%);
 }
 
 .exampleHeader {
@@ -156,7 +156,7 @@
   gap: 6px;
   padding: 4px 9px;
   border-radius: 999px;
-  background: #efe9e2;
+  background: var(--spark-accent-soft);
   color: var(--welcome-ink);
   font-size: 12px;
   font-weight: 700;
