@@ -7,9 +7,8 @@ import { DEFAULT_SORT_TYPE, SORT_TYPES, getSortLabel } from "@/lib/constants/sor
 import styles from "./StatusViewPage.module.css";
 
 const options = Object.values(SORT_TYPES);
-const firstCategoryOption = options.find((option) => option.category)?.value;
 
-export default function SortControls({ sortType, building, buildings, isBuildingsLoading, buildingError, onRetry, onSort, onBuilding }) {
+export default function SortControls({ sortType, building, buildings, isBuildingsLoading, buildingError, onRetry, onSort, onBuilding, sortOptions = options, trackChanges = true }) {
   const [open, setOpen] = useState(false);
   const [choosingBuilding, setChoosingBuilding] = useState(false);
   const [query, setQuery] = useState("");
@@ -18,6 +17,7 @@ export default function SortControls({ sortType, building, buildings, isBuilding
   const popup = useRef(null);
   const id = useId();
   const label = getSortLabel(sortType, building?.buildingName);
+  const firstCategoryOption = sortOptions.find((option) => option.category)?.value;
   const matchingBuildings = buildings.filter((item) => `${item.name} ${item.abbreviation}`.toLowerCase().includes(query.trim().toLowerCase()));
 
   const close = () => { setOpen(false); setChoosingBuilding(false); };
@@ -78,7 +78,7 @@ export default function SortControls({ sortType, building, buildings, isBuilding
                 {matchingBuildings.map((item) => (
                   <button className={styles.buildingChoice} type="button" key={item.building_id} onClick={() => {
                     onBuilding({ buildingID: item.building_id, buildingName: item.abbreviation || item.name });
-                    if (sortType !== SORT_TYPES.DISTANCE_TO_BUILDING.value || building?.buildingID !== item.building_id) {
+                    if (trackChanges && (sortType !== SORT_TYPES.DISTANCE_TO_BUILDING.value || building?.buildingID !== item.building_id)) {
                       posthog.capture("garage_sort_changed", { sort_type: SORT_TYPES.DISTANCE_TO_BUILDING.value });
                     }
                     close();
@@ -91,13 +91,13 @@ export default function SortControls({ sortType, building, buildings, isBuilding
                 {buildingError ? <button className={styles.retryButton} type="button" onClick={onRetry}>Try again</button> : null}
               </div>
             </>
-          ) : options.map((option) => (
+          ) : sortOptions.map((option) => (
             <Fragment key={option.value}>
               {option.value === firstCategoryOption && <div className={styles.sortDivider} role="separator" />}
               <button className={styles.sortChoice} type="button" role="menuitemradio" aria-checked={sortType === option.value} onClick={() => {
                 if (option.value === SORT_TYPES.DISTANCE_TO_BUILDING.value) { setQuery(""); setChoosingBuilding(true); return; }
                 onSort(option.value);
-                if (option.value !== sortType) {
+                if (trackChanges && option.value !== sortType) {
                   posthog.capture("garage_sort_changed", { sort_type: option.value });
                 }
                 close();

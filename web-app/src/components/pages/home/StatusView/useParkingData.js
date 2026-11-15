@@ -33,18 +33,24 @@ const forecastOptions = {
   revalidateOnReconnect: true,
 };
 
+export function useParkingBuildings(locationId, { buildingId = null, loadBuildings = true } = {}) {
+  const { getLocationBuildings, getBuildingDistances } = useLocationAPI();
+  const buildingsRequest = useSWR(locationId && loadBuildings ? [BUILDINGS_KEY, locationId] : null,
+    ([, id]) => getLocationBuildings(id).then(apiData), cachedOptions);
+  const buildingRequest = useSWR(locationId && buildingId ? [BUILDING_DISTANCES_KEY, locationId, buildingId] : null,
+    ([, id, destination]) => getBuildingDistances(id, destination).then(apiData), cachedOptions);
+  return { buildingsRequest, buildingRequest };
+}
+
 export default function useParkingData({ locationId, selection, buildingId = null, pausedSnapshot = null, loadBuildings = true }) {
-  const { getLocationInfo, getLocationLots, getLatestOccupancy, getLocationBuildings, getBuildingDistances } = useLocationAPI();
+  const { getLocationInfo, getLocationLots, getLatestOccupancy } = useLocationAPI();
   const selectedAt = selectionDateTime(selection);
 
   const locationRequest = useSWR(locationId ? ["parking-location", locationId] : null,
     ([, id]) => getLocationInfo(id).then(apiData), cachedOptions);
   const metadataRequest = useSWR(locationId ? ["parking-lots", locationId] : null,
     ([, id]) => getLocationLots(id).then(apiData), cachedOptions);
-  const buildingsRequest = useSWR(locationId && loadBuildings ? [BUILDINGS_KEY, locationId] : null,
-    ([, id]) => getLocationBuildings(id).then(apiData), cachedOptions);
-  const buildingRequest = useSWR(locationId && buildingId ? [BUILDING_DISTANCES_KEY, locationId, buildingId] : null,
-    ([, id, destination]) => getBuildingDistances(id, destination).then(apiData), cachedOptions);
+  const { buildingsRequest, buildingRequest } = useParkingBuildings(locationId, { buildingId, loadBuildings });
 
   const frozenLots = Array.isArray(pausedSnapshot) ? pausedSnapshot : pausedSnapshot?.lots;
   const frozen = selection?.mode === "paused" && Array.isArray(frozenLots);

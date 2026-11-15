@@ -1,0 +1,206 @@
+.guide {
+  --guide-width: 1020px;
+  --guide-inset: clamp(16px, 5vw, 42px);
+  --spark-paper: #fffdf9;
+  --spark-pearl: #f5f0eb;
+  --spark-ink: var(--welcome-ink);
+  --spark-secondary: var(--welcome-secondary);
+  --spark-line: #e8e0d8;
+  --spark-accent: var(--welcome-ink);
+  --spark-accent-soft: #f0ebe5;
+  --spark-live: #b94759;
+  --spark-forecast: #3e65b8;
+}
+
+.header {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  padding: env(safe-area-inset-top, 0px) var(--guide-inset) 0;
+  background: var(--welcome-paper);
+}
+
+.navigation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: min(100%, var(--guide-width));
+  min-height: 62px;
+  margin-inline: auto;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.skip { justify-self: end; }
+
+.back:focus-visible {
+  outline: 2px solid var(--welcome-ink);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .back:hover { background: #efe9e2; }
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.progressDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #d9d0c7;
+  transition: width 200ms var(--welcome-ease), background-color 200ms ease;
+}
+
+.progressDot[data-state="visited"] { background: #9c9187; }
+.progressDot[data-state="current"] { width: 21px; background: var(--welcome-ink); }
+
+.brand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  padding-block: 14px 4px;
+  font-size: 14px;
+  font-weight: 850;
+  letter-spacing: 0.26em;
+}
+
+.brand span { margin-inline-end: -0.26em; }
+
+.lesson {
+  display: grid;
+  flex: 1;
+  align-content: start;
+  gap: clamp(22px, 4svh, 36px);
+  width: min(100%, 510px);
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(30px, 8.2svh, 70px) var(--guide-inset) clamp(38px, 7svh, 70px);
+  animation: lesson-enter 260ms var(--welcome-ease);
+}
+
+@keyframes lesson-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
+}
+
+.intro { text-align: center; }
+
+.intro h1 {
+  margin: 0;
+  font-size: clamp(30px, 8.2vw, 42px);
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  outline: none;
+}
+
+.intro p {
+  max-width: 33ch;
+  margin: 13px auto 0;
+  color: var(--welcome-secondary);
+  font-size: clamp(16px, 4.4vw, 18px);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.intro strong { color: var(--welcome-ink); font-weight: 700; }
+
+.examplePanel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: clamp(10px, 3.3vw, 16px);
+  border: 1px solid #e8e0d8;
+  border-radius: 23px;
+  background: #faf6f1;
+  box-shadow: 0 16px 34px rgb(72 55 41 / 8%), 0 2px 4px rgb(72 55 41 / 4%);
+}
+
+.exampleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 27px;
+  padding-inline: 3px;
+}
+
+.exampleLabel {
+  color: var(--welcome-secondary);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.095em;
+  text-transform: uppercase;
+}
+
+.exampleNotice {
+  padding-inline: 3px;
+  color: var(--welcome-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mode {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #efe9e2;
+  color: var(--welcome-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mode::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--spark-secondary);
+}
+
+.mode[data-mode="live"]::before { background: var(--spark-live); }
+.mode[data-mode="predicted"]::before { background: var(--spark-forecast); }
+
+.actions {
+  position: sticky;
+  z-index: 2;
+  bottom: 0;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 860px) {
+  .lesson {
+    grid-template-columns: 0.9fr 1.1fr;
+    align-content: center;
+    align-items: center;
+    gap: clamp(40px, 7vw, 90px);
+    width: min(100%, var(--guide-width));
+    padding-block: 32px 60px;
+  }
+
+  .intro { text-align: left; }
+  .intro h1 { font-size: clamp(47px, 5.15vw, 64px); text-wrap: initial; }
+  .intro p { max-width: 27ch; margin-inline: 0; font-size: 21px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson { animation: none; }
+  .progressDot { transition: none; }
+}
