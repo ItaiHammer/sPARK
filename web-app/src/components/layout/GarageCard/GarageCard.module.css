@@ -450,6 +450,11 @@ a.travel:focus-visible {
   .adaptiveDensity .summary { padding-block: 6px; }
 }
 
+@container onboarding (max-height: 450px) and (max-width: 519px) {
+  .adaptiveDensity .summary { padding-block: 4px; }
+  .adaptiveDensity .travel { min-height: 28px; }
+}
+
 @container onboarding (max-height: 465px) and (min-width: 520px) {
   .adaptiveDensity .name { font-size: 14px; }
   .adaptiveDensity .numbers { flex-direction: row; align-items: baseline; gap: 4px; }
