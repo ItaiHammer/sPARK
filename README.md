@@ -44,7 +44,7 @@
 
 <p align="center">
   <a href="https://sparkparking.vercel.app/">
-    <img src="./assets/spark-demo.png" alt="sPARK garage availability and date picker alongside the West Garage occupancy forecast" width="760">
+    <img src="./assets/spark-demo.png" alt="West Garage highlighted in the sPARK garage list, with its 11:00 AM occupancy forecast alongside" width="760">
   </a>
 </p>
 
