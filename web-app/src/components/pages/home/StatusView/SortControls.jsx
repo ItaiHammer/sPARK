@@ -15,6 +15,7 @@ export default function SortControls({ sortType, building, buildings, isBuilding
   const wrapper = useRef(null);
   const trigger = useRef(null);
   const popup = useRef(null);
+  const sortHeading = useRef(null);
   const id = useId();
   const label = getSortLabel(sortType, building?.buildingName);
   const triggerLabel = modal && building?.buildingName?.length > 5 ? "Walking" : label;
@@ -42,6 +43,7 @@ export default function SortControls({ sortType, building, buildings, isBuilding
       viewport.addEventListener("scroll", alignToViewport);
     }
     dialog.showModal();
+    sortHeading.current?.focus({ preventScroll: true });
     return () => {
       viewport?.removeEventListener("resize", alignToViewport);
       viewport?.removeEventListener("scroll", alignToViewport);
@@ -52,6 +54,10 @@ export default function SortControls({ sortType, building, buildings, isBuilding
   useEffect(() => {
     if (!open) return;
     const frame = requestAnimationFrame(() => {
+      if (modal && !choosingBuilding) {
+        sortHeading.current?.focus({ preventScroll: true });
+        return;
+      }
       const firstChoice = choosingBuilding ? "input" : '[role="menuitemradio"]';
       const selectedChoice = choosingBuilding ? null : popup.current?.querySelector('[aria-checked="true"]');
       (selectedChoice ?? popup.current?.querySelector(firstChoice))?.focus({ preventScroll: true });
@@ -81,7 +87,10 @@ export default function SortControls({ sortType, building, buildings, isBuilding
     event.preventDefault();
     const items = [...popup.current.querySelectorAll('[role="menuitemradio"]')];
     const index = items.indexOf(document.activeElement);
-    const next = event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+    const goingUp = event.key === "ArrowUp";
+    const next = event.key === "Home" ? 0
+      : event.key === "End" || (goingUp && index === -1) ? items.length - 1
+      : (index + (goingUp ? -1 : 1) + items.length) % items.length;
     items[next]?.focus();
   };
 
@@ -155,7 +164,7 @@ export default function SortControls({ sortType, building, buildings, isBuilding
             </>
           ) : (
             <>
-              {modal && <h3 className={styles.modalSortHeading}>Sort garages</h3>}
+              {modal && <h3 ref={sortHeading} tabIndex={-1} className={styles.modalSortHeading}>Sort garages</h3>}
               <Choices {...choicesProps}>
                 {sortOptions.map((option) => (
                   <Fragment key={option.value}>
