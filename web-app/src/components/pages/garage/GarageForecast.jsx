@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import NumberFlow from "@number-flow/react";
 import { MoveHorizontal } from "lucide-react";
 import { forecastAt, operatingHours, parkingStatus } from "@/lib/utils/client/parking";
 import styles from "./GaragePage.module.css";
@@ -11,6 +12,55 @@ const WINDOWS = [
   { start: 14, label: "2pm–7pm" },
   { start: 19, label: "7pm–12am" },
 ];
+const HOLD_DELAY_MS = 350;
+const HOLD_TOLERANCE_PX = 12;
+const FORECAST_STEP_MINUTES = 30;
+const EDGE_SCROLL_MAX_PX_PER_SECOND = 420;
+const READOUT_INSET_PX = 60;
+const OCCUPANCY_ROLL_TIMING = { duration: 130, easing: "cubic-bezier(.22, .61, .36, 1)" };
+const OCCUPANCY_FADE_TIMING = { duration: 90, easing: "ease-out" };
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const readoutInset = (width) => Math.min(READOUT_INSET_PX, width / 2);
+
+function subscribeToMotionPreference(onChange) {
+  const preference = window.matchMedia(REDUCED_MOTION_QUERY);
+  preference.addEventListener("change", onChange);
+  return () => preference.removeEventListener("change", onChange);
+}
+
+const OccupancyDigits = memo(function OccupancyDigits({ value }) {
+  const reducedMotion = useSyncExternalStore(
+    subscribeToMotionPreference,
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
+    () => true,
+  );
+  return (
+    <NumberFlow
+      value={value}
+      suffix="%"
+      locales="en-US"
+      isolate
+      animated={!reducedMotion}
+      transformTiming={OCCUPANCY_ROLL_TIMING}
+      opacityTiming={OCCUPANCY_FADE_TIMING}
+    />
+  );
+});
+
+function inspectForecast(points, day, garage, index) {
+  const minutes = Math.round(index * FORECAST_STEP_MINUTES);
+  if (minutes % FORECAST_STEP_MINUTES === 0) return points[minutes / FORECAST_STEP_MINUTES];
+  const time = day.plus({ minutes });
+  const leftIndex = Math.floor(index);
+  const left = points[leftIndex];
+  const right = points[leftIndex + 1];
+  const closed = operatingHours(garage, time).closed;
+  // A gap or a closed endpoint breaks the curve.
+  const occupied = closed || left.occupied === null || right.occupied === null
+    ? null
+    : left.occupied + (right.occupied - left.occupied) * (index - leftIndex);
+  return { time, closed, occupied };
+}
 
 function ForecastBar({ occupied, tone }) {
   const bar = useRef(null);
@@ -19,7 +69,7 @@ function ForecastBar({ occupied, tone }) {
 
   useLayoutEffect(() => {
     const element = bar.current;
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const motion = window.matchMedia(REDUCED_MOTION_QUERY);
     const before = previous.current;
     previous.current = { height, scale: 1 };
     if (motion.matches || !element.animate || before.height === null || before.height === height) return;
@@ -49,47 +99,73 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const scrollIndex = useRef(0);
   const scrollClock = useRef(null);
   const hold = useRef(null);
+  const edgeScrollPosition = useRef(null);
   const [inspection, setInspection] = useState(null);
   const [startHour, setStartHour] = useState(() => selectedAt.hour < 14 ? 8 : selectedAt.hour < 19 ? 14 : 19);
-  const day = selectedAt.startOf("day");
+  const day = useMemo(() => selectedAt.startOf("day"), [selectedAt]);
   const dayKey = `${garage.lot_id}:${day.toMillis()}`;
-  const pointCount = Math.round(day.plus({ days: 1 }).diff(day, "minutes").minutes / 30) + 1;
+  const pointCount = Math.round(day.plus({ days: 1 }).diff(day, "minutes").minutes / FORECAST_STEP_MINUTES) + 1;
   const isToday = selectedAt.hasSame(currentAt, "day");
   const nowIndex = currentAt.diff(day, "minutes").minutes / 30;
-  const points = Array.from({ length: pointCount }, (_, index) => {
-    const time = day.plus({ minutes: index * 30 });
+  const points = useMemo(() => Array.from({ length: pointCount }, (_, index) => {
+    const time = day.plus({ minutes: index * FORECAST_STEP_MINUTES });
     const closed = operatingHours(garage, time).closed;
     const occupied = closed ? null : forecastAt(rows, time.toMillis());
     return { time, closed, occupied, tone: parkingStatus(occupied, closed).tone };
-  });
+  }), [day, garage, pointCount, rows]);
+  const columns = useMemo(() => points.map(({ time, occupied, tone, closed }, index) => (
+    <div className={styles.barColumn} key={index} role="img" aria-label={`${time.toFormat("h:mm a")}: ${closed ? "Closed" : occupied === null ? "Estimate unavailable" : `${Math.round(occupied)}% occupied`}`}>
+      <div className={styles.barTrack} aria-hidden="true">
+        {occupied === null ? <span className={styles.missingBar}>{closed ? "×" : "—"}</span> : <ForecastBar occupied={occupied} tone={tone} />}
+      </div>
+      <span className={styles.barLabel} aria-hidden="true">{time.minute === 0 ? time.toFormat("ha").toLowerCase() : "\u00a0"}</span>
+    </div>
+  )), [points]);
   const hasData = points.some((point) => point.occupied !== null);
   const activeInspection = !updating && inspection?.dayKey === dayKey ? inspection : null;
-  const activePoint = activeInspection ? points[activeInspection.index] : null;
+  const activePoint = activeInspection ? inspectForecast(points, day, garage, activeInspection.index) : null;
+  const timeLabel = activePoint?.time.toFormat("h:mm a");
+  const occupancy = activePoint?.occupied == null ? null : Math.round(activePoint.occupied);
+
+  const cancelHold = useCallback(() => {
+    if (!hold.current) return;
+    clearTimeout(hold.current.timer);
+    cancelAnimationFrame(hold.current.edgeFrame);
+    hold.current = null;
+  }, []);
 
   useEffect(() => {
     const dismissOutside = (event) => {
       if (scroller.current?.contains(event.target)) return;
-      clearTimeout(hold.current?.timer);
-      hold.current = null;
+      cancelHold();
       setInspection(null);
     };
     document.addEventListener("pointerdown", dismissOutside, true);
     return () => {
       document.removeEventListener("pointerdown", dismissOutside, true);
-      clearTimeout(hold.current?.timer);
-      hold.current = null;
+      cancelHold();
     };
-  }, []);
+  }, [cancelHold]);
 
-  useEffect(() => () => {
-    clearTimeout(hold.current?.timer);
-    hold.current = null;
-  }, [dayKey, hasData, updating]);
+  useEffect(() => cancelHold, [cancelHold, dayKey, hasData, updating]);
 
-  const columnStep = (element) => {
+  useLayoutEffect(() => {
+    const element = scroller.current;
+    if (!element || !hasData) return;
+    const preventScrollDuringHold = (event) => {
+      if (hold.current?.held && event.touches.length === 1 && event.cancelable) event.preventDefault();
+    };
+    // The browser needs the listener registered before contact. Until the hold
+    // wins, leaving touchmove alone lets native panning and momentum take over.
+    element.addEventListener("touchmove", preventScrollDuringHold, { passive: false });
+    return () => element.removeEventListener("touchmove", preventScrollDuringHold);
+  }, [hasData]);
+
+  const chartGeometry = (element) => {
     const track = element.lastElementChild;
     const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
-    return (track.scrollWidth + gap) / pointCount;
+    const plotWidth = track.getBoundingClientRect().width - 2 * READOUT_INSET_PX;
+    return { gap, step: (plotWidth + gap) / pointCount };
   };
 
   useLayoutEffect(() => {
@@ -103,7 +179,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
         : scrollClock.current === null ? scrollIndex.current : day.set({ hour: Math.floor(scrollClock.current / 60), minute: scrollClock.current % 60 }).diff(day, "minutes").minutes / 30;
       initialized.current = dayKey;
     }
-    const resize = () => element.scrollTo({ left: scrollIndex.current * columnStep(element), behavior: "instant" });
+    const resize = () => element.scrollTo({ left: READOUT_INSET_PX + scrollIndex.current * chartGeometry(element).step, behavior: "instant" });
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(element);
@@ -115,33 +191,65 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const scrollToIndex = (index) => {
     const element = scroller.current;
     if (!element) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    element.scrollTo({ left: index * columnStep(element), behavior: reduced ? "instant" : "smooth" });
+    const reduced = window.matchMedia(REDUCED_MOTION_QUERY).matches;
+    element.scrollTo({ left: READOUT_INSET_PX + index * chartGeometry(element).step, behavior: reduced ? "instant" : "smooth" });
   };
-  const inspectIndex = (index, source) => {
+  const boundIndex = (index) => Math.max(0, Math.min(pointCount - 1, index));
+  const inspectIndex = (index) => {
     const element = scroller.current;
-    const boundedIndex = Math.max(0, Math.min(pointCount - 1, Math.round(index)));
-    const track = element.lastElementChild;
-    const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
-    const viewportX = (boundedIndex + .5) * columnStep(element) - gap / 2 - element.scrollLeft;
-    // Keep the readout inside the visible timeline, including the first and last bars.
-    const tooltipShift = Math.min(Math.max(viewportX, 60), element.clientWidth - 60) - viewportX;
-    return { index: boundedIndex, source, dayKey, tooltipShift };
+    const { gap, step } = chartGeometry(element);
+    const boundedIndex = boundIndex(Math.round(index));
+    const contentX = READOUT_INSET_PX + (boundedIndex + .5) * step - gap / 2;
+    return { index: boundedIndex, contentX, source: "keyboard", dayKey };
   };
-  const inspectPointer = (event, source) => {
+  const inspectPointer = (clientX, source) => {
     const element = scroller.current;
-    const contentX = event.clientX - element.getBoundingClientRect().left + element.scrollLeft;
-    return inspectIndex(contentX / columnStep(element) - .5, source);
+    const { gap, step } = chartGeometry(element);
+    const viewportX = clientX - element.getBoundingClientRect().left;
+    const inset = readoutInset(element.clientWidth);
+    const contentX = Math.max(inset, Math.min(element.clientWidth - inset, viewportX)) + element.scrollLeft;
+    const index = boundIndex((contentX - READOUT_INSET_PX + gap / 2) / step - .5);
+    return { index, contentX, source, dayKey };
   };
-  const cancelHold = () => {
-    clearTimeout(hold.current?.timer);
-    hold.current = null;
+  const scrollAtEdge = (gesture, time) => {
+    const element = scroller.current;
+    if (!element || hold.current !== gesture) return;
+    gesture.edgeFrame = 0;
+
+    const width = element.clientWidth;
+    const inset = readoutInset(width);
+    const viewportX = gesture.clientX - element.getBoundingClientRect().left;
+    const edge = viewportX - Math.max(inset, Math.min(width - inset, viewportX));
+    const maxScroll = element.scrollWidth - width;
+    if (!edge || (edge < 0 ? element.scrollLeft <= 0 : element.scrollLeft >= maxScroll)) {
+      gesture.edgeTime = null;
+      return;
+    }
+
+    const strength = Math.min(1, Math.abs(edge) / inset);
+    const elapsed = gesture.edgeTime === null ? 0 : Math.min(time - gesture.edgeTime, 32);
+    if (gesture.edgeTime === null) gesture.edgeOffset = element.scrollLeft;
+    gesture.edgeTime = time;
+    const delta = Math.sign(edge) * EDGE_SCROLL_MAX_PX_PER_SECOND * strength ** 1.5 * elapsed / 1000;
+    // Keep fractional movement across frames on browsers that round scrollLeft.
+    gesture.edgeOffset = Math.max(0, Math.min(maxScroll, gesture.edgeOffset + delta));
+    const beforeScroll = element.scrollLeft;
+    element.scrollLeft = gesture.edgeOffset;
+    if (element.scrollLeft !== beforeScroll) {
+      edgeScrollPosition.current = element.scrollLeft;
+      setInspection(inspectPointer(gesture.clientX, "touch"));
+    }
+    if (gesture.edgeOffset === (edge < 0 ? 0 : maxScroll)) {
+      gesture.edgeTime = null;
+      return;
+    }
+    gesture.edgeFrame = requestAnimationFrame((nextTime) => scrollAtEdge(gesture, nextTime));
   };
   const onPointerDown = (event) => {
     cancelHold();
     if (updating) return;
     if (event.pointerType !== "touch") {
-      if (event.button === 0) setInspection(inspectPointer(event, "pointer"));
+      if (event.button === 0) setInspection(inspectPointer(event.clientX, "pointer"));
       return;
     }
     setInspection(null);
@@ -151,48 +259,61 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
       x: event.clientX,
       y: event.clientY,
       scrollLeft: scroller.current.scrollLeft,
-      inspection: inspectPointer(event, "touch"),
+      inspection: inspectPointer(event.clientX, "touch"),
       held: false,
+      edgeFrame: 0,
+      edgeTime: null,
     };
     gesture.timer = setTimeout(() => {
       if (hold.current !== gesture || !scroller.current || Math.abs(scroller.current.scrollLeft - gesture.scrollLeft) > 2) return;
       gesture.held = true;
       setInspection(gesture.inspection);
-    }, 1000);
+    }, HOLD_DELAY_MS);
     hold.current = gesture;
   };
   const onPointerMove = (event) => {
     if (updating) return;
     if (event.pointerType !== "touch") {
-      setInspection(inspectPointer(event, "pointer"));
+      setInspection(inspectPointer(event.clientX, "pointer"));
       return;
     }
     const gesture = hold.current;
     if (gesture?.pointerId !== event.pointerId) return;
-    // Never capture the pointer or suppress movement: horizontal and page scrolling stay native.
-    if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 8) {
+    if (gesture.held) {
+      gesture.clientX = event.clientX;
+      setInspection(inspectPointer(event.clientX, "touch"));
+      if (!gesture.edgeFrame) gesture.edgeFrame = requestAnimationFrame((time) => scrollAtEdge(gesture, time));
+      return;
+    }
+    if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > HOLD_TOLERANCE_PX) {
       cancelHold();
       setInspection(null);
+    } else {
+      gesture.inspection = inspectPointer(event.clientX, "touch");
     }
   };
   const onPointerUp = (event) => {
-    if (event.pointerType !== "touch") return;
-    const wasHeld = hold.current?.held;
+    const gesture = hold.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
     cancelHold();
-    if (!wasHeld) setInspection(null);
+    setInspection((previous) => gesture.held && previous?.source === "touch" ? { ...previous, fading: true } : null);
   };
   const onScroll = () => {
     const element = scroller.current;
-    cancelHold();
-    setInspection((previous) => !updating && previous?.source === "keyboard" && previous.dayKey === dayKey ? inspectIndex(previous.index, "keyboard") : null);
-    scrollIndex.current = element.scrollLeft / columnStep(element);
-    const firstTime = day.plus({ minutes: scrollIndex.current * 30 });
+    if (element.scrollLeft !== edgeScrollPosition.current) {
+      edgeScrollPosition.current = null;
+      cancelHold();
+      setInspection((previous) => !updating && previous?.source === "keyboard" && previous.dayKey === dayKey ? inspectIndex(previous.index) : null);
+    }
+    scrollIndex.current = (element.scrollLeft - READOUT_INSET_PX) / chartGeometry(element).step;
+    const firstTime = day.plus({ minutes: Math.max(0, scrollIndex.current) * 30 });
     scrollClock.current = firstTime.hour * 60 + firstTime.minute;
     const hour = day.plus({ minutes: (scrollIndex.current + 5) * 30 }).hour;
     setStartHour(hour < 14 ? 8 : hour < 19 ? 14 : 19);
   };
   const onKeyDown = (event) => {
     if (event.key === "Escape") {
+      cancelHold();
       setInspection(null);
       return;
     }
@@ -200,9 +321,9 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
     const offset = { ArrowLeft: -2, ArrowRight: 2 }[event.key];
     if (offset === undefined && !["Home", "End", "Enter", " "].includes(event.key)) return;
     event.preventDefault();
-    const previousIndex = activeInspection?.index ?? Math.round(scrollIndex.current + 5);
+    const previousIndex = activeInspection && !activeInspection.fading ? activeInspection.index : Math.round(scrollIndex.current + 5);
     const index = event.key === "Home" ? 0 : event.key === "End" ? pointCount - 1 : previousIndex + (offset ?? 0);
-    const nextInspection = inspectIndex(index, "keyboard");
+    const nextInspection = inspectIndex(index);
     setInspection(nextInspection);
     if (offset !== undefined || event.key === "Home" || event.key === "End") scrollToIndex(nextInspection.index - 5);
   };
@@ -211,32 +332,27 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
     <>
       <p className={styles.forecastLive} data-mode={isToday ? "live" : "forecast"}><span aria-hidden="true" /><strong>{isToday ? "Live" : "Forecast"}</strong> · {isToday ? parkingStatus(garage.occupied ?? null, garage.closed).label : selectedAt.toFormat("ccc, LLL d")}</p>
       {hasData ? (
-        <div ref={scroller} className={`${styles.chart} ${interactionStyles.chart}`} role="region" tabIndex={0} aria-label="Parking forecast timeline" aria-describedby="garage-forecast-scroll-hint" aria-busy={updating} onScroll={onScroll} onKeyDown={onKeyDown}
+        <div ref={scroller} className={`${styles.chart} ${interactionStyles.chart}`} style={{ "--inspection-gutter": `${READOUT_INSET_PX}px` }} role="region" tabIndex={0} aria-label="Parking forecast timeline" aria-describedby="garage-forecast-scroll-hint" aria-busy={updating} onScroll={onScroll} onKeyDown={onKeyDown}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
           onPointerCancel={() => { cancelHold(); setInspection(null); }}
           onPointerLeave={(event) => { if (event.pointerType !== "touch") setInspection(null); }}
           onContextMenu={(event) => { if (hold.current) event.preventDefault(); }}
-          onFocus={(event) => { if (!updating && event.currentTarget.matches(":focus-visible")) setInspection(inspectIndex(scrollIndex.current + 5, "keyboard")); }}
-          onBlur={() => setInspection(null)}>
+          onFocus={(event) => { if (!updating && event.currentTarget.matches(":focus-visible")) setInspection(inspectIndex(scrollIndex.current + 5)); }}
+          onBlur={() => { cancelHold(); setInspection(null); }}>
           <span className={styles.srOnly}>{isToday ? `Now: ${currentAt.toFormat("h:mm a")}.` : `Forecast for ${selectedAt.toFormat("cccc, LLLL d")}.`}</span>
-          <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{activePoint ? `${activePoint.time.toFormat("h:mm a")}: ${activePoint.closed ? "Closed" : activePoint.occupied === null ? "Estimate unavailable" : `${Math.round(activePoint.occupied)}% occupied`}.` : ""}</span>
+          <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{activePoint && !activeInspection.fading ? `${timeLabel}: ${activePoint.closed ? "Closed" : occupancy === null ? "Estimate unavailable" : `${occupancy}% occupied`}.` : ""}</span>
           <div className={`${styles.bars} ${interactionStyles.bars}`} style={{ "--point-count": pointCount, "--now-index": nowIndex }}>
             {isToday ? <span className={`${styles.nowMarker} ${interactionStyles.nowMarker}`} aria-hidden="true"><span>Now</span></span> : null}
-            {activePoint ? <span className={interactionStyles.marker} aria-hidden="true" style={{ left: `calc((100% + var(--bar-gap)) / var(--point-count) * (${activeInspection.index} + .5) - var(--bar-gap) / 2)`, "--tooltip-shift": `${activeInspection.tooltipShift}px` }}>
-              <span className={interactionStyles.readout}><strong>{activePoint.closed ? "Closed" : activePoint.occupied === null ? "Unavailable" : `${Math.round(activePoint.occupied)}% occupied`}</strong><span>{activePoint.time.toFormat("h:mm a")}</span></span>
+            {activePoint ? <span className={interactionStyles.marker} aria-hidden="true" data-fading={activeInspection.fading || undefined} style={{ left: activeInspection.contentX }}>
+              {activePoint.occupied !== null ? <span className={interactionStyles.markerDot} style={{ top: `${100 - activePoint.occupied}%` }} /> : null}
+              <span className={interactionStyles.readout}>
+                <strong>{activePoint.closed ? "Closed" : occupancy === null ? "Unavailable" : (
+                  <><OccupancyDigits value={occupancy} />{" occupied"}</>
+                )}</strong>
+                <span key={timeLabel}>{timeLabel}</span>
+              </span>
             </span> : null}
-            {points.map(({ time, occupied, tone, closed }, index) => (
-              <div className={styles.barColumn} key={index} role="img" aria-label={`${time.toFormat("h:mm a")}: ${closed ? "Closed" : occupied === null ? "Estimate unavailable" : `${Math.round(occupied)}% occupied`}`}>
-                <div className={styles.barTrack} aria-hidden="true">
-                  {occupied === null ? (
-                    <span className={styles.missingBar}>{closed ? "×" : "—"}</span>
-                  ) : (
-                    <ForecastBar occupied={occupied} tone={tone} />
-                  )}
-                </div>
-                <span className={styles.barLabel} aria-hidden="true">{time.minute === 0 ? time.toFormat("ha").toLowerCase() : "\u00a0"}</span>
-              </div>
-            ))}
+            {columns}
           </div>
         </div>
       ) : (
@@ -250,7 +366,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
           <button key={start} type="button" disabled={!hasData} aria-pressed={startHour === start} onClick={() => scrollToIndex(day.set({ hour: start }).diff(day, "minutes").minutes / 30)}>{label}</button>
         ))}
       </div>
-      {hasData ? <p id="garage-forecast-scroll-hint" className={styles.forecastHint}><MoveHorizontal aria-hidden="true" size={13} />Scroll to explore · hold to see occupancy<span className={styles.srOnly}>. Hover or click a bar, or hold still for one second on touch screens. Use left and right arrow keys to move by one hour, Home for the start, or End for the end of the day. Press Escape to hide the readout.</span></p> : null}
+      {hasData ? <p id="garage-forecast-scroll-hint" className={styles.forecastHint}><MoveHorizontal aria-hidden="true" size={13} />Scroll to explore · hold to see occupancy<span className={styles.srOnly}>. Hover or click a bar. On a touch screen, hold a bar until the readout appears, then drag to inspect other bars. Use left and right arrow keys to move by one hour, Home for the start, or End for the end of the day. Press Escape to hide the readout.</span></p> : null}
       {error ? <p className={styles.notice}>Forecast updates could not load. <button type="button" onClick={onRetry}>Try again</button></p> : null}
       <p className={styles.note}>Forecast occupancy uses historical patterns. Actual availability may vary.</p>
     </>
