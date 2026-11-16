@@ -11,6 +11,8 @@ const WINDOWS = [
   { start: 14, label: "2pm–7pm" },
   { start: 19, label: "7pm–12am" },
 ];
+const HOLD_DELAY_MS = 350;
+const HOLD_TOLERANCE_PX = 12;
 
 function ForecastBar({ occupied, tone }) {
   const bar = useRef(null);
@@ -158,7 +160,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
       if (hold.current !== gesture || !scroller.current || Math.abs(scroller.current.scrollLeft - gesture.scrollLeft) > 2) return;
       gesture.held = true;
       setInspection(gesture.inspection);
-    }, 1000);
+    }, HOLD_DELAY_MS);
     hold.current = gesture;
   };
   const onPointerMove = (event) => {
@@ -170,16 +172,16 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
     const gesture = hold.current;
     if (gesture?.pointerId !== event.pointerId) return;
     // Never capture the pointer or suppress movement: horizontal and page scrolling stay native.
-    if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 8) {
+    if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > HOLD_TOLERANCE_PX) {
       cancelHold();
       setInspection(null);
     }
   };
   const onPointerUp = (event) => {
-    if (event.pointerType !== "touch") return;
-    const wasHeld = hold.current?.held;
+    const gesture = hold.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
     cancelHold();
-    if (!wasHeld) setInspection(null);
+    if (!gesture.held) setInspection(null);
   };
   const onScroll = () => {
     const element = scroller.current;
@@ -193,6 +195,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   };
   const onKeyDown = (event) => {
     if (event.key === "Escape") {
+      cancelHold();
       setInspection(null);
       return;
     }
@@ -217,7 +220,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
           onPointerLeave={(event) => { if (event.pointerType !== "touch") setInspection(null); }}
           onContextMenu={(event) => { if (hold.current) event.preventDefault(); }}
           onFocus={(event) => { if (!updating && event.currentTarget.matches(":focus-visible")) setInspection(inspectIndex(scrollIndex.current + 5, "keyboard")); }}
-          onBlur={() => setInspection(null)}>
+          onBlur={() => { cancelHold(); setInspection(null); }}>
           <span className={styles.srOnly}>{isToday ? `Now: ${currentAt.toFormat("h:mm a")}.` : `Forecast for ${selectedAt.toFormat("cccc, LLLL d")}.`}</span>
           <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{activePoint ? `${activePoint.time.toFormat("h:mm a")}: ${activePoint.closed ? "Closed" : activePoint.occupied === null ? "Estimate unavailable" : `${Math.round(activePoint.occupied)}% occupied`}.` : ""}</span>
           <div className={`${styles.bars} ${interactionStyles.bars}`} style={{ "--point-count": pointCount, "--now-index": nowIndex }}>
@@ -250,7 +253,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
           <button key={start} type="button" disabled={!hasData} aria-pressed={startHour === start} onClick={() => scrollToIndex(day.set({ hour: start }).diff(day, "minutes").minutes / 30)}>{label}</button>
         ))}
       </div>
-      {hasData ? <p id="garage-forecast-scroll-hint" className={styles.forecastHint}><MoveHorizontal aria-hidden="true" size={13} />Scroll to explore · hold to see occupancy<span className={styles.srOnly}>. Hover or click a bar, or hold still for one second on touch screens. Use left and right arrow keys to move by one hour, Home for the start, or End for the end of the day. Press Escape to hide the readout.</span></p> : null}
+      {hasData ? <p id="garage-forecast-scroll-hint" className={styles.forecastHint}><MoveHorizontal aria-hidden="true" size={13} />Scroll to explore · hold to see occupancy<span className={styles.srOnly}>. Hover or click a bar, or touch and hold it briefly. Use left and right arrow keys to move by one hour, Home for the start, or End for the end of the day. Press Escape to hide the readout.</span></p> : null}
       {error ? <p className={styles.notice}>Forecast updates could not load. <button type="button" onClick={onRetry}>Try again</button></p> : null}
       <p className={styles.note}>Forecast occupancy uses historical patterns. Actual availability may vary.</p>
     </>
