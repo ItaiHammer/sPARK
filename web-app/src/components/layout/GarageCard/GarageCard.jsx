@@ -104,7 +104,7 @@ export default function GarageCard({
   buildingName,
   sortType,
   href,
-  compact = false,
+  adaptiveDensity = false,
 }) {
   const titleId = useId();
   const { occupied, spaces } = cardValues(garage);
@@ -154,7 +154,7 @@ export default function GarageCard({
   return (
     <article
       ref={card}
-      className={`${styles.card}${compact ? ` ${styles.compact}` : ""}${animateEntrance ? ` ${styles.entering}` : ""}`}
+      className={`${styles.card}${adaptiveDensity ? ` ${styles.adaptiveDensity}` : ""}${animateEntrance ? ` ${styles.entering}` : ""}`}
       aria-labelledby={titleId}
       data-mode={mode}
       data-status={statusKind}
