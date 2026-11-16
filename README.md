@@ -215,12 +215,47 @@ flowchart TD
 
 ## 🛠️ Technologies Used
 
--   **Frontend** uses Next.js, React, CSS, Framer Motion, and SWR.
--   **Backend** uses Node.js, Cheerio, Supabase Postgres and Realtime, Redis, and Arcjet.
--   **Maps & routing** use Google Maps, OpenRouteService, and OpenCage.
--   **Forecasting** uses Python with pandas and NumPy for data prep, scikit-learn for training, joblib for the saved model, and Flask for serving predictions.
--   **Analytics & feedback** use PostHog.
--   **Deployment** runs on Vercel.
+- **Frontend**
+  - **Next.js**
+    - **React**
+      - Builds the garage cards and time picker
+    - **Tailwind CSS**
+      - Provides utility styles for the app
+    - **Framer Motion**
+      - Animates the time picker and onboarding
+
+- **Backend & Database**
+  - **Node.js**
+    - **Cheerio**
+      - Extracts garage occupancy from the SJSU parking page
+  - **Supabase**
+    - **Postgres**
+      - Stores garage readings, forecasts, and walking distances
+    - **Realtime**
+      - Refreshes live counts when new readings arrive
+
+- **Machine Learning**
+  - **Python**
+    - **pandas**
+      - Cleans and prepares historical garage readings
+    - **scikit-learn**
+      - Trains and evaluates Flint’s gradient-boosted trees
+    - **Flask**
+      - Serves predictions to the scheduled forecast job
+
+- **Maps & Routing**
+  - **Google Maps**
+    - Shows garage maps and opens driving and walking directions
+  - **OpenRouteService**
+    - Calculates walking distances to campus buildings
+
+- **Hosting**
+  - **Vercel**
+    - Hosts the web app and Flint’s forecast service
+
+- **Analytics**
+  - **PostHog**
+    - Tracks feature usage and collects beta feedback
 
 ---
 
