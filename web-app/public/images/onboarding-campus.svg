@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 49 475 251" fill="none">
+  <defs>
+    <linearGradient id="ground" x1="80" y1="0" x2="335" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8f6f0"/>
+      <stop offset="1" stop-color="#e8e7e0"/>
+    </linearGradient>
+    <linearGradient id="lawn" x1="0" y1="0" x2="0" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d9e2cc"/>
+      <stop offset="1" stop-color="#bacba7"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#e0e2dd"/>
+      <stop offset="1" stop-color="#cdd0c9"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#d5b2a2"/>
+      <stop offset="1" stop-color="#bd9989"/>
+    </linearGradient>
+    <linearGradient id="base" x1="68" y1="140" x2="427" y2="281" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ddddd5"/>
+      <stop offset="1" stop-color="#c4c7be"/>
+    </linearGradient>
+    <radialGradient id="shadow">
+      <stop offset=".35" stop-color="#353923" stop-opacity=".17"/>
+      <stop offset="1" stop-color="#353923" stop-opacity="0"/>
+    </radialGradient>
+    <g id="tree">
+      <ellipse cx="4" cy="1" rx="12" ry="3" fill="#5c684c" opacity=".12"/>
+      <path d="M-.8 1-.5-13h2.1L1.7 0Z" fill="#998d74"/>
+      <path d="M-8-10a8 8 0 0 1 2-10 6 6 0 0 1 10-1 7 7 0 0 1 5 11c-2 5-14 5-17 0Z" fill="#a5b992"/>
+      <path d="M-8-10a8 8 0 0 1 2-10c4 0 2 3 6 4 4 2 6-1 9-2 4 10-11 13-17 8Z" fill="#8fa47b" opacity=".52"/>
+    </g>
+    <g id="palm">
+      <ellipse cx="5" cy="1" rx="13" ry="2.5" fill="#5c684c" opacity=".12"/>
+      <path d="M0 0C2-9 3-17 2-27" stroke="#9c9077" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M2-26C-2-35-10-34-13-31c6-1 10 3 13 6-6-3-12-1-14 3 6-2 11-2 15-2-6 2-8 6-7 10 3-4 6-7 9-10 2 2 5 5 6 9 2-5-1-8-4-10 5 0 9 1 13 4-1-5-8-8-13-7 3-3 6-4 11-4-4-4-10-3-14 3Z" fill="#879e74"/>
+      <path d="M2-28c-1-6-5-10-10-9 5 2 6 6 8 10Zm2 0c3-7 7-9 12-8-4 2-8 4-10 9Z" fill="#a6b990"/>
+    </g>
+  </defs>
+
+  <ellipse cx="260" cy="216" rx="224" ry="74" transform="rotate(-10 260 216)" fill="url(#shadow)"/>
+  <g transform="matrix(1 -.2 .46 .76 37 150)">
+    <rect width="355" height="184" rx="15" fill="url(#base)"/>
+  </g>
+  <g transform="matrix(1 -.2 .46 .76 37 140)">
+    <rect width="355" height="184" rx="15" fill="url(#ground)" stroke="#faf9f5" stroke-width="2"/>
+    <g fill="url(#lawn)">
+      <path d="M17 12h63q7 0 7 7v46H16V24q0-12 1-12Z"/>
+      <path d="M106 12h105v54H106Z"/>
+      <path d="M232 12h99q8 0 8 8v55H232Z"/>
+      <path d="M16 84h69v25c-29-2-39 13-72 8V88q0-4 3-4Z"/>
+      <path d="M106 84h39v31h-39Zm61 0h45v65h-41v-20q0-7-4-8Z"/>
+      <path d="M232 84h32v15h-32Zm-2 16h48v44h-48Z"/>
+      <path d="M17 134h70v35H23q-6 0-6-5Zm88 0h44v36h-44Zm66 25h41v11h-41Zm62 0h100v11H233Z"/>
+    </g>
+    <g stroke="#faf8f3" stroke-width="6" stroke-linecap="round">
+      <path d="M10 76H345"/>
+      <path d="M20 124H156Q162 124 162 130V146Q162 152 168 152H339"/>
+      <path d="M95 10V174"/>
+      <path d="M222 11V173"/>
+      <path d="M156 75V124"/>
+      <path d="M156 94h-35q-4 0-4-4v-5"/>
+      <path d="M279 14V103"/>
+      <path d="M18 115C39 115 45 96 62 94H95"/>
+      <path d="M112 160Q128 138 146 129"/>
+      <path d="M246 91H336"/>
+      <path d="M292 152v-9"/>
+      <path d="M336 16V166"/>
+    </g>
+    <circle cx="121" cy="110" r="13" fill="#eae9dc" stroke="#f5f3eb" stroke-width="2"/>
+    <path d="M110 109h22m-11-11v22" stroke="#fcfaf3" stroke-width="2"/>
+    <g fill="#c4a597">
+      <circle cx="115" cy="104" r="2"/><circle cx="126" cy="104" r="2"/>
+      <circle cx="115" cy="115" r="2"/><circle cx="126" cy="115" r="2"/>
+    </g>
+  </g>
+
+  <!-- The library and surrounding campus buildings. -->
+  <g>
+    <use href="#tree" transform="translate(121.7 139.2) scale(0.74)"/>
+    <use href="#tree" transform="translate(243.7 116.6) scale(0.78)"/>
+    <use href="#tree" transform="translate(363.8 89.1) scale(0.82)"/>
+    <polygon points="86 156.9 152 143.7 152 170.7 86 183.9" fill="url(#stone)"/>
+    <polygon points="134.5 114.8 152 143.7 152 170.7 134.5 141.8" fill="#c6c7c4"/>
+    <polygon points="68.5 128 134.5 114.8 152 143.7 86 156.9" fill="#eeedeb"/>
+    <polygon points="91 165.9 146 154.9 146 157.1 91 168.1" fill="#a9afaa"/>
+    <polygon points="91 170.9 146 159.9 146 162.1 91 173.1" fill="#a9afaa"/>
+    <polygon points="91 175.9 146 164.9 146 167.1 91 178.1" fill="#a9afaa"/>
+    <polygon points="297.9 124.2 396.9 104.4 396.9 123.4 297.9 143.2" fill="url(#stone)"/>
+    <polygon points="378.5 74 396.9 104.4 396.9 123.4 378.5 93" fill="#c5c7c1"/>
+    <polygon points="279.5 93.8 378.5 74 396.9 104.4 297.9 124.2" fill="#efeeeb"/>
+    <polygon points="304.9 129.8 384.9 113.8 384.9 117.8 304.9 133.8" fill="#a9afaa"/>
+    <polygon points="291.7 97.3 321.7 91.3 332.3 108.8 302.3 114.8" fill="#e2e5dc"/>
+    <polygon points="330.7 89.5 369.7 81.7 380.3 99.2 341.3 107" fill="#e5e5de"/>
+  </g>
+
+  <!-- Tower Hall and its tiled roofs and arches. -->
+  <g>
+    <polygon points="165.9 180.7 256.9 162.5 276.2 172.2 186.2 190.2" fill="#7e7764" opacity=".12"/>
+    <polygon points="168.9 163.1 256.9 145.5 256.9 162.5 168.9 180.1" fill="#e5d9c9"/>
+    <polygon points="242.2 121.2 256.9 145.5 256.9 162.5 242.2 138.2" fill="#cbb9a6"/>
+    <polygon points="154.2 138.8 242.2 121.2 256.9 145.5 168.9 163.1" fill="#f1eae0"/>
+    <polygon points="151.2 136.6 243.2 118.2 251.5 123.9 159.5 142.3" fill="#d4b0a0"/>
+    <polygon points="159.5 142.3 251.5 123.9 259.8 145.6 167.8 164" fill="url(#roof)"/>
+    <polygon points="243.2 118.2 251.5 123.9 259.8 145.6" fill="#b79281"/>
+    <path transform="translate(216.9 166.5) skewY(-11.31)" d="M0 0v-5.4a1.6 1.6 0 0 1 3.2 0V0Z" fill="#aa9a86"/>
+    <path transform="translate(227.9 164.3) skewY(-11.31)" d="M0 0v-5.4a1.6 1.6 0 0 1 3.2 0V0Z" fill="#aa9a86"/>
+    <path transform="translate(239.9 161.9) skewY(-11.31)" d="M0 0v-5.4a1.6 1.6 0 0 1 3.2 0V0Z" fill="#aa9a86"/>
+    <path transform="translate(249.9 159.9) skewY(-11.31)" d="M0 0v-5.4a1.6 1.6 0 0 1 3.2 0V0Z" fill="#aa9a86"/>
+    <polygon points="177.1 171.4 211.1 164.6 211.1 177.6 177.1 184.4" fill="#e2d4c4"/>
+    <polygon points="206 156.2 211.1 164.6 211.1 177.6 206 169.2" fill="#cbb8a6"/>
+    <polygon points="172 163 206 156.2 211.1 164.6 177.1 171.4" fill="#e7d7c9"/>
+    <path transform="translate(181.1 181.6) skewY(-11.31)" d="M0 0v-5.75a2.75 2.75 0 0 1 5.5 0V0Z" fill="#9e9385"/>
+    <path transform="translate(191.1 179.6) skewY(-11.31)" d="M0 0v-5.75a2.75 2.75 0 0 1 5.5 0V0Z" fill="#9e9385"/>
+    <path transform="translate(201.1 177.6) skewY(-11.31)" d="M0 0v-5.75a2.75 2.75 0 0 1 5.5 0V0Z" fill="#9e9385"/>
+    <polygon points="208.1 99.1 233.1 94.1 233.1 143.1 208.1 148.1" fill="#e8dbca"/>
+    <polygon points="222.1 75.9 233.1 94.1 233.1 143.1 222.1 124.9" fill="#c9b9a6"/>
+    <polygon points="197.1 80.9 222.1 75.9 233.1 94.1 208.1 99.1" fill="#f2e9da"/>
+    <path transform="translate(211.1 111.5) skewY(-11.31)" d="M0 0v-6.8a2.2 2.2 0 0 1 4.4 0V0Z" fill="#a59783"/>
+    <path transform="translate(218.1 110.1) skewY(-11.31)" d="M0 0v-6.8a2.2 2.2 0 0 1 4.4 0V0Z" fill="#a59783"/>
+    <path transform="translate(225.1 108.7) skewY(-11.31)" d="M0 0v-6.8a2.2 2.2 0 0 1 4.4 0V0Z" fill="#a59783"/>
+    <path transform="translate(218.1 128.1) skewY(-11.31)" d="M0 0v-6.6a2.4 2.4 0 0 1 4.8 0V0Z" fill="#b5a58e"/>
+    <polygon points="207 100 236 94.2 236 97.2 207 103" fill="#ecdfce"/>
+    <polygon points="223.2 73 236 94.2 236 97.2 223.2 76" fill="#cbbbaf"/>
+    <polygon points="194.2 78.8 223.2 73 236 94.2 207 100" fill="#f2e9da"/>
+    <polygon points="194.2 78.8 223.2 73 207.6 76 203.6 76.8" fill="#dbbbab"/>
+    <polygon points="207 100 236 94.2 218.6 73.8 207.6 76" fill="url(#roof)"/>
+    <polygon points="223.2 73 236 94.2 218.6 73.8 207.6 76" fill="#b89280"/>
+    <use href="#palm" transform="translate(160.6 186.8) scale(0.88)"/>
+    <use href="#palm" transform="translate(261.4 171.8) scale(0.96)"/>
+    <use href="#palm" transform="translate(285.2 172.2) scale(0.82)"/>
+    <use href="#palm" transform="translate(210.1 220.4) scale(0.92)"/>
+  </g>
+
+  <!-- Garage beside the main campus walk. -->
+  <g>
+    <use href="#tree" transform="translate(137.3 209.4) scale(0.93)"/>
+    <use href="#tree" transform="translate(323.9 160.2) scale(0.86)"/>
+    <use href="#tree" transform="translate(413.5 149) scale(0.92)"/>
+    <polygon points="359.8 197.3 427.8 183.7 441.5 186 378.3 203.8" fill="#6c7569" opacity=".13"/>
+    <polygon points="359.8 172.3 427.8 158.7 427.8 183.7 359.8 197.3" fill="url(#stone)"/>
+    <polygon points="411.2 131.3 427.8 158.7 427.8 183.7 411.2 156.3" fill="#bfc3bd"/>
+    <polygon points="343.2 144.9 411.2 131.3 427.8 158.7 359.8 172.3" fill="#edede8"/>
+    <polygon points="364.8 176.3 422.8 164.7 422.8 168.9 364.8 180.5" fill="#a9afaa"/>
+    <polygon points="364.8 184.3 422.8 172.7 422.8 176.9 364.8 188.5" fill="#a9afaa"/>
+    <polygon points="370.8 172.1 372.8 171.7 372.8 192.7 370.8 193.1" fill="#dce0d7"/>
+    <polygon points="383.8 169.5 385.8 169.1 385.8 190.1 383.8 190.5" fill="#dce0d7"/>
+    <polygon points="396.8 166.9 398.8 166.5 398.8 187.5 396.8 187.9" fill="#dce0d7"/>
+    <polygon points="409.8 164.3 411.8 163.9 411.8 184.9 409.8 185.3" fill="#dce0d7"/>
+    <polygon points="421.8 161.9 423.8 161.5 423.8 182.5 421.8 182.9" fill="#dce0d7"/>
+    <path d="M374.4 146.2 396.4 141.8" stroke="#faf9f2" stroke-width="1.1" opacity=".86"/>
+    <path d="M377.1 150.8 399.1 146.4" stroke="#faf9f2" stroke-width="1.1" opacity=".86"/>
+    <path d="M379.9 155.3 401.9 150.9" stroke="#faf9f2" stroke-width="1.1" opacity=".86"/>
+    <path d="M382.6 159.9 404.6 155.5" stroke="#faf9f2" stroke-width="1.1" opacity=".86"/>
+    <polygon points="137.4 240.6 203.4 227.4 203.4 246.4 137.4 259.6" fill="url(#stone)"/>
+    <polygon points="190.1 205.4 203.4 227.4 203.4 246.4 190.1 224.4" fill="#c8c6be"/>
+    <polygon points="124.1 218.6 190.1 205.4 203.4 227.4 137.4 240.6" fill="#eeece8"/>
+    <polygon points="143.4 245.4 199.4 234.2 199.4 239.2 143.4 250.4" fill="#a9afaa"/>
+    <use href="#tree" transform="translate(212.4 244.6) scale(1)"/>
+    <use href="#tree" transform="translate(348.5 215.7) scale(1.06)"/>
+    <use href="#tree" transform="translate(444.5 196.5) scale(0.85)"/>
+  </g>
+</svg>

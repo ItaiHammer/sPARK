@@ -6,10 +6,9 @@ import { DM_Sans } from "next/font/google";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import ExampleGarageCard from "./ExampleGarageCard";
+import OnboardingCampusMap from "./OnboardingCampusMap";
 import OnboardingFooter from "./OnboardingFooter";
 import OnboardingGuide from "./OnboardingGuide";
-import { sampleGarages } from "./sampleGarages";
 import styles from "./Onboarding.module.css";
 
 const introFont = DM_Sans({ subsets: ["latin"], display: "swap" });
@@ -122,10 +121,9 @@ function WelcomeScreen({ restoreFocus, onStart, onFinish }) {
       <div className={styles.brand}>
         {(!artworkTimedOut || logoReady) && (
           <Image
-            className={styles.brandMark}
             src="/spark-logo.svg"
-            width={37}
-            height={28}
+            width={30}
+            height={23}
             alt=""
             loading="eager"
             fetchPriority="high"
@@ -138,45 +136,13 @@ function WelcomeScreen({ restoreFocus, onStart, onFinish }) {
 
       <div className={styles.content}>
         <div className={`${styles.intro} ${introFont.className}`}>
-          <h1 ref={heading} tabIndex={-1}>Find parking at <span>SJSU</span></h1>
+          <h1 ref={heading} tabIndex={-1}>Find Parking at SJSU</h1>
           <p>Check live garage availability and plan ahead with parking forecasts.</p>
         </div>
 
-        <section className={styles.example} aria-labelledby="onboarding-example-label">
-          <h2 id="onboarding-example-label" className={styles.exampleLabel}>Example availability*</h2>
-          <div className={styles.illustration}>
-            {showMap && (
-              <div className={styles.map}>
-                <Image
-                  className={styles.mapTile}
-                  src="/images/onboarding-map.svg"
-                  width={480}
-                  height={330}
-                  alt=""
-                  loading="eager"
-                  fetchPriority="high"
-                  onLoad={() => setMapState("loaded")}
-                  onError={() => setMapState("failed")}
-                />
-                <svg className={styles.mapPin} viewBox="0 0 480 330" aria-hidden="true">
-                  <ellipse className={styles.pinRipple} cx="333" cy="274" rx="16" ry="7" />
-                  <ellipse className={styles.pinShadow} cx="333" cy="274" rx="11" ry="4" fill="#3974ce" />
-                  <g className={styles.pinMarker}>
-                    <path d="M333 236a15 15 0 0 0-15 15c0 8 9 17 15 24 6-7 15-16 15-24a15 15 0 0 0-15-15Z" fill="#2567df" />
-                    <circle cx="333" cy="251" r="6" fill="#fff" />
-                  </g>
-                </svg>
-              </div>
-            )}
-            {ready && (
-              <div className={styles.cards}>
-                {sampleGarages.map((garage, index) => (
-                  <ExampleGarageCard key={garage.lot_id} {...garage} delay={1060 + 400 * index} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+        {showMap && (
+          <OnboardingCampusMap onLoad={() => setMapState("loaded")} onError={() => setMapState("failed")} />
+        )}
       </div>
 
       <OnboardingFooter className={styles.welcomeFooter}>
