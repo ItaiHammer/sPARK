@@ -104,6 +104,8 @@ export default function GarageCard({
   buildingName,
   sortType,
   href,
+  adaptiveDensity = false,
+  unavailableLabel = "Availability unavailable",
 }) {
   const titleId = useId();
   const { occupied, spaces } = cardValues(garage);
@@ -153,7 +155,7 @@ export default function GarageCard({
   return (
     <article
       ref={card}
-      className={`${styles.card}${animateEntrance ? ` ${styles.entering}` : ""}`}
+      className={`${styles.card}${adaptiveDensity ? ` ${styles.adaptiveDensity}` : ""}${animateEntrance ? ` ${styles.entering}` : ""}`}
       aria-labelledby={titleId}
       data-mode={mode}
       data-status={statusKind}
@@ -171,7 +173,7 @@ export default function GarageCard({
                 {closed
                   ? "Outside open hours"
                   : occupied == null
-                    ? "Availability unavailable"
+                    ? unavailableLabel
                     : <><EntranceNumber value={occupied} />% occupied</>}
               </span>
               {(closed || occupied != null) && <span className={styles.status}>{status}</span>}

@@ -79,6 +79,45 @@
   .now { padding: 0 10px; }
 }
 
+.sheet:not(.drawer) { container: embedded-time / inline-size; }
+.sheet:not(.drawer) .days { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.sheet:not(.drawer) .timeHeading {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(8px, 4vw, 30px);
+  margin-top: 8px;
+  padding-inline: 0;
+}
+.sheet:not(.drawer) .nativeTime {
+  grid-column: 1;
+  gap: 4px;
+  padding-inline: 4px;
+}
+.sheet:not(.drawer) .now { grid-column: 2; padding-inline: 4px; }
+.sheet:not(.drawer) .rulerRow { margin: 8px 0 0; }
+.sheet:not(.drawer) .ruler { background: transparent; }
+
+@container onboarding-lesson (max-height: 430px) or ((max-width: 320px) and (max-height: 480px)) {
+  .sheet:not(.drawer) .days { padding-block: 0; }
+  .sheet:not(.drawer) :is(.timeHeading, .rulerRow) { margin-top: 4px; }
+  .sheet:not(.drawer) .dayHighlight { inset-block: 1px; }
+  .sheet:not(.drawer) :is(.day, .nativeDate) { min-height: 44px; }
+  .sheet:not(.drawer) :is(.ruler, .ticks) { height: 44px; }
+  .sheet:not(.drawer) .tick { top: 12px; }
+  .sheet:not(.drawer) .tickMajor { top: 5px; height: 18px; }
+  .sheet:not(.drawer) .tick > span { top: 22px; }
+  .sheet:not(.drawer) .marker { height: 23px; }
+}
+
+@container embedded-time (max-width: 360px) {
+  .sheet:not(.drawer) .timeLabel { font-size: 17px; }
+  .sheet:not(.drawer) .timeLabel > span { font-size: 11px; }
+  .sheet:not(.drawer) .nativeTime > svg { width: 14px; height: 14px; }
+}
+
+@container embedded-time (max-width: 205px) {
+  .sheet:not(.drawer) .nativeTime > svg { display: none; }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .day[aria-pressed="false"]:hover { background: var(--spark-pearl, #f7f7f5); }
   .nativeTime:hover, .now:hover { border-color: var(--spark-secondary, #686868); }

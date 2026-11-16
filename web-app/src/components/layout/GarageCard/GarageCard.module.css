@@ -405,6 +405,75 @@ a.travel:focus-visible {
   }
 }
 
+.adaptiveDensity[data-status="unknown"] .occupied { white-space: normal; }
+
+/* Walking estimates add a row to each card, so that row compacts first. */
+@container onboarding-lesson (max-height: 515px) {
+  .adaptiveDensity .travel {
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    gap: 8px;
+    min-height: 36px;
+    margin-top: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+  .adaptiveDensity .travelIcon { width: 18px; height: 18px; }
+  .adaptiveDensity .travelMetrics { flex-direction: row; align-items: baseline; gap: 5px; }
+  .adaptiveDensity .travelTime,
+  .adaptiveDensity .travelDistance { font-size: 13px; line-height: 17px; }
+}
+
+@container onboarding-lesson (max-height: 475px) {
+  .adaptiveDensity .summary { padding-block: 8px; }
+  .adaptiveDensity .count { font-size: 27px; line-height: 28px; }
+  .adaptiveDensity .meter { margin-top: 6px; }
+}
+
+@container onboarding-lesson (max-height: 430px) or ((max-width: 320px) and (max-height: 480px)) {
+  .adaptiveDensity .summary { padding: 8px 10px; }
+  .adaptiveDensity .top {
+    grid-template-columns: var(--garage-compact-columns, minmax(0, 1fr) auto);
+    gap: 3px 5px;
+  }
+  .adaptiveDensity .name { font-size: clamp(14px, 3.8vw, 18px); line-height: 19px; gap: 5px; }
+  .adaptiveDensity .modeDot { margin-top: 6px; }
+  .adaptiveDensity .numbers { min-width: 0; }
+  .adaptiveDensity .count { font-size: clamp(23px, 6vw, 30px); line-height: 1; }
+  .adaptiveDensity :is(.occupancy, .caption, .foot) { font-size: 12px; line-height: 16px; }
+  .adaptiveDensity .occupancy { margin-top: 2px; gap: 0 4px; }
+  .adaptiveDensity :is(.meter, .foot) { margin-top: 5px; }
+  .adaptiveDensity .travel { min-height: 30px; margin-top: 5px; padding-inline: 6px; }
+  .adaptiveDensity :is(.travel, .travelTime, .travelDistance) { font-size: 12px; line-height: 16px; }
+}
+
+@container onboarding (max-height: 520px) {
+  .adaptiveDensity .summary { padding-block: 6px; }
+}
+
+@container onboarding (max-height: 465px) and (min-width: 520px) {
+  .adaptiveDensity .name { font-size: 14px; }
+  .adaptiveDensity .numbers { flex-direction: row; align-items: baseline; gap: 4px; }
+  .adaptiveDensity .count { font-size: 20px; }
+  .adaptiveDensity :is(.occupancy, .caption) { font-size: 11px; }
+  .adaptiveDensity .travel { grid-template-columns: minmax(0, 1fr) auto; }
+  .adaptiveDensity .travelIcon { display: none; }
+  .adaptiveDensity .travelMetrics { flex-direction: column; align-items: end; gap: 0; }
+}
+
+/* Give the status row the space beside the caption on narrow examples. */
+@container onboarding-lesson (max-width: 360px) {
+  .adaptiveDensity .top {
+    grid-template-columns: minmax(0, 1fr) auto max-content;
+    gap: 2px 0;
+  }
+
+  .adaptiveDensity :is(.title, .numbers) { display: contents; }
+  .adaptiveDensity .name { grid-area: 1 / 1; margin-inline-end: 8px; }
+  .adaptiveDensity .count { grid-area: 1 / 2 / 2 / 4; justify-self: end; }
+  .adaptiveDensity .occupancy { grid-area: 2 / 1 / 3 / 3; margin: 0 8px 0 0; }
+  .adaptiveDensity .caption { grid-area: 2 / 3; justify-self: end; white-space: nowrap; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .entering {
     animation: none;

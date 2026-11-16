@@ -9,17 +9,17 @@ import styles from "./OnboardingGuide.module.css";
 const lessons = [
   {
     title: "Check spaces now",
-    description: <>Check the <strong>spaces left</strong> and garage hours before you head over.</>,
+    description: <>Check <strong>spaces left</strong> and garage hours before you go.</>,
     Example: AvailabilityExample,
   },
   {
     title: "Plan your arrival",
-    description: <>Pick a future date and time for an estimate. Tap <strong>Now</strong> to return to live updates.</>,
+    description: <>Pick a date and time for an estimate. Tap <strong>Now</strong> for live updates.</>,
     Example: ArrivalExample,
   },
   {
     title: "Park near your building",
-    description: <>Sort by <strong>Walking distance</strong>, then pick the campus building you’re headed to.</>,
+    description: <>Sort by <strong>Walking distance</strong>, then pick your campus building.</>,
     Example: WalkingExample,
   },
 ];
@@ -30,12 +30,11 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
   const last = step === lessons.length;
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     heading.current?.focus({ preventScroll: true });
   }, [step]);
 
   return (
-    <main className={`${welcomeStyles.screen} ${styles.guide}`}>
+    <main className={`${welcomeStyles.screen} ${styles.guide}`} data-step={step}>
       <header className={styles.header}>
         <nav className={styles.navigation} aria-label="Onboarding">
           <button className={styles.back} type="button" aria-label="Back" onClick={onBack}>
@@ -54,12 +53,11 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
           </div>
           <button className={`${welcomeStyles.secondaryAction} ${styles.skip}`} type="button" onClick={onFinish}>Skip</button>
         </nav>
+        <div className={styles.brand}>
+          <Image src="/spark-logo.svg" width={27} height={20} alt="" />
+          <span>SPARK</span>
+        </div>
       </header>
-
-      <div className={styles.brand}>
-        <Image src="/spark-logo.svg" width={27} height={20} alt="" />
-        <span>SPARK</span>
-      </div>
 
       <div className={styles.lesson} key={step}>
         <div className={`${styles.intro} ${fontClassName}`}>
@@ -69,9 +67,10 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
         <Example />
       </div>
 
-      <OnboardingFooter className={styles.actions}>
+      <OnboardingFooter>
         <button className={welcomeStyles.start} type="button" onClick={last ? onFinish : onNext}>
-          {last ? "See garages" : "Next"} <ArrowRight size={21} aria-hidden="true" />
+          <span>{last ? "See garages" : "Next"}</span>
+          <ArrowRight size={21} aria-hidden="true" />
         </button>
       </OnboardingFooter>
     </main>
