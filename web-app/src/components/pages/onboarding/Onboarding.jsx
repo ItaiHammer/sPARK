@@ -15,7 +15,7 @@ const introFont = DM_Sans({ subsets: ["latin"], display: "swap" });
 const getServerSnapshot = () => null;
 const COMPLETION_KEY = "spark:onboarding-complete";
 const ARTWORK_WAIT_MS = 2500;
-const screenEase = [0.22, 0.68, 0.24, 1];
+const screenEase = [0.32, 0.12, 0.24, 1];
 
 function getOnboardingCompletion() {
   try {
@@ -73,8 +73,8 @@ export default function Onboarding() {
           className={styles.stage}
           key={welcome ? "welcome" : "guide"}
           initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 10 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.38, ease: screenEase } }}
-          exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : -6, transition: { duration: reducedMotion ? 0 : 0.18, ease: "easeIn" } }}
+          animate={{ opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.56, ease: screenEase } }}
+          exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : -6, transition: { duration: reducedMotion ? 0 : 0.24, ease: "easeIn" } }}
         >
           {welcome ? (
             <WelcomeScreen
