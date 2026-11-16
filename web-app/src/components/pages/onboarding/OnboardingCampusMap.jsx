@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useId } from "react";
+import OnboardingMapPin from "./OnboardingMapPin";
 import styles from "./Onboarding.module.css";
 
 const route = "M292 143v5q0 4-4 4H168q-6 0-6-6v-16q0-6-6-6V94h-35q-4 0-4-4v-5";
@@ -35,14 +36,7 @@ export default function OnboardingCampusMap({ onLoad, onError }) {
           <path d={route} mask={`url(#${routeMask})`} />
           <path d={route} mask={`url(#${pulseMask})`} stroke="#80adff" />
         </g>
-        <g transform="translate(394.78 190.28)">
-          <ellipse className={styles.pinRipple} rx="16" ry="6" />
-          <ellipse className={styles.pinShadow} rx="10" ry="3" fill="#274a90" />
-          <g className={styles.pinMarker}>
-            <path d="M0-36a14 14 0 0 0-14 14C-14-15-7-7 0 0c7-7 14-15 14-22a14 14 0 0 0-14-14Z" fill="#2567df" />
-            <circle cy="-22" r="5.5" fill="#fff" />
-          </g>
-        </g>
+        <OnboardingMapPin transform="translate(394.78 190.28)" />
       </svg>
     </div>
   );

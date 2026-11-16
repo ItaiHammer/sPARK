@@ -9,14 +9,13 @@ import { ArrowRight } from "lucide-react";
 import ParkingLoading from "@/components/pages/home/StatusView/ParkingLoading";
 import OnboardingCampusMap from "./OnboardingCampusMap";
 import OnboardingFooter from "./OnboardingFooter";
-import OnboardingGuide from "./OnboardingGuide";
+import OnboardingGuide, { ONBOARDING_LESSON_COUNT } from "./OnboardingGuide";
 import styles from "./Onboarding.module.css";
 
 const introFont = DM_Sans({ subsets: ["latin"], display: "swap" });
 const getServerSnapshot = () => null;
 const COMPLETION_KEY = "spark:onboarding-complete";
 const GARAGE_LIST_PATH = "/sjsu";
-const LAST_STEP = 3;
 const ARTWORK_WAIT_MS = 2500;
 const HANDOFF_DURATION_MS = 240;
 const GARAGE_NAVIGATION_TIMEOUT_MS = 5000;
@@ -84,7 +83,7 @@ export default function Onboarding() {
   }, [opening, openingGarages, router]);
 
   useEffect(() => {
-    if (step === LAST_STEP) router.prefetch(GARAGE_LIST_PATH);
+    if (step === ONBOARDING_LESSON_COUNT) router.prefetch(GARAGE_LIST_PATH);
   }, [router, step]);
 
   useEffect(() => {
@@ -197,10 +196,10 @@ function WelcomeScreen({ restoreFocus, onStart, onFinish }) {
 
       <OnboardingFooter className={styles.welcomeFooter}>
         <button className={styles.start} type="button" onClick={onStart}>
-          <span>Get started</span>
-          <ArrowRight className={styles.startArrow} size={22} aria-hidden="true" />
+          <span>Get Started</span>
+          <ArrowRight className={styles.startArrow} size={21} aria-hidden="true" />
         </button>
-        <button className={styles.secondaryAction} type="button" onClick={onFinish}>Skip onboarding</button>
+        <button className={styles.secondaryAction} type="button" onClick={onFinish}>Skip Onboarding</button>
       </OnboardingFooter>
     </main>
   );

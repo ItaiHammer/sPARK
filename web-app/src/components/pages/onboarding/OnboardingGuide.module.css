@@ -1,6 +1,5 @@
 .guide {
   --guide-width: 1020px;
-  --guide-inset: clamp(16px, 5vw, 42px);
   --spark-paper: var(--white);
   --spark-pearl: #f5f5f5;
   --spark-ink: var(--welcome-ink);
@@ -13,7 +12,7 @@
 }
 
 .header {
-  padding-inline: max(var(--guide-inset), var(--safe-inline));
+  padding-inline: max(var(--onboarding-inset), var(--safe-inline));
 }
 
 .navigation {
@@ -84,7 +83,7 @@
   width: min(100%, 510px);
   min-width: 0;
   margin-inline: auto;
-  padding: 12px max(var(--guide-inset), var(--safe-inline));
+  padding: 12px max(var(--onboarding-inset), var(--safe-inline));
   animation: lesson-enter 340ms cubic-bezier(0.28, 0.34, 0.24, 1);
 }
 
@@ -107,24 +106,24 @@
 
 .intro p {
   max-width: 33ch;
-  margin: clamp(6px, 1.5dvh, 13px) auto 0;
+  margin: var(--onboarding-copy-gap) auto 0;
   color: var(--welcome-secondary);
-  font-size: clamp(14px, min(4.4vw, 2.7dvh), 18px);
-  line-height: 1.35;
+  font-size: var(--onboarding-copy-size);
+  font-weight: var(--onboarding-copy-weight);
+  line-height: var(--onboarding-copy-line);
   text-wrap: pretty;
 }
 
 .intro strong { color: var(--welcome-ink); font-weight: 700; }
 
 .examplePanel {
+  --example-gap: clamp(8px, 2.8cqh, 14px);
   display: grid;
-  gap: clamp(8px, 2.8cqh, 14px);
+  gap: var(--example-gap);
   min-width: 0;
   padding: clamp(10px, 3.8cqh, 20px);
   border: 1px solid var(--spark-line);
-  border-radius: 23px;
   background: #f8f8f8;
-  box-shadow: 0 16px 34px rgb(36 36 36 / 7%), 0 2px 4px rgb(36 36 36 / 4%);
 }
 
 .exampleHeader {
@@ -136,6 +135,98 @@
   padding-inline: 3px;
 }
 
+.garageExample { position: relative; }
+.garageOverview { display: grid; gap: var(--example-gap); }
+
+.exampleAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding-block: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--spark-ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.exampleAction svg { flex: none; color: var(--spark-secondary); stroke-width: 1.7; }
+
+.exampleAction::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--example-radius);
+}
+
+.exampleAction:focus-visible { outline: none; }
+.exampleAction:focus-visible::after { outline: 2px solid var(--welcome-ink); outline-offset: 3px; }
+
+@media (hover: hover) {
+  .garageExample:has(.exampleAction:hover) { border-color: #bfbfbd; }
+}
+
+.garageArtwork {
+  position: relative;
+  justify-self: center;
+  width: min(100%, clamp(142px, 61cqh, 330px));
+}
+
+.garageTile {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.garageOverlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.garageFeatures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  justify-self: center;
+  gap: clamp(8px, 2.6cqh, 14px) clamp(16px, 6cqw, 28px);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  color: var(--spark-ink);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  list-style: none;
+}
+
+.garageFeatures li { display: flex; align-items: center; gap: 8px; }
+.garageFeatures svg { flex: none; color: var(--spark-secondary); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lesson:is([data-garage-view="details"], [data-garage-view="return"]) .intro :is(h1, p) {
+    animation: garage-content-enter 260ms var(--welcome-ease) backwards;
+  }
+  .garagePane { animation: garage-content-enter 300ms var(--welcome-ease) 65ms backwards; }
+  .garageArtwork {
+    --pin-duration: 360ms;
+    --pin-settled: var(--pin-duration);
+  }
+  .garagePin { animation: garage-pin-land var(--pin-duration) var(--welcome-ease) backwards; }
+
+  @keyframes garage-content-enter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes garage-pin-land {
+    from { opacity: 0; transform: translateY(-14px) scale(.96); }
+    48% { opacity: 1; }
+    to { opacity: 1; transform: none; }
+  }
+}
+
 .exampleLabel {
   color: var(--welcome-secondary);
   font-family: var(--font-manrope), system-ui, sans-serif;
@@ -143,13 +234,6 @@
   font-weight: 750;
   letter-spacing: 0.095em;
   text-transform: uppercase;
-}
-
-.exampleNotice {
-  padding-inline: 3px;
-  color: var(--welcome-secondary);
-  font-size: 13px;
-  line-height: 1.45;
 }
 
 .mode {
@@ -212,7 +296,7 @@
 
   .intro { text-align: left; }
   .intro h1 { font-size: clamp(47px, 5.15vw, 64px); text-wrap: initial; }
-  .intro p { max-width: 27ch; margin-inline: 0; font-size: 21px; }
+  .intro p { max-width: 27ch; margin-inline: 0; }
 }
 
 @container onboarding (max-height: 670px) {
@@ -226,11 +310,11 @@
 }
 
 @container onboarding-lesson (max-height: 475px) {
-  .examplePanel { gap: 8px; padding-block: min(3.8cqh, 14px); }
+  .examplePanel { --example-gap: 8px; padding-block: min(3.8cqh, 14px); }
 }
 
 @container onboarding-lesson (max-height: 430px) or ((max-width: 320px) and (max-height: 480px)) {
-  .examplePanel { gap: 6px; padding-block: 8px; }
+  .examplePanel { --example-gap: 6px; padding-block: 8px; }
 }
 
 @container onboarding-lesson (max-height: 365px) {
@@ -240,8 +324,7 @@
 @container onboarding (max-height: 450px) and (max-width: 519px) {
   .lesson { gap: 5px; padding-block: 2px; }
   .intro h1 { font-size: 24px; }
-  .intro p { margin-top: 4px; font-size: 13px; line-height: 1.25; }
-  .examplePanel { gap: 4px; padding-block: 4px; }
+  .examplePanel { --example-gap: 4px; padding-block: 4px; }
   .exampleHeader { min-height: 22px; }
   .mode { padding-block: 2px; }
 }
@@ -258,7 +341,7 @@
 
   .intro { text-align: left; }
   .intro h1 { font-size: clamp(23px, 4vw, 38px); }
-  .intro p { margin-inline: 0; font-size: 14px; }
+  .intro p { margin-inline: 0; }
 
   .guide[data-step="2"] .examplePanel {
     grid-template-columns: minmax(0, .7fr) minmax(170px, 1.3fr);
@@ -270,8 +353,7 @@
     align-items: start;
   }
 
-  .exampleHeader,
-  .exampleNotice { grid-column: 1 / -1; }
+  .exampleHeader { grid-column: 1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

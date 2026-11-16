@@ -81,11 +81,8 @@ a.travel { position: relative; z-index: 2; }
 }
 
 .occupancy {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  column-gap: 7px;
-  row-gap: 1px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   margin-top: 6px;
   color: var(--spark-secondary, #686868);
   font-size: 13px;
@@ -93,6 +90,17 @@ a.travel { position: relative; z-index: 2; }
   line-height: 18px;
   font-variant-numeric: tabular-nums;
 }
+
+.occupancyDetails {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: start;
+  gap: 1px 7px;
+}
+
+.occupancySize { visibility: hidden; }
 
 .occupied {
   white-space: nowrap;
@@ -141,6 +149,11 @@ a.travel { position: relative; z-index: 2; }
   font-size: 13px;
   line-height: 17px;
 }
+
+.caption[aria-hidden="true"] { visibility: hidden; }
+
+.card[data-reserve-availability] .count { min-inline-size: 5.5ch; text-align: end; }
+.card[data-reserve-availability] .occupied { white-space: normal; }
 
 .entranceNumber { display: inline-grid; }
 .numberSize, .numberDisplay { grid-area: 1 / 1; }
@@ -387,7 +400,7 @@ a.travel:focus-visible {
     min-width: 71px;
   }
 
-  .occupancy {
+  .occupancyDetails {
     column-gap: 5px;
   }
 
@@ -440,7 +453,8 @@ a.travel:focus-visible {
   .adaptiveDensity .numbers { min-width: 0; }
   .adaptiveDensity .count { font-size: clamp(23px, 6vw, 30px); line-height: 1; }
   .adaptiveDensity :is(.occupancy, .caption, .foot) { font-size: 12px; line-height: 16px; }
-  .adaptiveDensity .occupancy { margin-top: 2px; gap: 0 4px; }
+  .adaptiveDensity .occupancy { margin-top: 2px; }
+  .adaptiveDensity .occupancyDetails { gap: 0 4px; }
   .adaptiveDensity :is(.meter, .foot) { margin-top: 5px; }
   .adaptiveDensity .travel { min-height: 30px; margin-top: 5px; padding-inline: 6px; }
   .adaptiveDensity :is(.travel, .travelTime, .travelDistance) { font-size: 12px; line-height: 16px; }
@@ -460,7 +474,7 @@ a.travel:focus-visible {
   .adaptiveDensity .numbers { flex-direction: row; align-items: baseline; gap: 4px; }
   .adaptiveDensity .count { font-size: 20px; }
   .adaptiveDensity :is(.occupancy, .caption) { font-size: 11px; }
-  .adaptiveDensity .travel { grid-template-columns: minmax(0, 1fr) auto; }
+  .adaptiveDensity .travel { grid-template-columns: minmax(0, 1fr) auto; min-height: 40px; }
   .adaptiveDensity .travelIcon { display: none; }
   .adaptiveDensity .travelMetrics { flex-direction: column; align-items: end; gap: 0; }
 }

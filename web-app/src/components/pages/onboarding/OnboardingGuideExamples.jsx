@@ -15,16 +15,32 @@ const noBuildings = [];
 const labels = { live: "Live", paused: "Paused", historical: "Historical", predicted: "Predicted" };
 const distanceSort = SORT_TYPES.DISTANCE_TO_BUILDING.value;
 const sortOptions = [SORT_TYPES.MOST_SPACES, SORT_TYPES.DISTANCE_TO_BUILDING];
+const panelRadius = 23;
+// Motion uses inline radius and shadow values to correct scaling during layout changes.
+const panelStyle = {
+  "--example-radius": `${panelRadius}px`,
+  borderRadius: panelRadius,
+  boxShadow: "0 16px 34px rgb(36 36 36 / 7%), 0 2px 4px rgb(36 36 36 / 4%)",
+};
 
-function ExamplePanel({ label = "Example", ariaLabel = "Parking example with sample data", activity, children }) {
+export function ExamplePanel({ label = "Example", ariaLabel = "Parking example with sample data", className, activity, children, layoutTransition, onLayoutAnimationComplete }) {
+  const transition = layoutTransition ? { layout: layoutTransition } : undefined;
+
   return (
-    <section className={styles.examplePanel} aria-label={ariaLabel}>
+    <motion.section
+      className={className ? `${styles.examplePanel} ${className}` : styles.examplePanel}
+      aria-label={ariaLabel}
+      style={panelStyle}
+      layout={Boolean(layoutTransition)}
+      transition={transition}
+      onLayoutAnimationComplete={onLayoutAnimationComplete}
+    >
       <div className={styles.exampleHeader}>
         <span className={styles.exampleLabel}>{label}</span>
         {activity}
       </div>
       {children}
-    </section>
+    </motion.section>
   );
 }
 
@@ -39,7 +55,7 @@ function Mode({ mode, spaces }) {
 }
 
 function LessonGarageCard(props) {
-  return <GarageCard {...props} adaptiveDensity />;
+  return <GarageCard {...props} adaptiveDensity animateLoadedValues />;
 }
 
 export function AvailabilityExample() {
@@ -62,15 +78,11 @@ export function ArrivalExample() {
   const { displayMode: mode } = picker;
   const loading = data.isLoading && !data.error && garage?.occupied == null && !garage?.closed;
   const unavailableLabel = loading ? "Loading availability…" : picker.selection.mode === "forecast" ? "Forecast unavailable" : undefined;
-  const [loadingInitialAvailability, setLoadingInitialAvailability] = useState(loading);
-
-  if (loadingInitialAvailability && !loading) setLoadingInitialAvailability(false);
 
   return (
     <ExamplePanel label="SJSU data" ariaLabel="South Garage availability and forecasts" activity={<Mode mode={mode} spaces={garage?.spaces} />}>
       <LessonGarageCard
-        key={loadingInitialAvailability ? "loading" : "arrival"}
-        animateEntrance={!loadingInitialAvailability}
+        reserveAvailabilitySpace
         garage={{
           lot_id: southGarage.lot_id,
           name: garage?.name ?? southGarage.name,
@@ -104,6 +116,7 @@ export function WalkingExample() {
     ...garage, entranceOrder, travel: travelForLot(garage.lot_id, buildingRequest.data),
   }));
   const hasWalkingEstimates = garages.some((garage) => garage.travel);
+  const walkingStatus = building ? buildingRequest.isLoading ? "Loading…" : "Unavailable" : undefined;
 
   return (
     <ExamplePanel label="Sample availability" activity={(
@@ -122,13 +135,13 @@ export function WalkingExample() {
       />
     )}>
       {building && !hasWalkingEstimates && (
-        <p className={styles.exampleNotice} role="status">
+        <span className="sr-only" role="status">
           {buildingRequest.isLoading ? "Loading walking estimates…" : "Walking estimates are unavailable for this example."}
-        </p>
+        </span>
       )}
       {getSortedLots(garages, hasWalkingEstimates ? sortType : DEFAULT_SORT_TYPE).map((garage) => (
         <motion.div key={garage.lot_id} layout={reducedMotion ? false : "position"} transition={{ duration: 0.28 }}>
-          <LessonGarageCard garage={garage} buildingName={building?.buildingName} order={garage.entranceOrder} />
+          <LessonGarageCard garage={garage} buildingName={building?.buildingName} order={garage.entranceOrder} travelPlaceholder={walkingStatus} />
         </motion.div>
       ))}
     </ExamplePanel>
