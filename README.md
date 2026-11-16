@@ -292,21 +292,25 @@ If you want to run Flint locally, use Python 3.13 and follow the [forecasting se
 
 ## 🔧 Environment Variables
 
-Add the settings for the features you’re working on to `web-app/.env.local`. To load garage data locally, use a Supabase development project with the sPARK schema and parking data.
+Add your settings to `web-app/.env.local`. Use a Supabase development project with the sPARK schema and garage data.
 
-| Used for | Variables |
+| Service or feature | Variables |
 | --- | --- |
-| Garage data and saved forecasts | `SUPABASE_PROJECT_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
-| App API requests | `INTERNAL_API_KEY`, `NEXT_PUBLIC_INTERNAL_API_KEY` |
-| API protection and caching | `ARCJET_KEY`, `REDIS_URL` (host), `REDIS_PORT`, `REDIS_PASSWORD` |
-| Supabase Realtime updates | `NEXT_PUBLIC_SUPABASE_PROJECT_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| Walking distances and address lookup | `OPENROUTE_SERVICE_URL`, `OPENROUTE_SERVICE_API_KEY`, `OPENCAGE_API_KEY` |
-| Beta feedback and analytics | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` |
-| Forecast job and Flint service | `FORECASTING_API_KEY`, `FLINT_SERVICE_URL` |
-| Occupancy scraper | `SCRAPING_API_KEY`, `SCRAPER_USER_AGENT` |
-| Share previews | `NEXT_PUBLIC_WEB_APP_URL` |
+| [Supabase Postgres](https://supabase.com/docs/guides/database/overview) | `SUPABASE_PROJECT_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
+| [Supabase Realtime](https://supabase.com/docs/guides/realtime) | `NEXT_PUBLIC_SUPABASE_PROJECT_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| [App API](web-app/src/proxy.js) | `INTERNAL_API_KEY`, `NEXT_PUBLIC_INTERNAL_API_KEY` |
+| [Arcjet](https://docs.arcjet.com/) | `ARCJET_KEY` |
+| [Redis](https://redis.io/docs/latest/) | `REDIS_URL`, `REDIS_PORT`, `REDIS_PASSWORD` |
+| [OpenRouteService](https://giscience.github.io/openrouteservice/api-reference/endpoints/matrix/) | `OPENROUTE_SERVICE_URL`, `OPENROUTE_SERVICE_API_KEY` |
+| [OpenCage](https://opencagedata.com/) | `OPENCAGE_API_KEY` |
+| [PostHog](https://posthog.com/docs) | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` |
+| [Flint forecast job](web-app/src/app/api/cron/forecast/README.md) | `FORECASTING_API_KEY` |
+| [Vercel Services](https://vercel.com/docs/services) | `FLINT_SERVICE_URL` |
+| [SJSU garage scraper](web-app/src/app/api/locations/%5Blocation_id%5D/scrape/route.js) | `SCRAPING_API_KEY`, `SCRAPER_USER_AGENT` |
+| [Link previews](web-app/src/app/layout.js) | `NEXT_PUBLIC_WEB_APP_URL` |
+| [Next.js runtime](https://nextjs.org/docs/app/guides/environment-variables) | `NODE_ENV` (set by Next.js) |
 
-For local testing, give both app API key variables the same development-only value. Variables starting with `NEXT_PUBLIC_` are visible in the browser. Keep your service role key and other server credentials in server-side variables.
+Use the same development-only value for both app API keys. `NEXT_PUBLIC_` variables are visible in the browser.
 
 ---
 
