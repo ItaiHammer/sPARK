@@ -332,6 +332,6 @@ Contributions are welcome! Open an issue or submit a pull request with features 
 
 ## 📜 License
 
-This project is licensed under the MIT License.
+The sPARK source code and documentation are licensed under the [MIT License](LICENSE). Third-party material remains subject to its own terms.
 
 [Back to top](#table-of-contents)
