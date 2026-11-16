@@ -136,7 +136,7 @@ function WelcomeScreen({ restoreFocus, onStart, onFinish }) {
 
       <div className={styles.content}>
         <div className={`${styles.intro} ${introFont.className}`}>
-          <h1 ref={heading} tabIndex={-1}>Find Parking at SJSU</h1>
+          <h1 ref={heading} tabIndex={-1}>Find Parking with sPARK</h1>
           <p>Check live garage availability and plan ahead with parking forecasts.</p>
         </div>
 
