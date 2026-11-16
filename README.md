@@ -36,7 +36,6 @@
 -   [🧩 Roadmap](#roadmap)
 -   [🛠️ Technologies Used](#technologies-used)
 -   [📚 Getting Started](#getting-started)
--   [⚙️ Running the Application](#running-the-application)
 -   [🔧 Environment Variables](#environment-variables)
 -   [🤝 Contributing](#contributing)
 -   [📜 License](#license)
@@ -263,40 +262,29 @@ flowchart TD
 
 ## 📚 Getting Started
 
-### Prerequisites
+Use Node.js 22 and npm 10+.
 
--   [Node.js](https://nodejs.org/) (v22 recommended)
--   [npm](https://www.npmjs.com/) (v10+ recommended)
--   Python 3.13 if you’re running Flint or working in the lab
+### Install
 
-### Installation
-
-1. **Clone the Repository**
-
-    ```bash
-    git clone https://github.com/ItaiHammer/sPARK.git
-    cd sPARK
-    ```
-
-2. **Install Dependencies**
-    ```bash
-    cd web-app
-    npm ci
-    ```
-
----
+```bash
+git clone https://github.com/ItaiHammer/sPARK.git
+cd sPARK/web-app
+npm ci
+```
 
 <a id="running-the-application"></a>
 
-## ⚙️ Running the Application
+### Run locally
 
-Set up `web-app/.env.local` using the settings below. Then, from `web-app/`, run:
+Add your [environment variables](#environment-variables) to `web-app/.env.local`, then run this from `web-app/`.
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The app reads live occupancy and saved forecasts from your Supabase project, so use a development database with the sPARK schema and parking data. To generate forecasts yourself, follow the [forecasting setup](web-app/src/app/api/cron/forecast/README.md).
+Open [http://localhost:3000](http://localhost:3000).
+
+If you want to run Flint locally, use Python 3.13 and follow the [forecasting setup](web-app/src/app/api/cron/forecast/README.md).
 
 ---
 
@@ -304,7 +292,7 @@ Open [http://localhost:3000](http://localhost:3000). The app reads live occupanc
 
 ## 🔧 Environment Variables
 
-Add the settings for the features you’re working on to `web-app/.env.local`.
+Add the settings for the features you’re working on to `web-app/.env.local`. To load garage data locally, use a Supabase development project with the sPARK schema and parking data.
 
 | Used for | Variables |
 | --- | --- |
