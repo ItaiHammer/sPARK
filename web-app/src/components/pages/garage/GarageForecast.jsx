@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MoveHorizontal } from "lucide-react";
 import { forecastAt, operatingHours, parkingStatus } from "@/lib/utils/client/parking";
 import styles from "./GaragePage.module.css";
@@ -14,6 +14,8 @@ const WINDOWS = [
 const HOLD_DELAY_MS = 350;
 const HOLD_TOLERANCE_PX = 12;
 const FORECAST_STEP_MINUTES = 30;
+const EDGE_SCROLL_MAX_PX_PER_SECOND = 420;
+const readoutInset = (width) => Math.min(60, width / 2);
 
 function inspectForecast(points, day, garage, index) {
   const minutes = Math.round(index * FORECAST_STEP_MINUTES);
@@ -67,6 +69,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const scrollIndex = useRef(0);
   const scrollClock = useRef(null);
   const hold = useRef(null);
+  const edgeScrollPosition = useRef(null);
   const [inspection, setInspection] = useState(null);
   const [startHour, setStartHour] = useState(() => selectedAt.hour < 14 ? 8 : selectedAt.hour < 19 ? 14 : 19);
   const day = useMemo(() => selectedAt.startOf("day"), [selectedAt]);
@@ -93,25 +96,27 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const activePoint = activeInspection ? inspectForecast(points, day, garage, activeInspection.index) : null;
   const timeLabel = activePoint?.time.toFormat("h:mm a");
 
+  const cancelHold = useCallback(() => {
+    if (!hold.current) return;
+    clearTimeout(hold.current.timer);
+    cancelAnimationFrame(hold.current.edgeFrame);
+    hold.current = null;
+  }, []);
+
   useEffect(() => {
     const dismissOutside = (event) => {
       if (scroller.current?.contains(event.target)) return;
-      clearTimeout(hold.current?.timer);
-      hold.current = null;
+      cancelHold();
       setInspection(null);
     };
     document.addEventListener("pointerdown", dismissOutside, true);
     return () => {
       document.removeEventListener("pointerdown", dismissOutside, true);
-      clearTimeout(hold.current?.timer);
-      hold.current = null;
+      cancelHold();
     };
-  }, []);
+  }, [cancelHold]);
 
-  useEffect(() => () => {
-    clearTimeout(hold.current?.timer);
-    hold.current = null;
-  }, [dayKey, hasData, updating]);
+  useEffect(() => cancelHold, [cancelHold, dayKey, hasData, updating]);
 
   useLayoutEffect(() => {
     const element = scroller.current;
@@ -161,7 +166,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const makeInspection = (element, index, contentX, source) => {
     const viewportX = contentX - element.scrollLeft;
     // Keep the label in the viewport while the line stays at the inspected coordinate.
-    const inset = Math.min(60, element.clientWidth / 2);
+    const inset = readoutInset(element.clientWidth);
     const tooltipShift = Math.min(Math.max(viewportX, inset), element.clientWidth - inset) - viewportX;
     return { index, contentX, source, dayKey, tooltipShift };
   };
@@ -171,22 +176,52 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
     const boundedIndex = boundIndex(Math.round(index));
     return makeInspection(element, boundedIndex, (boundedIndex + .5) * step - gap / 2, "keyboard");
   };
-  const inspectPointer = (event, source) => {
+  const inspectPointer = (clientX, source) => {
     const element = scroller.current;
     const { gap, step } = chartGeometry(element);
-    const viewportX = event.clientX - element.getBoundingClientRect().left;
+    const viewportX = clientX - element.getBoundingClientRect().left;
     const contentX = Math.max(0, Math.min(element.clientWidth - 1, viewportX)) + element.scrollLeft;
     return makeInspection(element, boundIndex((contentX + gap / 2) / step - .5), contentX, source);
   };
-  const cancelHold = () => {
-    clearTimeout(hold.current?.timer);
-    hold.current = null;
+  const scrollAtEdge = (gesture, time) => {
+    const element = scroller.current;
+    if (!element || hold.current !== gesture) return;
+    gesture.edgeFrame = 0;
+
+    const width = element.clientWidth;
+    const inset = readoutInset(width);
+    const viewportX = gesture.clientX - element.getBoundingClientRect().left;
+    const edge = viewportX - Math.max(inset, Math.min(width - inset, viewportX));
+    const maxScroll = element.scrollWidth - width;
+    if (!edge || (edge < 0 ? element.scrollLeft <= 0 : element.scrollLeft >= maxScroll)) {
+      gesture.edgeTime = null;
+      return;
+    }
+
+    const strength = Math.min(1, Math.abs(edge) / inset);
+    const elapsed = gesture.edgeTime === null ? 0 : Math.min(time - gesture.edgeTime, 32);
+    if (gesture.edgeTime === null) gesture.edgeOffset = element.scrollLeft;
+    gesture.edgeTime = time;
+    const delta = Math.sign(edge) * EDGE_SCROLL_MAX_PX_PER_SECOND * strength ** 1.5 * elapsed / 1000;
+    // Keep fractional movement across frames on browsers that round scrollLeft.
+    gesture.edgeOffset = Math.max(0, Math.min(maxScroll, gesture.edgeOffset + delta));
+    const beforeScroll = element.scrollLeft;
+    element.scrollLeft = gesture.edgeOffset;
+    if (element.scrollLeft !== beforeScroll) {
+      edgeScrollPosition.current = element.scrollLeft;
+      setInspection(inspectPointer(gesture.clientX, "touch"));
+    }
+    if (gesture.edgeOffset === (edge < 0 ? 0 : maxScroll)) {
+      gesture.edgeTime = null;
+      return;
+    }
+    gesture.edgeFrame = requestAnimationFrame((nextTime) => scrollAtEdge(gesture, nextTime));
   };
   const onPointerDown = (event) => {
     cancelHold();
     if (updating) return;
     if (event.pointerType !== "touch") {
-      if (event.button === 0) setInspection(inspectPointer(event, "pointer"));
+      if (event.button === 0) setInspection(inspectPointer(event.clientX, "pointer"));
       return;
     }
     setInspection(null);
@@ -196,8 +231,10 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
       x: event.clientX,
       y: event.clientY,
       scrollLeft: scroller.current.scrollLeft,
-      inspection: inspectPointer(event, "touch"),
+      inspection: inspectPointer(event.clientX, "touch"),
       held: false,
+      edgeFrame: 0,
+      edgeTime: null,
     };
     gesture.timer = setTimeout(() => {
       if (hold.current !== gesture || !scroller.current || Math.abs(scroller.current.scrollLeft - gesture.scrollLeft) > 2) return;
@@ -209,20 +246,22 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const onPointerMove = (event) => {
     if (updating) return;
     if (event.pointerType !== "touch") {
-      setInspection(inspectPointer(event, "pointer"));
+      setInspection(inspectPointer(event.clientX, "pointer"));
       return;
     }
     const gesture = hold.current;
     if (gesture?.pointerId !== event.pointerId) return;
     if (gesture.held) {
-      setInspection(inspectPointer(event, "touch"));
+      gesture.clientX = event.clientX;
+      setInspection(inspectPointer(event.clientX, "touch"));
+      if (!gesture.edgeFrame) gesture.edgeFrame = requestAnimationFrame((time) => scrollAtEdge(gesture, time));
       return;
     }
     if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > HOLD_TOLERANCE_PX) {
       cancelHold();
       setInspection(null);
     } else {
-      gesture.inspection = inspectPointer(event, "touch");
+      gesture.inspection = inspectPointer(event.clientX, "touch");
     }
   };
   const onPointerUp = (event) => {
@@ -233,8 +272,11 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   };
   const onScroll = () => {
     const element = scroller.current;
-    cancelHold();
-    setInspection((previous) => !updating && previous?.source === "keyboard" && previous.dayKey === dayKey ? inspectIndex(previous.index) : null);
+    if (element.scrollLeft !== edgeScrollPosition.current) {
+      edgeScrollPosition.current = null;
+      cancelHold();
+      setInspection((previous) => !updating && previous?.source === "keyboard" && previous.dayKey === dayKey ? inspectIndex(previous.index) : null);
+    }
     scrollIndex.current = element.scrollLeft / chartGeometry(element).step;
     const firstTime = day.plus({ minutes: scrollIndex.current * 30 });
     scrollClock.current = firstTime.hour * 60 + firstTime.minute;
