@@ -143,6 +143,11 @@ test("a European local day plus alert lookahead can require three UTC-day payloa
   assert.deepEqual(forecastDayDates(selected, 0), ["2026-10-04", "2026-10-05"]);
 });
 
+test("day-cache dates cover the longer alert lookahead and interpolation", () => {
+  const selected = DateTime.fromISO("2026-10-05T23:59", { zone: "Asia/Kolkata" });
+  assert.deepEqual(forecastDayDates(selected), ["2026-10-04", "2026-10-05", "2026-10-06"]);
+});
+
 test("cached forecasts retain garage metadata without mutating the source lots", () => {
   const metadata = {
     ...campus,
@@ -213,25 +218,40 @@ test("closed garage hours take priority when the cached day has no predictions",
   assert.equal(normalized.alert.text, "Opens at 7 AM");
 });
 
-test("Full in follows the nearly-full threshold, with 15-minute estimates", () => {
-  assert.deepEqual(message(90, rows([90, 97])), { text: "Full in 15m", type: "fullSoon" });
+test("the few-spaces alert names the local time of the nearly-full threshold", () => {
+  assert.deepEqual(message(90, rows([90, 97])), { text: "Few spaces left around 9:15 AM", type: "fullSoon" });
 });
 
-test("Busy in describes the first transition from available to busy", () => {
-  assert.deepEqual(message(79, rows([79, 84, 99])), { text: "Busy in 15m", type: "busySoon" });
+test("the busy alert names the first transition from available to busy", () => {
+  assert.deepEqual(message(79, rows([79, 84, 99])), { text: "Gets busy around 9:15 AM", type: "busySoon" });
 });
 
-test("Available in means a recovery below 80 percent", () => {
-  assert.deepEqual(message(83, rows([83, 74])), { text: "Available in 15m", type: "recovery" });
+test("the available alert names the time when occupancy recovers below 80 percent", () => {
+  assert.deepEqual(message(83, rows([83, 74])), { text: "Available around 9:15 AM", type: "recovery" });
 });
 
-test("the next status may become Busy when a nearly-full garage improves", () => {
-  assert.deepEqual(message(95, rows([95, 88, 50])), { text: "Busy in 15m", type: "busySoon" });
+test("a nearly-full garage improving to busy is described as recovery", () => {
+  assert.deepEqual(message(95, rows([95, 88, 50])), { text: "More room around 9:15 AM", type: "recovery" });
 });
 
-test("the status-change lookahead is bounded to four hours", () => {
-  assert.equal(message(70, rows([70, 70, 70, 70, 70, 70, 70, 70, 80])).text, "Busy in 4h");
-  assert.equal(message(70, rows([70, 70, 70, 70, 70, 70, 70, 70, 79, 85])).text, "Spaces expected for 2h");
+test("the status-change lookahead reaches six hours", () => {
+  assert.equal(message(70, rows([...Array(12).fill(70), 80])).text, "Gets busy around 3 PM");
+  assert.equal(message(70, rows([...Array(13).fill(70), 80])).text, "Plenty of spaces expected");
+});
+
+test("a transition after local midnight includes its weekday", () => {
+  const selectedAt = at("23:45");
+  assert.equal(message(79, rows([79, 85], selectedAt), { selectedAt }).text, "Gets busy around Tue 12 AM");
+});
+
+test("a transition in a repeated local hour includes its time zone", () => {
+  const selectedAt = DateTime.fromISO("2026-11-01T01:45:00-07:00", { zone });
+  assert.equal(message(79, rows([79, 85], selectedAt), { selectedAt }).text, "Gets busy around 1 AM PST");
+});
+
+test("one-hour space changes take priority over the additional two hours of status lookahead", () => {
+  const forecast = rows([60, 65, 70, ...Array(8).fill(70), 85]);
+  assert.equal(message(60, forecast).text, "~100 fewer spaces in 1h");
 });
 
 test("one-hour trends count actual estimated spaces and retain the eight-point threshold", () => {
@@ -246,12 +266,15 @@ test("90 percent is an early caution while 93 is the status boundary", () => {
   assert.equal(message(89, []).text, "Parking is busy");
 });
 
-test("two-hour reassurance requires complete real forecasts below 80 percent", () => {
-  assert.deepEqual(message(60, rows([60, 60, 60, 60, 60])), { text: "Spaces expected for 2h", type: "roomy" });
+test("reassurance requires uninterrupted available forecasts up to the lookahead or closing", () => {
+  const steadyForecast = rows(Array(13).fill(60));
+  assert.deepEqual(message(60, steadyForecast), { text: "Plenty of spaces expected", type: "roomy" });
   assert.equal(message(60, []).text, "Spaces available");
-  assert.equal(message(60, rows([60, 60, 60])).text, "Spaces available");
-  assert.equal(message(60, rows([60, 60, 60, 60, 60]), { lot: campus, selectedAt: at("20:30") }).type, "available");
-  assert.equal(message(60, rows([60, 60, 60, 60, 60]), { lot: { ...garage, "24_hour": false } }).type, "available");
+  assert.equal(message(60, rows(Array(5).fill(60))).text, "Spaces available");
+  assert.equal(message(60, steadyForecast.filter((_, index) => index !== 8)).type, "available");
+  const selectedAt = at("20:30");
+  assert.equal(message(60, rows([60, 60, 60, 60, 95], selectedAt), { lot: campus, selectedAt }).type, "roomy");
+  assert.equal(message(60, steadyForecast, { lot: { ...garage, "24_hour": false } }).type, "available");
 });
 
 test("missing occupancy cannot generate a fabricated available message", () => {
