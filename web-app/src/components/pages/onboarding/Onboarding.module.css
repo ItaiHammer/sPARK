@@ -287,9 +287,9 @@
 }
 
 .start {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
   gap: 11px;
   width: min(100%, 400px);
   min-height: 56px;
@@ -298,11 +298,14 @@
   background: var(--primary-black);
   color: #fff;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 650;
   text-align: center;
   transition: background-color 160ms ease;
   cursor: pointer;
 }
+
+.start > span { grid-column: 2; }
+.start > svg { grid-column: 3; justify-self: start; }
 
 .start:focus-visible {
   outline: 2px solid var(--welcome-ink);

@@ -69,7 +69,8 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
 
       <OnboardingFooter>
         <button className={welcomeStyles.start} type="button" onClick={last ? onFinish : onNext}>
-          {last ? "See garages" : "Next"} <ArrowRight size={21} aria-hidden="true" />
+          <span>{last ? "See garages" : "Next"}</span>
+          <ArrowRight size={21} aria-hidden="true" />
         </button>
       </OnboardingFooter>
     </main>
