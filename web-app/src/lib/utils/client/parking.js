@@ -7,6 +7,10 @@ export const PARKING_THRESHOLDS = Object.freeze({
   hourlyChange: 8,
 });
 
+const NEAR_TERM_ALERT_MINUTES = 240;
+const ALERT_LOOKAHEAD_MINUTES = 360;
+const ALERT_STEP_MINUTES = 15;
+
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const number = (value) =>
   value === null || value === undefined || value === "" || !Number.isFinite(Number(value))
@@ -124,7 +128,7 @@ export function forecastAt(rows, timestamp) {
 
 // The bulk API returns UTC calendar days. Cover the whole selected local day,
 // plus alert/interpolation lookahead, so moving the ruler never changes keys.
-export function forecastDayDates(selectedAt, lookaheadMinutes = 270) {
+export function forecastDayDates(selectedAt, lookaheadMinutes = ALERT_LOOKAHEAD_MINUTES + 30) {
   if (!selectedAt?.isValid) return [];
   const start = selectedAt.startOf("day");
   const end = start.plus({ days: 1, minutes: lookaheadMinutes }).toUTC();
@@ -148,6 +152,17 @@ const alert = (text, type) => ({ text, type });
 const statusBucket = (occupied) => occupied >= PARKING_THRESHOLDS.nearlyFull
   ? "full" : occupied >= PARKING_THRESHOLDS.busy ? "busy" : "available";
 
+function statusChangeAlert(currentStatus, nextStatus, time, selectedAt) {
+  const clock = clockLabel(time.hour * 60 + time.minute);
+  const localTime = time.getPossibleOffsets().length > 1 ? `${clock} ${time.offsetNameShort}` : clock;
+  const when = time.hasSame(selectedAt, "day") ? localTime : `${time.toFormat("ccc")} ${localTime}`;
+  if (nextStatus === "full") return alert(`Few spaces left around ${when}`, "fullSoon");
+  if (nextStatus === "available") return alert(`Available around ${when}`, "recovery");
+  return currentStatus === "full"
+    ? alert(`More room around ${when}`, "recovery")
+    : alert(`Gets busy around ${when}`, "busySoon");
+}
+
 export function parkingAlert({ lot, occupied, spaces, selectedAt, forecastRows = [], mode = "live" }) {
   const hours = operatingHours(lot, selectedAt);
   if (hours.closed) return hours.opensAt ? alert(`Opens at ${hours.opensAt}`, "opening") : alert("Closed today", "closing");
@@ -155,23 +170,31 @@ export function parkingAlert({ lot, occupied, spaces, selectedAt, forecastRows =
   if (occupied === null || !selectedAt?.isValid) {
     return alert(mode === "live" ? "Availability unavailable" : "Forecast unavailable", "unknown");
   }
-  const future = (ahead) => {
-    const time = selectedAt.plus({ minutes: ahead });
-    if (operatingHours(lot, time).closed) return null;
+  const forecastValues = (time) => {
     const pct = forecastAt(forecastRows, time.toMillis());
     return pct === null ? null : parkingValues(pct, lot.spot_count);
   };
   const currentStatus = statusBucket(occupied);
-  for (let ahead = 15; ahead <= 240; ahead += 15) {
-    const value = future(ahead);
-    if (!value) break;
+  let comfortable = hours.known && currentStatus === "available";
+  let laterAlert = null;
+  for (let ahead = ALERT_STEP_MINUTES; ahead <= ALERT_LOOKAHEAD_MINUTES; ahead += ALERT_STEP_MINUTES) {
+    const time = selectedAt.plus({ minutes: ahead });
+    if (operatingHours(lot, time).closed) break;
+    const value = forecastValues(time);
+    if (!value) {
+      comfortable = false;
+      break;
+    }
     const nextStatus = statusBucket(value.occupied);
     if (nextStatus === currentStatus) continue;
-    if (nextStatus === "full") return alert(`Full in ${durationLabel(ahead)}`, "fullSoon");
-    if (nextStatus === "busy") return alert(`Busy in ${durationLabel(ahead)}`, "busySoon");
-    return alert(`Available in ${durationLabel(ahead)}`, "recovery");
+    const transition = statusChangeAlert(currentStatus, nextStatus, time, selectedAt);
+    if (ahead <= NEAR_TERM_ALERT_MINUTES) return transition;
+    // Keep the one-hour change ahead of alerts added by the longer lookahead.
+    laterAlert = transition;
+    break;
   }
-  const inAnHour = future(60);
+  const hourFromSelection = selectedAt.plus({ hours: 1 });
+  const inAnHour = operatingHours(lot, hourFromSelection).closed ? null : forecastValues(hourFromSelection);
   if (spaces !== null && inAnHour?.spaces !== null && inAnHour?.spaces !== undefined) {
     if (inAnHour.occupied <= occupied - PARKING_THRESHOLDS.hourlyChange) {
       return alert(`~${(inAnHour.spaces - spaces).toLocaleString("en-US")} more spaces in 1h`, "moreSpaces");
@@ -180,13 +203,9 @@ export function parkingAlert({ lot, occupied, spaces, selectedAt, forecastRows =
       return alert(`~${(spaces - inAnHour.spaces).toLocaleString("en-US")} fewer spaces in 1h`, "fewerSpaces");
     }
   }
+  if (laterAlert) return laterAlert;
   if (occupied >= PARKING_THRESHOLDS.warning) return alert("Parking likely limited", "limited");
-  let comfortable = hours.known && occupied < PARKING_THRESHOLDS.busy;
-  for (let ahead = 15; comfortable && ahead <= 120; ahead += 15) {
-    const value = future(ahead);
-    comfortable = Boolean(value) && value.occupied < PARKING_THRESHOLDS.busy;
-  }
-  if (comfortable) return alert("Spaces expected for 2h", "roomy");
+  if (comfortable) return alert("Plenty of spaces expected", "roomy");
   return occupied < PARKING_THRESHOLDS.busy
     ? alert("Spaces available", "available")
     : alert("Parking is busy", "busySoon");
