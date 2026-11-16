@@ -54,7 +54,7 @@ export default function OnboardingGarageLesson({ view, buttonRef, onOpen, onBack
           type="button"
           onClick={showDetails ? onBack : openDetails}
         >
-          {showDetails ? <><ArrowLeft size={16} aria-hidden="true" /> Back to example</> : <>Open Garage Page <ArrowRight size={16} aria-hidden="true" /></>}
+          {showDetails ? <><ArrowLeft size={16} aria-hidden="true" /> Back to Example</> : <>Open Garage Page <ArrowRight size={16} aria-hidden="true" /></>}
         </button>
       )}
     >

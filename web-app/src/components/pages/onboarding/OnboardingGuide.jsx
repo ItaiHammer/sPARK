@@ -10,22 +10,22 @@ import styles from "./OnboardingGuide.module.css";
 
 const lessons = [
   {
-    title: "Check spaces now",
+    title: "Check Spaces Now",
     description: <>Check <strong>spaces left</strong> and garage hours before you go.</>,
     Example: AvailabilityExample,
   },
   {
-    title: "Plan your arrival",
+    title: "Plan Your Arrival",
     description: <>Pick a date and time for an estimate. Tap <strong>Now</strong> for live updates.</>,
     Example: ArrivalExample,
   },
   {
-    title: "Park near your building",
+    title: "Park Near Your Building",
     description: <>Sort by <strong>Walking distance</strong>, then pick your campus building.</>,
     Example: WalkingExample,
   },
   {
-    title: "Tap a garage card",
+    title: "Tap a Garage Card",
     description: <>Open the garage page for directions, forecasts, and parking info.</>,
     Example: OnboardingGarageLesson,
   },
@@ -119,7 +119,7 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
 
       <OnboardingFooter>
         <button className={welcomeStyles.start} type="button" onClick={last ? onFinish : onNext}>
-          <span>{last ? "See garages" : "Next"}</span>
+          <span>{last ? "See Garages" : "Next"}</span>
           <ArrowRight size={21} aria-hidden="true" />
         </button>
       </OnboardingFooter>

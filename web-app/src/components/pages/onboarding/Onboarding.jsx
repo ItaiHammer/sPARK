@@ -196,10 +196,10 @@ function WelcomeScreen({ restoreFocus, onStart, onFinish }) {
 
       <OnboardingFooter className={styles.welcomeFooter}>
         <button className={styles.start} type="button" onClick={onStart}>
-          <span>Get started</span>
+          <span>Get Started</span>
           <ArrowRight className={styles.startArrow} size={21} aria-hidden="true" />
         </button>
-        <button className={styles.secondaryAction} type="button" onClick={onFinish}>Skip onboarding</button>
+        <button className={styles.secondaryAction} type="button" onClick={onFinish}>Skip Onboarding</button>
       </OnboardingFooter>
     </main>
   );
