@@ -59,17 +59,33 @@ I built sPARK as an independent project because finding parking was a problem fo
 
 ## ✨ Features
 
--   **Real-time & Forecast Parking**\
-    Check how many spaces are left and when the latest reading came in. Pause live updates to hold that snapshot, or pick a date and time up to six days ahead. The cards also show when a garage is expected to get busier or free up.
+- **Live Parking & Forecasts**
 
--   **Find the Right Garage**\
-    Sort by spaces left, how full each garage is, garage name, or walking distance to your campus building. You can also compare how many accessible, employee, 20-minute, motorcycle, or EV spots each garage has.
+  - See live space counts for all 4 SJSU garages
+  - Check forecasts for all garages up to six days ahead
 
--   **Garage Details & Daily Forecasts**\
-    Open a garage to see live availability, capacity, hours, permit and payment info, and Google Maps directions. Scroll through the day’s forecast and inspect occupancy by touch, mouse, or keyboard. Each garage has a shareable link with its own preview.
+- **Find the Right Garage**
 
--   **Quick Tour & Beta Feedback**\
-    The first-visit guide uses an animated campus map and interactive examples to show how to check spaces, pick an arrival time, and park near your building. Use the feedback form to tell me what’s working or what could be better.
+  - Sort by spaces left or how full garages are
+  - Find the garage with the shortest walk to your building and open walking directions in Google Maps
+  - Compare accessible, employee, 20-minute, motorcycle, and EV spaces across garages
+
+- **Garage Details**
+
+  - Explore each garage’s daily forecast on an interactive chart
+  - Check hours, permits, and payment options
+  - Get driving directions to the garage in Google Maps
+
+- **Design**
+
+  - Clean, simple interface
+  - Switch dates and times quickly to compare forecasts
+  - Responsive (ish 😭) UI
+  - Learn how to use the app with a short interactive onboarding guide
+
+- **Beta Feedback**
+
+  - Send feedback right from the app
 
 ---
 
