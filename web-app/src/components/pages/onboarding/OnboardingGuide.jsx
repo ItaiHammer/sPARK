@@ -103,7 +103,7 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
             {showGarageDetails ? "Garage Details" : title}
           </h1>
           <p key={showGarageDetails ? "details-copy" : "lesson-copy"} id="onboarding-description">
-            {showGarageDetails ? "A preview of the South Garage page." : description}
+            {showGarageDetails ? "Get more detailed information about a specific garage." : description}
           </p>
         </motion.div>
         {garageLesson ? (
