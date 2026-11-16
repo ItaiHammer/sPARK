@@ -5,10 +5,6 @@
   </picture>
 </h1>
 <p align="center">
-  <strong>Park Smart - Made by students for students.</strong>
-</p>
-
-<p align="center">
   Smart parking predictions for San Jose State University
 </p>
 
@@ -29,16 +25,16 @@
 
 ## Table of Contents
 
--   [📖 About](#about)
--   [✨ Features](#features)
--   [🪨 Flint & 🧪 sPARK Lab](#flint)
--   [🔄 How It Works](#how-it-works)
--   [🧩 Roadmap](#roadmap)
--   [🛠️ Technologies Used](#technologies-used)
--   [📚 Getting Started](#getting-started)
--   [🔧 Environment Variables](#environment-variables)
--   [🤝 Contributing](#contributing)
--   [📜 License](#license)
+- [📖 About](#about)
+- [✨ Features](#features)
+- [🪨 Flint & 🧪 sPARK Lab](#flint)
+- [🔄 How It Works](#how-it-works)
+- [🧩 Roadmap](#roadmap)
+- [🛠️ Technologies Used](#technologies-used)
+- [📚 Getting Started](#getting-started)
+- [🔧 Environment Variables](#environment-variables)
+- [🤝 Contributing](#contributing)
+- [📜 License](#license)
 
 ---
 
@@ -46,17 +42,17 @@
 
 ## 📖 About
 
-sPARK is a web platform that forecasts parking availability for San Jose State University. It shows live garage occupancy and forecasts from Flint, a model I trained on historical garage readings.
-
-With sPARK, you can decide where to park before you head to campus. Check which garages have space now, or pick an arrival time to see how full they’re expected to be when you get there.
-
-I built sPARK as an independent project because finding parking was a problem for me and a lot of my friends at school. I’ve heard stories of students getting to campus hours before class just to make sure they find a spot. I wanted to make it easier to decide when to leave and where to park, so we could spend less time looking for a spot and get to class on time.
-
 <p align="center">
   <a href="https://sparkparking.vercel.app/">
     <img src="./assets/spark-demo.png" alt="sPARK garage list showing predicted spaces and the date and time picker" width="320">
   </a>
 </p>
+
+sPARK is a web app that forecasts parking availability for San Jose State University. It shows live garage occupancy and forecasts from Flint, a model I trained on historical garage readings.
+
+With sPARK, you can decide where to park before you head to campus. Check which garages have space now, or pick an arrival time to see how full they’re expected to be when you get there.
+
+I built sPARK as an independent project because finding parking was a problem for me and a lot of my friends at school. I’ve heard stories of students getting to campus hours before class just to make sure they find a spot. I wanted to make it easier to decide when to leave and where to park, so we could spend less time looking for a spot and get to class on time.
 
 ---
 
@@ -65,31 +61,26 @@ I built sPARK as an independent project because finding parking was a problem fo
 ## ✨ Features
 
 - **Live Parking & Forecasts**
-
   - See live space counts for all 4 SJSU garages
   - Check forecasts for all garages up to six days ahead
 
 - **Find the Right Garage**
-
   - Sort by spaces left or how full garages are
   - Find the garage with the shortest walk to your building and open walking directions in Google Maps
   - Compare accessible, employee, 20-minute, motorcycle, and EV spaces across garages
 
 - **Garage Details**
-
   - Explore each garage’s daily forecast on an interactive chart
   - Check hours, permits, and payment options
   - Get driving directions to the garage in Google Maps
 
 - **Design**
-
   - Clean, simple interface
   - Switch dates and times quickly to compare forecasts
   - Responsive (ish 😭) UI
   - Learn how to use the app with a short interactive onboarding guide
 
 - **Beta Feedback**
-
   - Send feedback right from the app
 
 ---
@@ -104,7 +95,7 @@ Flint is a gradient-boosted tree model I trained, tested, and deployed to predic
 
 I trained [Flint v0.3](lab/models/flint_v0.3/README.md) using scikit-learn’s `HistGradientBoostingRegressor` on **58,795 garage readings** I collected from October 21, 2025 through September 19, 2026 (**334 days**).
 
-The model uses nine features across three groups.
+The model uses 9 features across three groups.
 
 - **Garage and time**
   - `lot_id`: Which garage
@@ -125,7 +116,7 @@ In the future, with more opening week data, I want to see if the model can learn
 
 ### How I tested it
 
-I compared [Flint v0.3](lab/experiments/flint_v0.3/README.md) with [Flint v0.2](lab/experiments/flint_v0.2/README.md) on **32,135 garage readings**. The saved three-week forecasts covered **31,602** of those readings and were usually issued about six days ahead.
+I compared [Flint v0.3](lab/experiments/flint_v0.3/README.md) with [Flint v0.2](lab/experiments/flint_v0.2/README.md) on **32,135 garage readings**. The saved 3 week avg baseline forecasts covered **31,602** of those readings and were usually issued about 6 days ahead.
 
 For example, to test a 10:00am Flint prediction, I used what the model would have known by 9:30am and checked its prediction against the actual 10:00am reading.
 
@@ -135,23 +126,23 @@ $$
 \mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n}|e_i|
 $$
 
-| Average error | Saved three-week average | Flint v0.2 | Flint v0.3 |
-| --- | ---: | ---: | ---: |
-| All daytime slots | 10.96 | 8.46 | **5.57** |
-| Regular class days | 7.49 | 6.46 | **4.11** |
-| Campus holidays | 17.24 | 15.01 | **4.77** |
-| Spring opening week | 37.07 | **8.32** | 20.04 |
-| Fall opening week | 45.54 | 13.59 | **7.78** |
+| Average error       | 3 week average | Flint v0.2 | Flint v0.3 |
+| ------------------- | -------------: | ---------: | ---------: |
+| All daytime slots   |          10.96 |       8.46 |   **5.57** |
+| Regular class days  |           7.49 |       6.46 |   **4.11** |
+| Campus holidays     |          17.24 |      15.01 |   **4.77** |
+| Spring opening week |          37.07 |   **8.32** |      20.04 |
+| Fall opening week   |          45.54 |      13.59 |   **7.78** |
 
 I also tested how much the opening curve itself helped during the first week of fall classes.
 
-| Fall opening week | Average error |
-| --- | ---: |
-| Saved three-week average | 45.54 |
-| Flint v0.2 | 13.59 |
-| Flint v0.3 trees alone | 14.73 |
-| Flint v0.3 with the opening curve | 8.63 |
-| Flint v0.3 with the opening curve and clearing update | **7.78** |
+| Fall opening week                                     | Average error |
+| ----------------------------------------------------- | ------------: |
+| Saved three-week average                              |         45.54 |
+| Flint v0.2                                            |         13.59 |
+| Flint v0.3 trees alone                                |         14.73 |
+| Flint v0.3 with the opening curve                     |          8.63 |
+| Flint v0.3 with the opening curve and clearing update |      **7.78** |
 
 Links: [sPARK Lab](lab/README.md), [Full results and training steps](lab/experiments/flint_v0.3/README.md)
 
@@ -175,13 +166,13 @@ flowchart TD
 
 - **Forecasts**
   - A scheduled job asks Flint for forecasts for the rest of today and the next six days
-  - Flint predicts how full each garage will be in 30-minute slots
+  - Flint predicts how full each garage will be in 30 minute increments
   - The job saves those predictions in a Supabase table
-  - The app reads the saved forecasts so we don’t have to recompute them each time someone opens the app or changes the time
+  - The app reads the saved forecasts from the supabase table so we don’t have to recompute them each time someone asks for them
 
 - **Walking Distances & Trip Planning**
-  - When you pick a campus building, sPARK uses OpenRouteService to calculate the walk from each garage
-  - The API saves those walking distances in Supabase so it can reuse them when someone picks the same building
+  - When you pick a building, sPARK uses OpenRouteService to calculate the walk from each garage
+  - The API saves those walking distances in Supabase so it can reuse them when someone picks the same building/garage combo
   - The trip recommendation API ranks garages by travel time and predicted occupancy
 
 - **Analytics & Feedback**
@@ -300,21 +291,21 @@ If you want to run Flint locally, use Python 3.13 and follow the [forecasting se
 
 Add your settings to `web-app/.env.local`. Use a Supabase development project with the sPARK schema and garage data.
 
-| Service or feature | Variables |
-| --- | --- |
-| [Supabase Postgres](https://supabase.com/docs/guides/database/overview) | `SUPABASE_PROJECT_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
-| [Supabase Realtime](https://supabase.com/docs/guides/realtime) | `NEXT_PUBLIC_SUPABASE_PROJECT_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| [App API](web-app/src/proxy.js) | `INTERNAL_API_KEY`, `NEXT_PUBLIC_INTERNAL_API_KEY` |
-| [Arcjet](https://docs.arcjet.com/) | `ARCJET_KEY` |
-| [Redis](https://redis.io/docs/latest/) | `REDIS_URL`, `REDIS_PORT`, `REDIS_PASSWORD` |
-| [OpenRouteService](https://giscience.github.io/openrouteservice/api-reference/endpoints/matrix/) | `OPENROUTE_SERVICE_URL`, `OPENROUTE_SERVICE_API_KEY` |
-| [OpenCage](https://opencagedata.com/) | `OPENCAGE_API_KEY` |
-| [PostHog](https://posthog.com/docs) | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` |
-| [Flint forecast job](web-app/src/app/api/cron/forecast/README.md) | `FORECASTING_API_KEY` |
-| [Vercel Services](https://vercel.com/docs/services) | `FLINT_SERVICE_URL` |
-| [SJSU garage scraper](web-app/src/app/api/locations/%5Blocation_id%5D/scrape/route.js) | `SCRAPING_API_KEY`, `SCRAPER_USER_AGENT` |
-| [Link previews](web-app/src/app/layout.js) | `NEXT_PUBLIC_WEB_APP_URL` |
-| [Next.js runtime](https://nextjs.org/docs/app/guides/environment-variables) | `NODE_ENV` (set by Next.js) |
+| Service or feature                                                                               | Variables                                                           |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| [Supabase Postgres](https://supabase.com/docs/guides/database/overview)                          | `SUPABASE_PROJECT_URL`, `SUPABASE_SERVICE_ROLE_KEY`                 |
+| [Supabase Realtime](https://supabase.com/docs/guides/realtime)                                   | `NEXT_PUBLIC_SUPABASE_PROJECT_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| [App API](web-app/src/proxy.js)                                                                  | `INTERNAL_API_KEY`, `NEXT_PUBLIC_INTERNAL_API_KEY`                  |
+| [Arcjet](https://docs.arcjet.com/)                                                               | `ARCJET_KEY`                                                        |
+| [Redis](https://redis.io/docs/latest/)                                                           | `REDIS_URL`, `REDIS_PORT`, `REDIS_PASSWORD`                         |
+| [OpenRouteService](https://giscience.github.io/openrouteservice/api-reference/endpoints/matrix/) | `OPENROUTE_SERVICE_URL`, `OPENROUTE_SERVICE_API_KEY`                |
+| [OpenCage](https://opencagedata.com/)                                                            | `OPENCAGE_API_KEY`                                                  |
+| [PostHog](https://posthog.com/docs)                                                              | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST`     |
+| [Flint forecast job](web-app/src/app/api/cron/forecast/README.md)                                | `FORECASTING_API_KEY`                                               |
+| [Vercel Services](https://vercel.com/docs/services)                                              | `FLINT_SERVICE_URL`                                                 |
+| [SJSU garage scraper](web-app/src/app/api/locations/%5Blocation_id%5D/scrape/route.js)           | `SCRAPING_API_KEY`, `SCRAPER_USER_AGENT`                            |
+| [Link previews](web-app/src/app/layout.js)                                                       | `NEXT_PUBLIC_WEB_APP_URL`                                           |
+| [Next.js runtime](https://nextjs.org/docs/app/guides/environment-variables)                      | `NODE_ENV` (set by Next.js)                                         |
 
 Use the same development-only value for both app API keys. `NEXT_PUBLIC_` variables are visible in the browser.
 
