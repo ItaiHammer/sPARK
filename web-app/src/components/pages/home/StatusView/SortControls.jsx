@@ -8,7 +8,7 @@ import styles from "./StatusViewPage.module.css";
 
 const options = Object.values(SORT_TYPES);
 
-export default function SortControls({ sortType, building, buildings, isBuildingsLoading, buildingError, onRetry, onSort, onBuilding, sortOptions = options, trackChanges = true, modal = false }) {
+export default function SortControls({ sortType, building, buildings, isBuildingsLoading, buildingError, onRetry, onSort, onBuilding, sortOptions = options, trackChanges = true, modal = false, compactTrigger = modal }) {
   const [open, setOpen] = useState(false);
   const [choosingBuilding, setChoosingBuilding] = useState(false);
   const [query, setQuery] = useState("");
@@ -18,7 +18,7 @@ export default function SortControls({ sortType, building, buildings, isBuilding
   const sortHeading = useRef(null);
   const id = useId();
   const label = getSortLabel(sortType, building?.buildingName);
-  const triggerLabel = modal && building?.buildingName?.length > 5 ? "Walking" : label;
+  const triggerLabel = compactTrigger && building?.buildingName?.length > 5 ? "Walking" : label;
   const firstCategoryOption = sortOptions.find((option) => option.category)?.value;
   const matchingBuildings = buildings.filter((item) => `${item.name} ${item.abbreviation}`.toLowerCase().includes(query.trim().toLowerCase()));
 
@@ -102,7 +102,7 @@ export default function SortControls({ sortType, building, buildings, isBuilding
       if (!modal && event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) close();
     }}>
       <button
-        className={`${styles.topControl}${modal ? ` ${styles.modalSortTrigger}` : ""}`}
+        className={`${styles.topControl}${compactTrigger ? ` ${styles.modalSortTrigger}` : ""}`}
         ref={trigger}
         type="button"
         title={label}

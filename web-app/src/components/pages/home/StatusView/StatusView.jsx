@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Calendar } from "lucide-react";
 import { DateTime } from "luxon";
 import { useUI } from "@/contexts/UI/UI.context";
@@ -18,11 +18,27 @@ import useParkingSelection from "./useParkingSelection";
 import styles from "./StatusViewPage.module.css";
 
 const modeLabels = { live: "Live", paused: "Paused", historical: "Historical", predicted: "Predicted" };
+const sortDialogQuery = "(max-width: 600px), (pointer: coarse)";
+
+function subscribeToSortDialogLayout(onChange) {
+  const query = window.matchMedia(sortDialogQuery);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+function useSortDialog() {
+  return useSyncExternalStore(
+    subscribeToSortDialogLayout,
+    () => window.matchMedia(sortDialogQuery).matches,
+    () => false,
+  );
+}
 
 export default function StatusViewPage({ locationId, onReady }) {
   const page = useRef(null);
   const refreshTimer = useRef(null);
   const [sorting, setSorting] = useState(false);
+  const sortDialog = useSortDialog();
   const { sortMenu, selectSortOption, selectBuildingOption, updateTimeFilterMenu } = useUI();
   const [zone, setZone] = useState("America/Los_Angeles");
   const picker = useParkingSelection({ locationId, zone });
@@ -76,7 +92,18 @@ export default function StatusViewPage({ locationId, onReady }) {
               <span className={styles.dateText}>{selectedAt.toFormat("LLL d")}</span>
               <span className={styles.timeText}>{selectedAt.toFormat("h:mm a")}</span>
             </button>
-            <SortControls sortType={sortMenu.type} building={sortMenu.building} buildings={data.buildings} isBuildingsLoading={data.isBuildingsLoading} buildingError={data.buildingError} onRetry={retry} onSort={(type) => refreshCards(() => selectSortOption(type))} onBuilding={(building) => refreshCards(() => selectBuildingOption(building))} />
+            <SortControls
+              sortType={sortMenu.type}
+              building={sortMenu.building}
+              buildings={data.buildings}
+              isBuildingsLoading={data.isBuildingsLoading}
+              buildingError={data.buildingError}
+              onRetry={retry}
+              onSort={(type) => refreshCards(() => selectSortOption(type))}
+              onBuilding={(building) => refreshCards(() => selectBuildingOption(building))}
+              modal={sortDialog}
+              compactTrigger={false}
+            />
           </div>
           <div className={styles.metadata}>
             <span className={styles.mode} data-mode={picker.displayMode}><span className={styles.modeDot} aria-hidden="true" />{modeLabels[picker.displayMode]}</span>
