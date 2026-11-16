@@ -237,6 +237,15 @@
   .examplePanel { padding-block: 6px; }
 }
 
+@container onboarding (max-height: 450px) and (max-width: 519px) {
+  .lesson { gap: 5px; padding-block: 2px; }
+  .intro h1 { font-size: 24px; }
+  .intro p { margin-top: 4px; font-size: 13px; line-height: 1.25; }
+  .examplePanel { gap: 4px; padding-block: 4px; }
+  .exampleHeader { min-height: 22px; }
+  .mode { padding-block: 2px; }
+}
+
 @container onboarding (max-height: 465px) and (min-width: 520px) {
   .lesson {
     grid-template-columns: minmax(0, 0.58fr) minmax(0, 1.42fr);
