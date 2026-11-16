@@ -47,11 +47,11 @@
 
 ## 📖 About
 
-sPARK helps San Jose State University students figure out where to park before they get to campus. You can check North, South, South Campus, and West garages right now, look ahead to when you’ll arrive, or find the shortest walk to class.
+sPARK is a web platform that forecasts parking availability for San Jose State University. It shows live garage occupancy and forecasts from Flint, a model I trained on historical garage readings.
 
-I built the web app, the pipeline that collects garage readings, and Flint, the model that uses those readings to forecast parking. sPARK is an independent student project.
+With sPARK, you can decide where to park before you head to campus. Check which garages have space now, or pick an arrival time to see how full they’re expected to be when you get there.
 
-Made by students for students.
+I built sPARK as an independent project because finding parking was a problem for me and a lot of my friends at school. I’ve heard stories of students getting to campus hours before class just to make sure they find a spot. I wanted to make it easier to decide when to leave and where to park, so we could spend less time looking for a spot and get to class on time.
 
 ---
 
