@@ -88,6 +88,18 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
     hold.current = null;
   }, [dayKey, hasData, updating]);
 
+  useLayoutEffect(() => {
+    const element = scroller.current;
+    if (!element || !hasData) return;
+    const preventScrollDuringHold = (event) => {
+      if (hold.current?.held && event.touches.length === 1 && event.cancelable) event.preventDefault();
+    };
+    // The browser needs the listener registered before contact. Until the hold
+    // wins, leaving touchmove alone lets native panning and momentum take over.
+    element.addEventListener("touchmove", preventScrollDuringHold, { passive: false });
+    return () => element.removeEventListener("touchmove", preventScrollDuringHold);
+  }, [hasData]);
+
   const columnStep = (element) => {
     const track = element.lastElementChild;
     const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
@@ -132,7 +144,8 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   };
   const inspectPointer = (event, source) => {
     const element = scroller.current;
-    const contentX = event.clientX - element.getBoundingClientRect().left + element.scrollLeft;
+    const viewportX = event.clientX - element.getBoundingClientRect().left;
+    const contentX = Math.max(0, Math.min(element.clientWidth - 1, viewportX)) + element.scrollLeft;
     return inspectIndex(contentX / columnStep(element) - .5, source);
   };
   const cancelHold = () => {
@@ -171,7 +184,11 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
     }
     const gesture = hold.current;
     if (gesture?.pointerId !== event.pointerId) return;
-    // Never capture the pointer or suppress movement: horizontal and page scrolling stay native.
+    if (gesture.held) {
+      const next = inspectPointer(event, "touch");
+      setInspection((previous) => previous?.index === next.index ? previous : next);
+      return;
+    }
     if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > HOLD_TOLERANCE_PX) {
       cancelHold();
       setInspection(null);
@@ -253,7 +270,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
           <button key={start} type="button" disabled={!hasData} aria-pressed={startHour === start} onClick={() => scrollToIndex(day.set({ hour: start }).diff(day, "minutes").minutes / 30)}>{label}</button>
         ))}
       </div>
-      {hasData ? <p id="garage-forecast-scroll-hint" className={styles.forecastHint}><MoveHorizontal aria-hidden="true" size={13} />Scroll to explore · hold to see occupancy<span className={styles.srOnly}>. Hover or click a bar, or touch and hold it briefly. Use left and right arrow keys to move by one hour, Home for the start, or End for the end of the day. Press Escape to hide the readout.</span></p> : null}
+      {hasData ? <p id="garage-forecast-scroll-hint" className={styles.forecastHint}><MoveHorizontal aria-hidden="true" size={13} />Scroll to explore · hold to see occupancy<span className={styles.srOnly}>. Hover or click a bar. On a touch screen, hold a bar until the readout appears, then drag to inspect other bars. Use left and right arrow keys to move by one hour, Home for the start, or End for the end of the day. Press Escape to hide the readout.</span></p> : null}
       {error ? <p className={styles.notice}>Forecast updates could not load. <button type="button" onClick={onRetry}>Try again</button></p> : null}
       <p className={styles.note}>Forecast occupancy uses historical patterns. Actual availability may vary.</p>
     </>
