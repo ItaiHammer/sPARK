@@ -32,7 +32,7 @@
 
 I build and test parking occupancy models for SJSU's garages using historical readings from Supabase. I publish the experiments here to show what I tried, how I built each model, and what I learned.
 
-The models predict **0-100% occupancy** for a garage at a given time. My goal is to forecast up to a week ahead with an average error of **3-5 percentage points**. Training runs locally on CPU. App integration is planned.
+The models predict **0-100% occupancy** for a garage at a given time. My goal is to forecast up to a week ahead with an average error of **3-5 percentage points**. Training runs locally on CPU. I integrated Flint v0.3 beta into the [app’s forecasting pipeline](../web-app/src/app/api/cron/forecast/README.md). The beta’s reported accuracy comes from a same-day replay.
 
 ---
 
