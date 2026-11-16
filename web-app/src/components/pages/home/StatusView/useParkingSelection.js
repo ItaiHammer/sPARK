@@ -125,7 +125,7 @@ export function decodeParkingSelection(serialized, zone, now = Date.now()) {
 
 function initialState(storageKey, zone) {
   let restored = null;
-  if (typeof window !== "undefined") {
+  if (storageKey && typeof window !== "undefined") {
     try { restored = decodeParkingSelection(window.localStorage.getItem(storageKey), zone); }
     catch { /* Private browsing and blocked storage still allow the picker to work. */ }
   }
@@ -135,9 +135,9 @@ function initialState(storageKey, zone) {
   };
 }
 
-export default function useParkingSelection({ locationId, zone = DEFAULT_ZONE }) {
+export default function useParkingSelection({ locationId, zone = DEFAULT_ZONE, persist = true }) {
   const locationZone = validZone(zone);
-  const storageKey = `spark:parking-selection:v${STORAGE_VERSION}:${String(locationId || "default")}`;
+  const storageKey = persist ? `spark:parking-selection:v${STORAGE_VERSION}:${String(locationId || "default")}` : null;
   const [state, setState] = useState(() => initialState(storageKey, locationZone));
   const [now, setNow] = useState(() => Date.now());
 
@@ -180,7 +180,7 @@ export default function useParkingSelection({ locationId, zone = DEFAULT_ZONE })
   }, []);
 
   useEffect(() => {
-    if (state.storageKey !== storageKey || state.selection.zone !== locationZone) return;
+    if (!storageKey || state.storageKey !== storageKey || state.selection.zone !== locationZone) return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({
         version: STORAGE_VERSION,

@@ -405,6 +405,8 @@ a.travel:focus-visible {
   }
 }
 
+.adaptiveDensity[data-status="unknown"] .occupied { white-space: normal; }
+
 /* Walking estimates add a row to each card, so that row compacts first. */
 @container onboarding-lesson (max-height: 515px) {
   .adaptiveDensity .travel {

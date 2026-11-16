@@ -105,6 +105,7 @@ export default function GarageCard({
   sortType,
   href,
   adaptiveDensity = false,
+  unavailableLabel = "Availability unavailable",
 }) {
   const titleId = useId();
   const { occupied, spaces } = cardValues(garage);
@@ -172,7 +173,7 @@ export default function GarageCard({
                 {closed
                   ? "Outside open hours"
                   : occupied == null
-                    ? "Availability unavailable"
+                    ? unavailableLabel
                     : <><EntranceNumber value={occupied} />% occupied</>}
               </span>
               {(closed || occupied != null) && <span className={styles.status}>{status}</span>}
