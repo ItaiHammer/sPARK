@@ -42,12 +42,6 @@
 
 ---
 
-<p align="center">
-  <a href="https://sparkparking.vercel.app/">
-    <img src="./assets/spark-demo.png" alt="sPARK garage list showing predicted spaces and the date and time picker" width="320">
-  </a>
-</p>
-
 <a id="about"></a>
 
 ## 📖 About
@@ -57,6 +51,12 @@ sPARK is a web platform that forecasts parking availability for San Jose State U
 With sPARK, you can decide where to park before you head to campus. Check which garages have space now, or pick an arrival time to see how full they’re expected to be when you get there.
 
 I built sPARK as an independent project because finding parking was a problem for me and a lot of my friends at school. I’ve heard stories of students getting to campus hours before class just to make sure they find a spot. I wanted to make it easier to decide when to leave and where to park, so we could spend less time looking for a spot and get to class on time.
+
+<p align="center">
+  <a href="https://sparkparking.vercel.app/">
+    <img src="./assets/spark-demo.png" alt="sPARK garage list showing predicted spaces and the date and time picker" width="320">
+  </a>
+</p>
 
 ---
 
