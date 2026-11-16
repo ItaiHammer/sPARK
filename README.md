@@ -31,7 +31,7 @@
 
 -   [📖 About](#about)
 -   [✨ Features](#features)
--   [🔥 Flint & sPARK Lab](#flint)
+-   [🪨 Flint & 🧪 sPARK Lab](#flint)
 -   [🔄 How It Works](#how-it-works)
 -   [🧩 Roadmap](#roadmap)
 -   [🛠️ Technologies Used](#technologies-used)
@@ -91,33 +91,64 @@ I built sPARK as an independent project because finding parking was a problem fo
 
 <a id="flint"></a>
 
-## 🔥 Flint & sPARK Lab
+## <img src="lab/experiments/flint_v0.1/icon.svg" alt="" width="24"> Flint & 🧪 sPARK Lab
 
-Flint predicts how full a garage will be on a 0–100% scale. I built the training and evaluation code in Python and trained the models locally on CPU in [sPARK Lab](lab/README.md).
+Flint is a gradient-boosted tree model I trained, tested, and deployed to predict how full SJSU’s garages will be at a given time.
 
 ### How I trained it
 
-I used historical occupancy readings from all four garages. I rounded the readings to half-hour slots, removed invalid readings and a period when the feed was stuck, and kept one training reading per garage and slot. I joined the readings with the SJSU academic calendar and federal holidays. The [Flint v0.3 beta checkpoint](lab/models/flint_v0.3/README.md) was fitted on **58,795 readings** from October 21, 2025 through September 19, 2026.
+I trained [Flint v0.3](lab/models/flint_v0.3/README.md) using scikit-learn’s `HistGradientBoostingRegressor` on **58,795 garage readings** I collected from October 21, 2025 through September 19, 2026 (**334 days**).
 
-| Version | What I built |
-| --- | --- |
-| [Flint v0.1](lab/experiments/flint_v0.1/README.md) | Started with scikit-learn’s histogram gradient-boosted trees using the garage, time of day, weekday, holidays, and where the date falls in the academic term. |
-| [Flint v0.2](lab/experiments/flint_v0.2/README.md) | Tuned the tree settings and chose the recipe with the lowest daytime error on a later validation period. |
-| [Flint v0.3](lab/experiments/flint_v0.3/README.md) | Added occupancy at the same time last week and an average from comparable days in the prior two weeks, for nine inputs total. |
+The model uses nine features across three groups.
 
-The trees struggled when classes first resumed, so I added an adjustment that blends their prediction with the typical occupancy from earlier opening weeks. The model leans more on the trees as readings come in for the new term. A same-day update can also lower the forecast when live readings show a near-full garage has started clearing.
+- **Garage and time**
+  - `lot_id`: Which garage
+  - `weekday`: Day of the week
+  - `minute_of_day`: Minutes since midnight Pacific time
+- **Calendar**
+  - `calendar`: Academic term type or break
+  - `days_into_calendar`: Days since the term started
+  - `days_until_term_end`: Days until the term ends
+  - `is_us_holiday`: Whether it’s an observed U.S. federal holiday
+- **Occupancy history**
+  - `recent_same_regime_slot`: Average occupancy at the same time on comparable days in the past two weeks
+  - `lag_7`: Occupancy at the same time last week
+
+I added an opening curve based on past opening weeks to help Flint account for the jump in demand when classes start. It applies on class weekdays in the first 7 days of instruction and helped the model a lot in the fall replay.
+
+In the future, with more opening week data, I want to see if the model can learn that pattern on its own.
 
 ### How I tested it
 
-I replayed historical forecasts by refitting v0.2 and v0.3 on the same 41 Sundays using earlier readings. I compared both versions on **32,135 observed daytime half-hours**, with a simulated issue time 30 minutes before each target slot. Mean absolute error is measured in occupancy percentage points.
+I compared [Flint v0.3](lab/experiments/flint_v0.3/README.md) with [Flint v0.2](lab/experiments/flint_v0.2/README.md) on **32,135 garage readings**. The saved three-week forecasts covered **31,602** of those readings and were usually issued about six days ahead.
 
-| Same-day replay | Flint v0.2 | Flint v0.3 |
-| --- | ---: | ---: |
-| Average daytime error | 8.46 pp | **5.57 pp** |
-| Average error on ordinary class days | 6.46 pp | **4.11 pp** |
-| Average error on campus holidays | 15.01 pp | **4.77 pp** |
+For example, to test a 10:00am Flint prediction, I used what the model would have known by 9:30am and checked its prediction against the actual 10:00am reading.
 
-On the first day of fall classes, v0.3 caught **33 of 37** near-full slots, up from **0 of 37** with v0.2. Near-full means at least 93% occupied. The spring opening was harder. With no earlier opening in the archive, v0.3 missed all 34 near-full slots on the first day. I chose the clearing rule after reviewing the fall replay, so accuracy on a fresh opening still needs validation. Forecasts issued several days ahead need their own replay. [Full replay results](lab/experiments/flint_v0.3/README.md#evaluation) · [Training and replay commands](lab/experiments/flint_v0.3/README.md#reproduce)
+I measured mean absolute error (MAE) in occupancy percentage points. If $e_i = \hat{y}_i - y_i$ is the difference between predicted and actual occupancy, then
+
+$$
+\mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n}|e_i|
+$$
+
+| Average error | Saved three-week average | Flint v0.2 | Flint v0.3 |
+| --- | ---: | ---: | ---: |
+| All daytime slots | 10.96 | 8.46 | **5.57** |
+| Regular class days | 7.49 | 6.46 | **4.11** |
+| Campus holidays | 17.24 | 15.01 | **4.77** |
+| Spring opening week | 37.07 | **8.32** | 20.04 |
+| Fall opening week | 45.54 | 13.59 | **7.78** |
+
+I also tested how much the opening curve itself helped during the first week of fall classes.
+
+| Fall opening week | Average error |
+| --- | ---: |
+| Saved three-week average | 45.54 |
+| Flint v0.2 | 13.59 |
+| Flint v0.3 trees alone | 14.73 |
+| Flint v0.3 with the opening curve | 8.63 |
+| Flint v0.3 with the opening curve and clearing update | **7.78** |
+
+Links: [sPARK Lab](lab/README.md), [Full results and training steps](lab/experiments/flint_v0.3/README.md)
 
 ---
 
