@@ -4,8 +4,17 @@
   -webkit-touch-callout: none;
 }
 
-.bars { padding-top: 44px; }
-.nowMarker { top: 44px; }
+.bars {
+  box-sizing: content-box;
+  padding-top: 44px;
+  /* Leave room to center the readout on the first and last bars. */
+  padding-inline: var(--inspection-gutter);
+}
+
+.nowMarker {
+  top: 44px;
+  left: calc(var(--inspection-gutter) + (100% - 2 * var(--inspection-gutter) + var(--bar-gap)) / var(--point-count) * (var(--now-index) + .5) - var(--bar-gap) / 2);
+}
 
 .marker {
   position: absolute;
@@ -16,6 +25,12 @@
   background: color-mix(in srgb, var(--spark-ink) 72%, transparent);
   transform: translateX(-50%);
   pointer-events: none;
+}
+
+.marker[data-fading="true"] {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 180ms ease-out, visibility 0s linear 180ms;
 }
 
 .markerDot {
@@ -47,7 +62,7 @@
   line-height: 15px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-  transform: translateX(calc(-50% + var(--tooltip-shift)));
+  transform: translateX(-50%);
   animation: readout-appear 160ms cubic-bezier(.16, 1, .3, 1);
 }
 
@@ -67,4 +82,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .readout, .readout > span { animation: none; }
+  .marker[data-fading="true"] { transition: none; }
 }
