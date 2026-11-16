@@ -25,7 +25,7 @@ const lessons = [
   },
 ];
 
-export default function OnboardingGuide({ step, fontClassName, onBack, onNext, onFinish }) {
+export default function OnboardingGuide({ step, fontClassName, onBack, onNext, onSkip, onFinish }) {
   const guide = useRef(null);
   const heading = useRef(null);
   const reducedMotion = useReducedMotion();
@@ -63,7 +63,7 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
               />
             ))}
           </div>
-          <button className={`${welcomeStyles.secondaryAction} ${styles.skip}`} type="button" onClick={onFinish}>Skip</button>
+          <button className={`${welcomeStyles.secondaryAction} ${styles.skip}`} type="button" onClick={onSkip}>Skip</button>
         </nav>
         <div className={styles.brand}>
           <Image src="/spark-logo.svg" width={27} height={20} alt="" />

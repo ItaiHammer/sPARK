@@ -6,6 +6,7 @@ import { DM_Sans } from "next/font/google";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import ParkingLoading from "@/components/pages/home/StatusView/ParkingLoading";
 import OnboardingCampusMap from "./OnboardingCampusMap";
 import OnboardingFooter from "./OnboardingFooter";
 import OnboardingGuide from "./OnboardingGuide";
@@ -14,8 +15,24 @@ import styles from "./Onboarding.module.css";
 const introFont = DM_Sans({ subsets: ["latin"], display: "swap" });
 const getServerSnapshot = () => null;
 const COMPLETION_KEY = "spark:onboarding-complete";
+const GARAGE_LIST_PATH = "/sjsu";
+const LAST_STEP = 3;
 const ARTWORK_WAIT_MS = 2500;
+const HANDOFF_DURATION_MS = 240;
+const GARAGE_NAVIGATION_TIMEOUT_MS = 5000;
 const screenEase = [0.32, 0.12, 0.24, 1];
+const screenVariants = {
+  enter: (reducedMotion) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: reducedMotion ? 0 : 0.56, ease: screenEase },
+  }),
+  handoff: {
+    opacity: 0.32,
+    y: -6,
+    transition: { duration: HANDOFF_DURATION_MS / 1000, ease: screenEase },
+  },
+};
 
 function getOnboardingCompletion() {
   try {
@@ -48,51 +65,84 @@ export default function Onboarding() {
   const router = useRouter();
   const reducedMotion = useReducedMotion();
   const [step, setStep] = useState(null);
+  const [finishing, setFinishing] = useState(false);
+  const [opening, setOpening] = useState(false);
   const completed = useSyncExternalStore(
     subscribeToOnboardingCompletion,
     getOnboardingCompletion,
     getServerSnapshot,
   );
+  const openingGarages = opening || (completed === true && !finishing);
+  const showOnboarding = completed === false || finishing || opening;
 
   useEffect(() => {
-    if (completed) router.replace("/sjsu");
-  }, [completed, router]);
+    if (!openingGarages) return;
+    if (opening) completeOnboarding();
+    const fallback = window.setTimeout(() => window.location.replace(GARAGE_LIST_PATH), GARAGE_NAVIGATION_TIMEOUT_MS);
+    router.replace(GARAGE_LIST_PATH);
+    return () => window.clearTimeout(fallback);
+  }, [opening, openingGarages, router]);
 
-  function finish() {
-    completeOnboarding();
-    router.replace("/sjsu");
+  useEffect(() => {
+    if (step === LAST_STEP) router.prefetch(GARAGE_LIST_PATH);
+  }, [router, step]);
+
+  useEffect(() => {
+    if (!finishing || openingGarages) return;
+    // Continue if the browser interrupts or suppresses the exit animation.
+    const fallback = window.setTimeout(() => setOpening(true), HANDOFF_DURATION_MS + 100);
+    return () => window.clearTimeout(fallback);
+  }, [finishing, openingGarages]);
+
+  const finish = () => setOpening(true);
+
+  function finishWithHandoff() {
+    if (reducedMotion) finish();
+    else setFinishing(true);
   }
-
-  if (completed !== false) return <div className={styles.transitionSurface} />;
 
   const welcome = !step;
   return (
     <div className={styles.transitionSurface}>
-      <AnimatePresence initial={false} mode="wait">
-        <motion.div
-          className={styles.stage}
-          key={welcome ? "welcome" : "guide"}
-          initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 10 }}
-          animate={{ opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.56, ease: screenEase } }}
-          exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : -6, transition: { duration: reducedMotion ? 0 : 0.24, ease: "easeIn" } }}
-        >
-          {welcome ? (
-            <WelcomeScreen
-              restoreFocus={step === 0}
-              onStart={() => setStep(1)}
-              onFinish={finish}
-            />
-          ) : (
-            <OnboardingGuide
-              step={step}
-              fontClassName={introFont.className}
-              onBack={() => setStep(step - 1)}
-              onNext={() => setStep(step + 1)}
-              onFinish={finish}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+      {showOnboarding && (
+        <AnimatePresence initial={false} mode="wait">
+          <motion.div
+            className={styles.stage}
+            key={welcome ? "welcome" : "guide"}
+            inert={finishing || openingGarages}
+            custom={reducedMotion}
+            variants={screenVariants}
+            initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 10 }}
+            animate={finishing ? "handoff" : "enter"}
+            onAnimationComplete={(variant) => {
+              if (variant === "handoff") finish();
+            }}
+            exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : -6, transition: { duration: reducedMotion ? 0 : 0.24, ease: "easeIn" } }}
+          >
+            {welcome ? (
+              <WelcomeScreen
+                restoreFocus={step === 0}
+                onStart={() => setStep(1)}
+                onFinish={finish}
+              />
+            ) : (
+              <OnboardingGuide
+                step={step}
+                fontClassName={introFont.className}
+                onBack={() => setStep(step - 1)}
+                onNext={() => setStep(step + 1)}
+                onSkip={finish}
+                onFinish={finishWithHandoff}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      )}
+      {openingGarages && (
+        <div className={styles.handoffLoading}>
+          <ParkingLoading fullPage />
+        </div>
+      )}
     </div>
   );
 }

@@ -20,6 +20,11 @@
 
 .stage { height: 100%; }
 
+.handoffLoading {
+  position: absolute;
+  inset: 0;
+}
+
 .screen {
   --welcome-ink: #242424;
   --welcome-secondary: #555;
@@ -273,6 +278,11 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .handoffLoading {
+    --welcome-enter-from: none;
+    animation: welcome-enter 160ms ease-out 120ms both;
+  }
+
   .screen[data-ready="true"] :is(.brand, .intro h1, .intro p, .map, .start, .startArrow) {
     animation: welcome-enter var(--welcome-enter-duration, 1150ms) var(--welcome-ease) var(--welcome-enter-delay, 0ms) backwards;
   }
