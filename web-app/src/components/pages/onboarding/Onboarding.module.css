@@ -29,6 +29,13 @@
   --welcome-ink: #242424;
   --welcome-secondary: #555;
   --welcome-ease: cubic-bezier(0.22, 0.68, 0.24, 1);
+  --pin-loop-period: 3.8s;
+  --pin-loop-wait: 1340ms;
+  --onboarding-inset: clamp(16px, 5vw, 42px);
+  --onboarding-copy-gap: clamp(6px, 1.5dvh, 13px);
+  --onboarding-copy-size: clamp(14px, min(4.4vw, 2.7dvh), 18px);
+  --onboarding-copy-line: 1.35;
+  --onboarding-copy-weight: 450;
   --secondary-action-height: 44px;
   --safe-inline: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
   display: grid;
@@ -125,7 +132,7 @@
   gap: clamp(18px, 4dvh, 32px);
   width: min(100%, 510px);
   margin-inline: auto;
-  padding: 8px max(clamp(16px, 5vw, 42px), var(--safe-inline));
+  padding: 8px max(var(--onboarding-inset), var(--safe-inline));
 }
 
 .content:not(:has(.map)) { grid-template-columns: minmax(0, 1fr); }
@@ -147,11 +154,11 @@
 
 .intro p {
   max-width: 33ch;
-  margin: clamp(6px, 1.5dvh, 13px) auto 0;
+  margin: var(--onboarding-copy-gap) auto 0;
   color: var(--welcome-secondary);
-  font-size: clamp(14px, min(4.4vw, 2.7dvh), 18px);
-  font-weight: 450;
-  line-height: 1.35;
+  font-size: var(--onboarding-copy-size);
+  font-weight: var(--onboarding-copy-weight);
+  line-height: var(--onboarding-copy-line);
   text-wrap: pretty;
 }
 
@@ -235,6 +242,8 @@
 }
 
 @media (min-width: 860px) {
+  .screen { --onboarding-copy-size: 21px; }
+
   .content {
     align-items: center;
     grid-template-columns: 0.95fr 1.05fr;
@@ -243,8 +252,6 @@
   }
 
   .intro h1 { font-size: clamp(48px, 5.25vw, 64px); }
-  .intro p { font-size: 21px; }
-
   .map { width: min(100%, 480px); }
 }
 
@@ -274,8 +281,20 @@
   }
 
   .welcomeFooter .start { padding-inline: 10px; }
-  .welcomeFooter .start > svg { width: 18px; height: 18px; }
+  .start > svg { width: 18px; height: 18px; }
   .welcomeFooter .secondaryAction { padding-inline: 4px; }
+}
+
+@container onboarding (max-height: 450px) and (max-width: 519px) {
+  .screen {
+    --onboarding-copy-gap: 4px;
+    --onboarding-copy-size: 13px;
+    --onboarding-copy-line: 1.25;
+  }
+}
+
+@container onboarding (max-height: 465px) and (min-width: 520px) {
+  .screen { --onboarding-copy-size: 14px; }
 }
 
 @container onboarding (max-height: 430px) and (min-width: 520px) {
@@ -288,7 +307,6 @@
   }
 
   .intro h1 { font-size: clamp(31px, 5.6vw, 43px); }
-  .intro p { font-size: 15px; }
   .map { width: min(100%, 265px); }
 }
 
@@ -321,8 +339,7 @@
     --pin-duration: 650ms;
     --pin-settled: calc(var(--pin-delay) + var(--pin-duration));
     --route-duration: 900ms;
-    --route-loop-delay: calc(var(--pin-settled) + var(--route-duration) + 600ms);
-    --route-loop-period: 3.8s;
+    --route-loop-delay: calc(var(--pin-settled) + var(--pin-loop-wait) + 160ms);
   }
   .screen[data-ready="true"] .pinMarker {
     animation: pin-land var(--pin-duration) var(--welcome-ease) var(--pin-delay) backwards;
@@ -330,16 +347,17 @@
   .screen[data-ready="true"] .pinShadow {
     animation: pin-shadow 450ms ease calc(var(--pin-settled) - 150ms) backwards;
   }
-  .screen[data-ready="true"] .pinRipple {
+  .screen[data-ready="true"] .pinRipple,
+  .previewPinRipple {
     animation:
       pin-ripple 720ms ease-out var(--pin-settled) backwards,
-      route-pin-ping var(--route-loop-period) ease-out calc(var(--route-loop-delay) - 160ms) infinite;
+      route-pin-ping var(--pin-loop-period) ease-out calc(var(--pin-settled) + var(--pin-loop-wait)) infinite;
   }
   .screen[data-ready="true"] .routeReveal {
     animation: campus-route var(--route-duration) ease-out var(--pin-settled) backwards;
   }
   .screen[data-ready="true"] .routePulse {
-    animation: campus-route-pulse var(--route-loop-period) linear var(--route-loop-delay) infinite;
+    animation: campus-route-pulse var(--pin-loop-period) linear var(--route-loop-delay) infinite;
   }
   .start {
     --welcome-enter-delay: 640ms;

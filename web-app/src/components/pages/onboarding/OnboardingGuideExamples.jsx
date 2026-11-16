@@ -15,16 +15,32 @@ const noBuildings = [];
 const labels = { live: "Live", paused: "Paused", historical: "Historical", predicted: "Predicted" };
 const distanceSort = SORT_TYPES.DISTANCE_TO_BUILDING.value;
 const sortOptions = [SORT_TYPES.MOST_SPACES, SORT_TYPES.DISTANCE_TO_BUILDING];
+const panelRadius = 23;
+// Motion uses inline radius and shadow values to correct scaling during layout changes.
+const panelStyle = {
+  "--example-radius": `${panelRadius}px`,
+  borderRadius: panelRadius,
+  boxShadow: "0 16px 34px rgb(36 36 36 / 7%), 0 2px 4px rgb(36 36 36 / 4%)",
+};
 
-function ExamplePanel({ label = "Example", ariaLabel = "Parking example with sample data", activity, children }) {
+export function ExamplePanel({ label = "Example", ariaLabel = "Parking example with sample data", className, activity, children, layoutTransition, onLayoutAnimationComplete }) {
+  const transition = layoutTransition ? { layout: layoutTransition } : undefined;
+
   return (
-    <section className={styles.examplePanel} aria-label={ariaLabel}>
+    <motion.section
+      className={className ? `${styles.examplePanel} ${className}` : styles.examplePanel}
+      aria-label={ariaLabel}
+      style={panelStyle}
+      layout={Boolean(layoutTransition)}
+      transition={transition}
+      onLayoutAnimationComplete={onLayoutAnimationComplete}
+    >
       <div className={styles.exampleHeader}>
         <span className={styles.exampleLabel}>{label}</span>
         {activity}
       </div>
       {children}
-    </section>
+    </motion.section>
   );
 }
 
