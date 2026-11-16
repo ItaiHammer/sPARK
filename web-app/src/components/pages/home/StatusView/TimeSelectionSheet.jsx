@@ -200,8 +200,7 @@ export default function TimeSelectionSheet({
     return () => window.removeEventListener("blur", cancelGestures);
   }, [expanded, rulerMinutes, settleSheet]);
 
-  function haptic() {
-    const now = performance.now();
+  function haptic(now) {
     if (now - hapticTime.current < 45) return;
     hapticTime.current = now;
     if (typeof navigator.vibrate === "function") {
@@ -313,7 +312,7 @@ export default function TimeSelectionSheet({
     if (minutes !== gesture.lastMinutes || selectionRef.current.mode === "live") {
       if (selectMinutes(minutes, true) !== false) {
         gesture.lastMinutes = minutes;
-        haptic();
+        haptic(event.timeStamp);
       } else rulerMinutes.set(selectionRef.current.minutes);
     }
   }
