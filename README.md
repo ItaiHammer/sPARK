@@ -156,28 +156,32 @@ Links: [sPARK Lab](lab/README.md), [Full results and training steps](lab/experim
 
 ## 🔄 How It Works
 
-```text
-SJSU occupancy feed → Next.js scraper → Supabase → Live garage cards
-Supabase readings + academic calendar → Flint on Vercel → Supabase → Forecasts in the app
+```mermaid
+flowchart TD
+    Feed["SJSU parking feed"] --> Scraper["Next.js scraper"]
+    Scraper --> Readings["Garage readings in Supabase"]
+    Readings --> Live["Live garage counts"]
+    Readings --> Flint["Flint on Vercel"]
+    Calendar["SJSU academic calendar"] --> Flint
+    Flint --> Forecasts["Half-hour forecasts in Supabase"]
+    Live --> App["sPARK garage view"]
+    Forecasts --> App
 ```
 
--   **Collecting live data**\
-    I wrote a scraper that parses the SJSU feed with Cheerio, timestamps the readings, saves them in Supabase Postgres, and clears the Redis occupancy cache. The app polls for new data and can also refresh when Supabase Realtime sees a new reading.
+- **Forecasts**
+  - A scheduled job asks Flint for forecasts for the rest of today and the next six days
+  - Flint predicts how full each garage will be in 30-minute slots
+  - The job saves those predictions in a Supabase table
+  - The app reads the saved forecasts so we don’t have to recompute them each time someone opens the app or changes the time
 
--   **Serving forecasts**\
-    The [scheduled Next.js forecast job](web-app/src/app/api/cron/forecast/README.md) builds a list of half-hour slots during garage opening hours. It sends those slots, calendar data, and readings available at the time to a private Flask service on Vercel. The service verifies the saved model’s checksum and reuses the lab’s feature code. By default, the job saves forecasts for the rest of today and the next six Pacific calendar days. It also saves a same-time three-week average in a separate table for comparison with Flint.
+- **Walking Distances & Trip Planning**
+  - When you pick a campus building, sPARK uses OpenRouteService to calculate the walk from each garage
+  - The API saves those walking distances in Supabase so it can reuse them when someone picks the same building
+  - The trip recommendation API ranks garages by travel time and predicted occupancy
 
--   **Building the parking interface**\
-    I built the draggable date and time sheet, the 15-minute time ruler, and the scrollable garage chart that shows predicted occupancy as you drag. The app caches forecast data with SWR and interpolates between half-hour predictions when you pick a time in between. The time controls and charts support keyboard navigation, and the interface respects reduced-motion preferences.
-
--   **Sharing and home-screen support**\
-    Garage pages use native share controls with a copy-link fallback. I added the standalone web app manifest, home-screen icons, and branded link previews.
-
--   **Routing and trip planning**\
-    I use OpenRouteService to calculate walking distances from garages to campus buildings, then save those results in Supabase so they can be reused. Google Maps handles maps and directions. I also built the trip planner’s recommendation API. It uses OpenCage for address lookup and ranks garages using travel time and forecast occupancy.
-
--   **Analytics and feedback**\
-    I added PostHog events for page views, sorting, forecast selections, and directions. The beta feedback form submits through a validated API route. Session recording and automatic click capture are disabled.
+- **Analytics & Feedback**
+  - PostHog tracks when people sort garages, change the forecast time, or open directions
+  - The beta feedback form sends messages through an API that checks each submission
 
 ---
 
