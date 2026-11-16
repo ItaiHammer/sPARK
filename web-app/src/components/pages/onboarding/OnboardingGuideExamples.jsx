@@ -39,7 +39,7 @@ function Mode({ mode, spaces }) {
 }
 
 function LessonGarageCard(props) {
-  return <GarageCard {...props} adaptiveDensity />;
+  return <GarageCard {...props} adaptiveDensity animateLoadedValues />;
 }
 
 export function AvailabilityExample() {
@@ -62,15 +62,11 @@ export function ArrivalExample() {
   const { displayMode: mode } = picker;
   const loading = data.isLoading && !data.error && garage?.occupied == null && !garage?.closed;
   const unavailableLabel = loading ? "Loading availability…" : picker.selection.mode === "forecast" ? "Forecast unavailable" : undefined;
-  const [loadingInitialAvailability, setLoadingInitialAvailability] = useState(loading);
-
-  if (loadingInitialAvailability && !loading) setLoadingInitialAvailability(false);
 
   return (
     <ExamplePanel label="SJSU data" ariaLabel="South Garage availability and forecasts" activity={<Mode mode={mode} spaces={garage?.spaces} />}>
       <LessonGarageCard
-        key={loadingInitialAvailability ? "loading" : "arrival"}
-        animateEntrance={!loadingInitialAvailability}
+        reserveAvailabilitySpace
         garage={{
           lot_id: southGarage.lot_id,
           name: garage?.name ?? southGarage.name,
@@ -104,6 +100,7 @@ export function WalkingExample() {
     ...garage, entranceOrder, travel: travelForLot(garage.lot_id, buildingRequest.data),
   }));
   const hasWalkingEstimates = garages.some((garage) => garage.travel);
+  const walkingStatus = building ? buildingRequest.isLoading ? "Loading…" : "Unavailable" : undefined;
 
   return (
     <ExamplePanel label="Sample availability" activity={(
@@ -122,13 +119,13 @@ export function WalkingExample() {
       />
     )}>
       {building && !hasWalkingEstimates && (
-        <p className={styles.exampleNotice} role="status">
+        <span className="sr-only" role="status">
           {buildingRequest.isLoading ? "Loading walking estimates…" : "Walking estimates are unavailable for this example."}
-        </p>
+        </span>
       )}
       {getSortedLots(garages, hasWalkingEstimates ? sortType : DEFAULT_SORT_TYPE).map((garage) => (
         <motion.div key={garage.lot_id} layout={reducedMotion ? false : "position"} transition={{ duration: 0.28 }}>
-          <LessonGarageCard garage={garage} buildingName={building?.buildingName} order={garage.entranceOrder} />
+          <LessonGarageCard garage={garage} buildingName={building?.buildingName} order={garage.entranceOrder} travelPlaceholder={walkingStatus} />
         </motion.div>
       ))}
     </ExamplePanel>

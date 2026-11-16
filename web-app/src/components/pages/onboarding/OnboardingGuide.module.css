@@ -145,13 +145,6 @@
   text-transform: uppercase;
 }
 
-.exampleNotice {
-  padding-inline: 3px;
-  color: var(--welcome-secondary);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
 .mode {
   display: flex;
   align-items: center;
@@ -270,8 +263,7 @@
     align-items: start;
   }
 
-  .exampleHeader,
-  .exampleNotice { grid-column: 1 / -1; }
+  .exampleHeader { grid-column: 1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

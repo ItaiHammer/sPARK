@@ -8,7 +8,7 @@ export const formatEntranceNumber = (value, fractionDigits = 0) =>
 
 // Each card's entrance, bar, and readings run together on its own timeline.
 // Text updates stay outside React; the accessible, final readings never change.
-export function animateGarageValues(card, { enabled, delay = 0, onComplete }) {
+export function animateGarageValues(card, { enabled, delay = 0, onComplete, onlyElements }) {
   const numbers = [...card.querySelectorAll("[data-entrance-value]")].flatMap((element) => {
     const raw = element.dataset.entranceValue;
     const value = raw?.trim() ? Number(raw) : NaN;
@@ -20,10 +20,11 @@ export function animateGarageValues(card, { enabled, delay = 0, onComplete }) {
   let frame;
   const paint = (progress) => {
     for (const { element, value, fractionDigits } of numbers) {
-      const current = fractionDigits ? value * progress : Math.round(value * progress);
+      const scaled = onlyElements && !onlyElements.has(element) ? value : value * progress;
+      const current = fractionDigits ? scaled : Math.round(scaled);
       element.textContent = formatEntranceNumber(current, fractionDigits);
     }
-    if (bar) bar.style.transform = `scaleX(${progress})`;
+    if (bar) bar.style.transform = `scaleX(${onlyElements && !onlyElements.has(bar) ? 1 : progress})`;
   };
   const finish = () => {
     cancelAnimationFrame(frame);
@@ -40,7 +41,7 @@ export function animateGarageValues(card, { enabled, delay = 0, onComplete }) {
   }
 
   paint(0);
-  const entrance = card.getAnimations?.().find((animation) =>
+  const entrance = onlyElements ? null : card.getAnimations?.().find((animation) =>
     typeof animation.effect?.getComputedTiming().activeDuration === "number");
   const timing = entrance?.effect.getComputedTiming();
   const start = performance.now() + delay;

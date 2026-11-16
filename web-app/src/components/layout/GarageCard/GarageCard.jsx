@@ -100,12 +100,15 @@ export default function GarageCard({
   mode = "live",
   order = 0,
   animateEntrance = true,
+  animateLoadedValues = false,
   building,
   buildingName,
   sortType,
   href,
   adaptiveDensity = false,
   unavailableLabel = "Availability unavailable",
+  reserveAvailabilitySpace = false,
+  travelPlaceholder,
 }) {
   const titleId = useId();
   const { occupied, spaces } = cardValues(garage);
@@ -131,7 +134,10 @@ export default function GarageCard({
     ? ALERT_ICONS[alert.type]
     : Info;
   const travel = travelValues(garage.travel, buildingName);
-  const directionsUrl = walkingDirectionsUrl(garage, building);
+  const destination = travel?.building || buildingName || "building";
+  const directionsUrl = travel ? walkingDirectionsUrl(garage, building) : null;
+  const hasSpaces = !closed && spaces != null;
+  const hasOccupancy = !closed && occupied != null;
   const TravelContainer = directionsUrl ? "a" : "div";
   const categorySort = getSpotCategorySort(sortType);
   const categoryCount = categorySort ? getSpotCategoryCount(garage, categorySort.category.key) : null;
@@ -140,17 +146,34 @@ export default function GarageCard({
   const valueKey = JSON.stringify([closed, occupied, spaces, categoryCount, travel?.minutes, travel?.miles]);
   const initialValues = useRef(valueKey);
   const completedEntrance = useRef(false);
+  const valueUpdate = useRef(null);
 
   useLayoutEffect(() => {
-    // A data update settles immediately instead of counting from zero again.
-    // Strict Mode's setup/cleanup/setup can still replay the initial sequence.
+    // Keep the entrance one-shot. Onboarding can also animate readings that were absent while loading.
     if (valueKey !== initialValues.current) completedEntrance.current = true;
+    const entering = animateEntrance && !completedEntrance.current;
+    if (animateLoadedValues && valueUpdate.current?.key !== valueKey) {
+      const elements = [...card.current.querySelectorAll("[data-entrance-value], [data-entrance-bar]")];
+      const previous = valueUpdate.current?.elements;
+      valueUpdate.current = {
+        key: valueKey,
+        elements: new Set(elements),
+        pending: previous ? new Set(elements.filter((element) => !previous.has(element))) : undefined,
+      };
+    }
+    const update = animateLoadedValues ? valueUpdate.current : null;
+    const newElements = entering ? undefined : update?.pending;
+
     return animateGarageValues(card.current, {
-      enabled: animateEntrance && !completedEntrance.current,
-      delay,
-      onComplete: () => { completedEntrance.current = true; },
+      enabled: entering || Boolean(newElements?.size),
+      delay: entering ? delay : 0,
+      onlyElements: newElements,
+      onComplete: () => {
+        completedEntrance.current = true;
+        if (update) update.pending = undefined;
+      },
     });
-  }, [animateEntrance, delay, valueKey]);
+  }, [animateEntrance, animateLoadedValues, delay, valueKey]);
 
   return (
     <article
@@ -159,6 +182,7 @@ export default function GarageCard({
       aria-labelledby={titleId}
       data-mode={mode}
       data-status={statusKind}
+      data-reserve-availability={reserveAvailabilitySpace || undefined}
       style={{ "--card-delay": `${delay}ms`, "--card-entrance-duration": `${CARD_ENTRANCE_MS}ms` }}
     >
       <div className={styles.summary}>
@@ -169,28 +193,36 @@ export default function GarageCard({
               {href ? <Link className={styles.detailLink} href={href}>{garage.name}</Link> : garage.name}
             </h3>
             <div className={styles.occupancy}>
-              <span className={styles.occupied}>
-                {closed
-                  ? "Outside open hours"
-                  : occupied == null
-                    ? unavailableLabel
-                    : <><EntranceNumber value={occupied} />% occupied</>}
-              </span>
-              {(closed || occupied != null) && <span className={styles.status}>{status}</span>}
+              <div className={styles.occupancyDetails}>
+                <span className={styles.occupied}>
+                  {closed
+                    ? "Outside open hours"
+                    : occupied == null
+                      ? unavailableLabel
+                      : <><EntranceNumber value={occupied} />% occupied</>}
+                </span>
+                {(closed || occupied != null) && <span className={styles.status}>{status}</span>}
+              </div>
+              {reserveAvailabilitySpace && (
+                <div className={`${styles.occupancyDetails} ${styles.occupancySize}`} aria-hidden="true">
+                  <span className={styles.occupied}>100% occupied</span>
+                  <span className={styles.status}>Nearly full</span>
+                </div>
+              )}
             </div>
           </div>
 
           <div className={styles.numbers}>
             <span className={styles.count}>
-              {closed || spaces == null ? "—" : <>{spaces > 0 ? "~" : ""}<EntranceNumber value={spaces} /></>}
+              {hasSpaces ? <>{spaces > 0 ? "~" : ""}<EntranceNumber value={spaces} /></> : "—"}
             </span>
-            {!closed && spaces != null && <span className={styles.caption}>spaces left</span>}
+            {(hasSpaces || reserveAvailabilitySpace) && <span className={styles.caption} aria-hidden={!hasSpaces || undefined}>spaces left</span>}
           </div>
         </div>
 
-        {!closed && occupied != null && (
+        {(hasOccupancy || reserveAvailabilitySpace) && (
           <div className={styles.meter} aria-hidden="true">
-            <span data-entrance-bar style={{ width: `${occupied}%` }} />
+            {hasOccupancy && <span data-entrance-bar style={{ width: `${occupied}%` }} />}
           </div>
         )}
 
@@ -206,7 +238,7 @@ export default function GarageCard({
           </div>
         )}
 
-        {travel && (
+        {(travel || travelPlaceholder) && (
           <TravelContainer
             className={styles.travel}
             href={directionsUrl || undefined}
@@ -220,7 +252,7 @@ export default function GarageCard({
           >
             <span className={styles.travelIcon} aria-hidden="true" />
             <span className={styles.travelText}>
-              <span>Walk{travel.building ? ` to ${travel.building}` : " to building"}</span>
+              <span>Walk to {destination}</span>
               {directionsUrl && (
                 <svg className={styles.travelLinkIcon} aria-hidden="true" viewBox="2 2 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 7l-10 10" />
@@ -228,10 +260,12 @@ export default function GarageCard({
                 </svg>
               )}
             </span>
-            <span className={styles.travelMetrics}>
-              <strong className={styles.travelTime}>~<EntranceNumber value={travel.minutes} /> min</strong>
-              <span className={styles.travelDistance}><EntranceNumber value={Number(travel.miles)} fractionDigits={2} /> mi</span>
-            </span>
+            {travel ? (
+              <span className={styles.travelMetrics}>
+                <strong className={styles.travelTime}>~<EntranceNumber value={travel.minutes} /> min</strong>
+                <span className={styles.travelDistance}><EntranceNumber value={Number(travel.miles)} fractionDigits={2} /> mi</span>
+              </span>
+            ) : <span className={styles.travelDistance}>{travelPlaceholder}</span>}
           </TravelContainer>
         )}
         {categorySort && (
