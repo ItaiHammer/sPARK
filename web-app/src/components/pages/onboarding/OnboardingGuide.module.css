@@ -138,6 +138,7 @@
 
 .exampleLabel {
   color: var(--welcome-secondary);
+  font-family: var(--font-manrope), system-ui, sans-serif;
   font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.095em;
@@ -173,6 +174,11 @@
 
 .mode[data-mode="live"]::before { background: var(--spark-live); }
 .mode[data-mode="predicted"]::before { background: var(--spark-forecast); }
+
+@container onboarding (max-width: 350px) {
+  .exampleHeader { gap: 6px; }
+  .exampleLabel { letter-spacing: 0.025em; }
+}
 
 @media (min-width: 860px) {
   .lesson {
