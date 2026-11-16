@@ -77,8 +77,11 @@ export default function Onboarding() {
   useEffect(() => {
     if (!openingGarages) return;
     if (opening) completeOnboarding();
-    const fallback = window.setTimeout(() => window.location.replace(GARAGE_LIST_PATH), GARAGE_NAVIGATION_TIMEOUT_MS);
-    router.replace(GARAGE_LIST_PATH);
+    const utms = new URLSearchParams([...new URLSearchParams(window.location.search)]
+      .filter(([key]) => key.startsWith("utm_")));
+    const garageListHref = utms.size ? `${GARAGE_LIST_PATH}?${utms}` : GARAGE_LIST_PATH;
+    const fallback = window.setTimeout(() => window.location.replace(garageListHref), GARAGE_NAVIGATION_TIMEOUT_MS);
+    router.replace(garageListHref);
     return () => window.clearTimeout(fallback);
   }, [opening, openingGarages, router]);
 
