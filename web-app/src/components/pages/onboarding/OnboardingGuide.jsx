@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { AvailabilityExample, ArrivalExample, WalkingExample } from "./OnboardingGuideExamples";
 import OnboardingFooter from "./OnboardingFooter";
@@ -24,17 +25,28 @@ const lessons = [
   },
 ];
 
-export default function OnboardingGuide({ step, fontClassName, onBack, onNext, onFinish }) {
+export default function OnboardingGuide({ step, fontClassName, onBack, onNext, onSkip, onFinish }) {
+  const guide = useRef(null);
   const heading = useRef(null);
+  const reducedMotion = useReducedMotion();
   const { title, description, Example } = lessons[step - 1];
   const last = step === lessons.length;
+
+  useLayoutEffect(() => {
+    if (reducedMotion) return;
+    const animation = guide.current?.animate?.([{ opacity: 0.76 }, { opacity: 1 }], {
+      duration: 280,
+      easing: "cubic-bezier(0.28, 0.34, 0.24, 1)",
+    });
+    return () => animation?.cancel();
+  }, [step, reducedMotion]);
 
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
   }, [step]);
 
   return (
-    <main className={`${welcomeStyles.screen} ${styles.guide}`} data-step={step}>
+    <main ref={guide} className={`${welcomeStyles.screen} ${styles.guide}`} data-step={step}>
       <header className={styles.header}>
         <nav className={styles.navigation} aria-label="Onboarding">
           <button className={styles.back} type="button" aria-label="Back" onClick={onBack}>
@@ -51,7 +63,7 @@ export default function OnboardingGuide({ step, fontClassName, onBack, onNext, o
               />
             ))}
           </div>
-          <button className={`${welcomeStyles.secondaryAction} ${styles.skip}`} type="button" onClick={onFinish}>Skip</button>
+          <button className={`${welcomeStyles.secondaryAction} ${styles.skip}`} type="button" onClick={onSkip}>Skip</button>
         </nav>
         <div className={styles.brand}>
           <Image src="/spark-logo.svg" width={27} height={20} alt="" />
