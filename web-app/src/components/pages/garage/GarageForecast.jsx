@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import NumberFlow from "@number-flow/react";
 import { MoveHorizontal } from "lucide-react";
 import { forecastAt, operatingHours, parkingStatus } from "@/lib/utils/client/parking";
 import styles from "./GaragePage.module.css";
@@ -16,7 +17,35 @@ const HOLD_TOLERANCE_PX = 12;
 const FORECAST_STEP_MINUTES = 30;
 const EDGE_SCROLL_MAX_PX_PER_SECOND = 420;
 const READOUT_INSET_PX = 60;
+const OCCUPANCY_ROLL_TIMING = { duration: 130, easing: "cubic-bezier(.22, .61, .36, 1)" };
+const OCCUPANCY_FADE_TIMING = { duration: 90, easing: "ease-out" };
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const readoutInset = (width) => Math.min(READOUT_INSET_PX, width / 2);
+
+function subscribeToMotionPreference(onChange) {
+  const preference = window.matchMedia(REDUCED_MOTION_QUERY);
+  preference.addEventListener("change", onChange);
+  return () => preference.removeEventListener("change", onChange);
+}
+
+const OccupancyDigits = memo(function OccupancyDigits({ value }) {
+  const reducedMotion = useSyncExternalStore(
+    subscribeToMotionPreference,
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
+    () => true,
+  );
+  return (
+    <NumberFlow
+      value={value}
+      suffix="%"
+      locales="en-US"
+      isolate
+      animated={!reducedMotion}
+      transformTiming={OCCUPANCY_ROLL_TIMING}
+      opacityTiming={OCCUPANCY_FADE_TIMING}
+    />
+  );
+});
 
 function inspectForecast(points, day, garage, index) {
   const minutes = Math.round(index * FORECAST_STEP_MINUTES);
@@ -40,7 +69,7 @@ function ForecastBar({ occupied, tone }) {
 
   useLayoutEffect(() => {
     const element = bar.current;
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const motion = window.matchMedia(REDUCED_MOTION_QUERY);
     const before = previous.current;
     previous.current = { height, scale: 1 };
     if (motion.matches || !element.animate || before.height === null || before.height === height) return;
@@ -96,6 +125,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const activeInspection = !updating && inspection?.dayKey === dayKey ? inspection : null;
   const activePoint = activeInspection ? inspectForecast(points, day, garage, activeInspection.index) : null;
   const timeLabel = activePoint?.time.toFormat("h:mm a");
+  const occupancy = activePoint?.occupied == null ? null : Math.round(activePoint.occupied);
 
   const cancelHold = useCallback(() => {
     if (!hold.current) return;
@@ -161,7 +191,7 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
   const scrollToIndex = (index) => {
     const element = scroller.current;
     if (!element) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(REDUCED_MOTION_QUERY).matches;
     element.scrollTo({ left: READOUT_INSET_PX + index * chartGeometry(element).step, behavior: reduced ? "instant" : "smooth" });
   };
   const boundIndex = (index) => Math.max(0, Math.min(pointCount - 1, index));
@@ -310,12 +340,17 @@ export default function GarageForecast({ garage, selectedAt, currentAt = selecte
           onFocus={(event) => { if (!updating && event.currentTarget.matches(":focus-visible")) setInspection(inspectIndex(scrollIndex.current + 5)); }}
           onBlur={() => { cancelHold(); setInspection(null); }}>
           <span className={styles.srOnly}>{isToday ? `Now: ${currentAt.toFormat("h:mm a")}.` : `Forecast for ${selectedAt.toFormat("cccc, LLLL d")}.`}</span>
-          <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{activePoint && !activeInspection.fading ? `${timeLabel}: ${activePoint.closed ? "Closed" : activePoint.occupied === null ? "Estimate unavailable" : `${Math.round(activePoint.occupied)}% occupied`}.` : ""}</span>
+          <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{activePoint && !activeInspection.fading ? `${timeLabel}: ${activePoint.closed ? "Closed" : occupancy === null ? "Estimate unavailable" : `${occupancy}% occupied`}.` : ""}</span>
           <div className={`${styles.bars} ${interactionStyles.bars}`} style={{ "--point-count": pointCount, "--now-index": nowIndex }}>
             {isToday ? <span className={`${styles.nowMarker} ${interactionStyles.nowMarker}`} aria-hidden="true"><span>Now</span></span> : null}
             {activePoint ? <span className={interactionStyles.marker} aria-hidden="true" data-fading={activeInspection.fading || undefined} style={{ left: activeInspection.contentX }}>
               {activePoint.occupied !== null ? <span className={interactionStyles.markerDot} style={{ top: `${100 - activePoint.occupied}%` }} /> : null}
-              <span className={interactionStyles.readout}><strong>{activePoint.closed ? "Closed" : activePoint.occupied === null ? "Unavailable" : `${Math.round(activePoint.occupied)}% occupied`}</strong><span key={timeLabel}>{timeLabel}</span></span>
+              <span className={interactionStyles.readout}>
+                <strong>{activePoint.closed ? "Closed" : occupancy === null ? "Unavailable" : (
+                  <><OccupancyDigits value={occupancy} />{" occupied"}</>
+                )}</strong>
+                <span key={timeLabel}>{timeLabel}</span>
+              </span>
             </span> : null}
             {columns}
           </div>
