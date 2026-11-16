@@ -66,6 +66,8 @@
 
 .pageContent { min-height: calc(100dvh - 58px - env(safe-area-inset-top, 0px)); }
 .pageIntro { display: flow-root; position: relative; z-index: 2; }
+/* Let the open sort popup stack directly above the date/time drawer. */
+.pageIntro:has(.sortPopup) { z-index: auto; }
 .pageEntrance { animation: page-ready 1200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 @keyframes page-ready {
   from { opacity: 0; transform: translateY(16px); }
