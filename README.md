@@ -189,16 +189,25 @@ flowchart TD
 
 ## 🧩 Roadmap
 
--   🚧 **In Progress**
+- 🚧 **In Progress**
+  - **UI Redesign**
+    - Redesign parts of the app to make them look better and easier to use
 
-    -   UI polish and beta feedback
-    -   “Plan Your Trip” feature (recommendations for best garage, leave time, and walking distance)
+- 💡 **Potential Features**
+  - **Plan Your Trip**
+    - Enter where you’re leaving from, your campus building, and when you need to arrive
+    - Get a garage recommendation based on expected availability when you get there
+    - See when to leave so you have time to park and walk to class
 
--   🚀 **Planned**
-    -   **AI Schedule Parser / Planner**\
-        Upload a screenshot of your class schedule and sPARK will use AI to extract your classes and buildings, calculate recommended leave times for each day, and prefill the trip planner. Includes multiple schedules, editable plans, and automatic trip planning.
-    -   **Notifications**\
-        Receive leave-time reminders and alerts if your preferred garages are nearing capacity or trip conditions change.
+  - **Notifications**
+    - Get a reminder when it’s time to leave
+    - Get an alert when your garage is expected to fill up
+
+  - **Saved Schedules**
+    - Save and edit your class times and buildings for future trips
+
+  - **AI Schedule Planner**
+    - Upload a schedule screenshot to fill in your saved schedule and plan trips from it
 
 ---
 
