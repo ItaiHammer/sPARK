@@ -21,6 +21,22 @@
   If you find this project helpful, please consider giving it a ⭐ on GitHub!
 </p>
 
+<p align="center">
+  <img src="./assets/spark-launch-hero.jpg" alt="Plan your SJSU parking with sPARK, showing garage forecasts and the open arrival time picker" width="100%">
+</p>
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="./assets/spark-mobile-live-parking.jpg" alt="Live SJSU parking availability for all four garages with the time picker closed" width="205"><br><sub>Live parking</sub></td>
+    <td align="center"><img src="./assets/spark-mobile-south-garage.jpg" alt="South Garage forecast for Tuesday, November 17, rising from 31 percent occupied at 8 a.m. to 82 percent at noon" width="205"><br><sub>Garage forecast</sub></td>
+    <td align="center"><img src="./assets/spark-mobile-walking-times.jpg" alt="Garages sorted by estimated walk to King Library" width="205"><br><sub>Walking times</sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <a href="./assets/spark-demo-iphone.mp4">Watch the iPhone demo (MP4)</a>
+</p>
+
 ---
 
 ## Table of Contents
@@ -41,12 +57,6 @@
 <a id="about"></a>
 
 ## 📖 About
-
-<p align="center">
-  <a href="https://sparkparking.vercel.app/">
-    <img src="./assets/spark-demo.png" alt="sPARK garage list showing predicted spaces and the date and time picker" width="320">
-  </a>
-</p>
 
 sPARK is a web app that forecasts parking availability for San Jose State University. It shows live garage occupancy and forecasts from Flint, a model I trained on historical garage readings.
 
@@ -105,7 +115,7 @@ The model uses 9 features across three groups.
   - `calendar`: Academic term type or break
   - `days_into_calendar`: Days since the term started
   - `days_until_term_end`: Days until the term ends
-  - `is_us_holiday`: Whether it’s an observed U.S. federal holiday
+  - `is_us_holiday`: Whether it’s a federal holiday
 - **Occupancy history**
   - `recent_same_regime_slot`: Average occupancy at the same time on comparable days in the past two weeks
   - `lag_7`: Occupancy at the same time last week
@@ -190,6 +200,9 @@ flowchart TD
     - Redesign parts of the app to make them look better and easier to use
 
 - 💡 **Potential Features**
+  - **Parking Forecast MCP Server**
+    - Let AI agents look up sPARK forecasts so students can ask, “How full will the SJSU garages be tomorrow at 10 a.m.?”
+
   - **Plan Your Trip**
     - Enter where you’re leaving from, your campus building, and when you need to arrive
     - Get a garage recommendation based on expected availability when you get there
