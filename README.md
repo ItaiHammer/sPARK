@@ -190,6 +190,9 @@ flowchart TD
     - Redesign parts of the app to make them look better and easier to use
 
 - 💡 **Potential Features**
+  - **Parking Forecast MCP Server**
+    - Let AI agents look up sPARK forecasts so students can ask, “How full will the SJSU garages be tomorrow at 10 a.m.?”
+
   - **Plan Your Trip**
     - Enter where you’re leaving from, your campus building, and when you need to arrive
     - Get a garage recommendation based on expected availability when you get there
