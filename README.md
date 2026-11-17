@@ -27,9 +27,9 @@
 
 <table align="center">
   <tr>
-    <td align="center"><img src="./assets/spark-mobile-live-parking.jpg" alt="Live SJSU parking availability for all four garages with the time picker closed" width="205"><br><sub>Live parking</sub></td>
-    <td align="center"><img src="./assets/spark-mobile-south-garage.jpg" alt="South Garage forecast for Tuesday, November 17, rising from 31 percent occupied at 8 a.m. to 82 percent at noon" width="205"><br><sub>Garage forecast</sub></td>
-    <td align="center"><img src="./assets/spark-mobile-walking-times.jpg" alt="Garages sorted by estimated walk to King Library" width="205"><br><sub>Walking times</sub></td>
+    <td align="center" valign="top"><img src="./assets/spark-mobile-live-parking.jpg" alt="Live SJSU parking availability for all four garages with the time picker closed" width="205"></td>
+    <td align="center" valign="top"><img src="./assets/spark-mobile-south-garage.jpg" alt="South Garage forecast for Tuesday, November 17, rising from 31 percent occupied at 8 a.m. to 82 percent at noon" width="205"></td>
+    <td align="center" valign="top"><img src="./assets/spark-mobile-walking-times.jpg" alt="Garages sorted by estimated walk to King Library" width="205"></td>
   </tr>
 </table>
 
