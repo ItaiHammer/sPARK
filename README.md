@@ -105,7 +105,7 @@ The model uses 9 features across three groups.
   - `calendar`: Academic term type or break
   - `days_into_calendar`: Days since the term started
   - `days_until_term_end`: Days until the term ends
-  - `is_us_holiday`: Whether it’s an observed U.S. federal holiday
+  - `is_us_holiday`: Whether it’s a federal holiday
 - **Occupancy history**
   - `recent_same_regime_slot`: Average occupancy at the same time on comparable days in the past two weeks
   - `lag_7`: Occupancy at the same time last week
