@@ -15,6 +15,18 @@ export const transportationTypes = {
 };
 
 export const calculateMatrix = async (transportation, locations) => {
+  const baseUrl = process.env.OPENROUTE_SERVICE_URL?.replace(/\/+$/, "");
+  if (!URL.canParse(baseUrl) || !/^https?:\/\//i.test(baseUrl)) {
+    console.error("OpenRouteService matrix URL is missing or invalid.");
+    return {
+      data: null,
+      error: {
+        message: "The routing service is unavailable.",
+        code: errorCodes.OPENROUTESERVICE_ERROR,
+      },
+    };
+  }
+
   try {
     const destinations = Array.from(
       { length: Math.max(locations.length - 1, 0) },
@@ -22,7 +34,7 @@ export const calculateMatrix = async (transportation, locations) => {
     );
 
     const res = await axios.post(
-      process.env.OPENROUTE_SERVICE_URL + "/matrix/" + transportation,
+      `${baseUrl}/matrix/${transportation}`,
       JSON.stringify({
         locations,
         sources: [0],
@@ -39,12 +51,17 @@ export const calculateMatrix = async (transportation, locations) => {
 
     return { data: res.data, error: null };
   } catch (error) {
-    console.log(error);
+    const providerError = error.response?.data?.error;
+    console.error("OpenRouteService matrix request failed.", {
+      code: error.code,
+      status: error.response?.status,
+      providerCode: providerError?.code,
+    });
 
     return {
       data: null,
       error: {
-        message: error.response.data?.message,
+        message: providerError?.message || error.response?.data?.message || "The routing service could not calculate travel times.",
         code: errorCodes.OPENROUTESERVICE_ERROR,
       },
     };

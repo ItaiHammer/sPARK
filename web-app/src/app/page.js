@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import Onboarding from "@/components/pages/onboarding/Onboarding";
 
 export default function HomePage() {
-    redirect('/sjsu'); // redirect anyone visiting '/' to '/sjsu'
+  return <Onboarding />;
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { DateTime } from "luxon";
+import { usePathname } from "next/navigation";
 
 // Utils
 import {
@@ -12,7 +13,7 @@ import {
 
 // Constants
 import { FILTER_TYPES } from "@/lib/constants/filters";
-import { SORT_TYPES } from "@/lib/constants/sort";
+import { DEFAULT_SORT_TYPE, SORT_TYPES } from "@/lib/constants/sort";
 
 const DEFAULT_TIME_FILTER = {
   type: FILTER_TYPES.LIVE.value,
@@ -24,14 +25,23 @@ const DEFAULT_TIME_FILTER = {
 };
 
 const DEFAULT_SORT_MENU = {
-  type: SORT_TYPES.EMPTIEST_FIRST.value,
+  type: DEFAULT_SORT_TYPE,
   building: null,
 };
+
+const MAIN_PAGE_SORT_TYPES = new Set(Object.values(SORT_TYPES).map((type) => type.value));
 
 // UI Context
 const UIContext = createContext();
 export const useUI = () => useContext(UIContext);
 export const UIProvider = ({ children }) => {
+  const pathname = usePathname();
+  const [loadingPathname, setLoadingPathname] = useState(pathname);
+  // Startup belongs to this document's first screen. Navigation ends it even
+  // if that screen's data has not finished loading; returning cannot restart it.
+  if (loadingPathname !== null && loadingPathname !== pathname) setLoadingPathname(null);
+  const completeInitialPageLoading = useCallback(() => setLoadingPathname(null), []);
+  const isInitialPageLoading = loadingPathname !== null && loadingPathname === pathname;
   const [locationID, setLocationID] = useState(null);
 
   // Home Page
@@ -48,8 +58,8 @@ export const UIProvider = ({ children }) => {
     setTimeFilterMenu((prev) => ({ ...prev, isOpen: !prev.isOpen }));
 
   // Update Time Filter Status
-  const updateTimeFilterMenu = (newState) =>
-    setTimeFilterMenu((prev) => ({ ...prev, ...newState }));
+  const updateTimeFilterMenu = useCallback((newState) =>
+    setTimeFilterMenu((prev) => ({ ...prev, ...newState })), []);
 
   const updateTimeFilterForm = (newState) =>
     setTimeFilterMenu((prev) => ({
@@ -73,15 +83,22 @@ export const UIProvider = ({ children }) => {
 
   // Load sort type from localStorage on client-side mount
   useEffect(() => {
-    const savedSortType = getLocalSortType();
-    if (savedSortType) {
-      const savedBuilding = getLocalSortBuilding();
-      setSortMenu((prev) => ({
-        ...prev,
-        type: savedSortType,
-        building: savedBuilding || DEFAULT_SORT_MENU.building,
-      }));
-    }
+    const frame = requestAnimationFrame(() => {
+      const savedSortType = getLocalSortType();
+      if (savedSortType) {
+        const savedBuilding = getLocalSortBuilding();
+        const supportedSort = MAIN_PAGE_SORT_TYPES.has(savedSortType)
+          && (savedSortType !== SORT_TYPES.DISTANCE_TO_BUILDING.value || savedBuilding);
+        const restoredSortType = supportedSort ? savedSortType : DEFAULT_SORT_MENU.type;
+        if (restoredSortType !== savedSortType) setLocalSortType(restoredSortType);
+        setSortMenu((prev) => ({
+          ...prev,
+          type: restoredSortType,
+          building: savedBuilding || DEFAULT_SORT_MENU.building,
+        }));
+      }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   // Prevent background scrolling when any menu is open
@@ -193,6 +210,8 @@ export const UIProvider = ({ children }) => {
   return (
     <UIContext.Provider
       value={{
+        isInitialPageLoading,
+        completeInitialPageLoading,
         locationID,
         setLocationID,
         activeTab,

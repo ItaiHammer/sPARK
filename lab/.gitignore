@@ -1,0 +1,31 @@
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.env
+.env.*
+env.lab
+!.env.example
+/plan.md
+
+# Generated per-cell outputs and fitted model weights.
+**/predictions.csv
+**/predictions.csv.gz
+**/checkpoints/
+*.joblib
+*.pkl
+*.pickle
+*.cbm
+*.onnx
+*.pt
+*.pth
+*.safetensors
+
+# Local runs stay private; retain the folder placeholder.
+/local_experiments/*
+!/local_experiments/.gitkeep
+
+# Model artifacts selected for publication.
+!/experiments/flint_v0.1/model.joblib
+!/models/flint_v0.3/model.joblib

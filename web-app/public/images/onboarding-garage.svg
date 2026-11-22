@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 15 362 205" fill="none">
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="266" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8f6f0"/>
+      <stop offset="1" stop-color="#e8e7e0"/>
+    </linearGradient>
+    <linearGradient id="lawn" x1="0" y1="0" x2="266" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d9e2cc"/>
+      <stop offset="1" stop-color="#bacba7"/>
+    </linearGradient>
+    <linearGradient id="front" x1="0" y1="0" x2="174" y2="61" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d6d9d2"/>
+      <stop offset="1" stop-color="#cacfc6"/>
+    </linearGradient>
+    <linearGradient id="entrance" x1="0" y1="35" x2="0" y2="61" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7d857c"/>
+      <stop offset="1" stop-color="#a5aaa0"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="matrix(1 -.2 .53 .73 28 120)">
+    <rect width="266" height="130" rx="14" fill="#cdd0c7"/>
+  </g>
+  <g transform="matrix(1 -.2 .53 .73 28 114)">
+    <rect width="266" height="130" rx="14" fill="url(#ground)" stroke="#faf9f5" stroke-width="2"/>
+    <path d="M7 89V17q0-10 10-10h232q10 0 10 10v72h-65V77h-34v12Z" fill="url(#lawn)"/>
+    <path d="M7 98h152V80h35v18h65v15q0 10-10 10H17q-10 0-10-10Z" fill="#ddded7"/>
+    <path d="M18 110h105m104 0h23" stroke="#fcfaf5" stroke-width="2.5" stroke-dasharray="11 7" stroke-linecap="round"/>
+    <path d="M136 100h3v21h-3Zm6 0h3v21h-3Zm6 0h3v21h-3Z" fill="#faf9f5"/>
+    <path d="M42 19h174l12 10v64H53L42 87Z" fill="#626b5e" opacity=".16"/>
+  </g>
+
+  <!-- Both faces meet the roof in the same projection as the campus illustration. -->
+  <g transform="matrix(.53 .73 0 1 80.07 58.47)">
+    <path d="M0 0h68v61H0Z" fill="#e0e3db"/>
+    <path d="M6 11h55v8H6Zm0 15h55v8H6Zm0 15h55v8H6Z" fill="#aab0a6"/>
+    <path d="M19 9h4v43h-4Zm20 0h4v43h-4Z" fill="#d8dbd3"/>
+    <path d="M0 0h68v5H0Z" fill="#eceee7"/>
+  </g>
+  <g transform="matrix(1 -.2 0 1 116.11 108.11)">
+    <path d="M0 0h174v61H0Z" fill="url(#front)"/>
+    <path d="M7 11h94v8H7Zm0 15h94v8H7Zm0 15h94v8H7Z" fill="#9fa79f"/>
+    <path d="M21 9h4v43h-4Zm25 0h4v43h-4Zm25 0h4v43h-4Zm25 0h5v43h-5Z" fill="#d8dcd4"/>
+    <path d="M111 35h51v26h-51Z" fill="url(#entrance)"/>
+    <path d="M118 38h37v3h-37Z" fill="#efe5c9"/>
+    <path d="M105 4h6v57h-6Zm57 0h5v57h-5Z" fill="#dfe2da"/>
+    <path d="M0 0h174v5H0Z" fill="#e2e5dd"/>
+  </g>
+
+  <g transform="matrix(1 -.2 .53 .73 28 53)">
+    <rect x="42" y="19" width="174" height="68" rx="2.5" fill="#efeeeb"/>
+    <rect x="47" y="24" width="164" height="58" rx="1" fill="#e3e5de"/>
+    <path d="M51 30h56m9 0h32" stroke="#edede6" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(252 100) skewY(-11.31)">
+    <rect x="-9" y="-8" width="18" height="17" rx="3" fill="#376ac9"/>
+    <path d="M-3 5V-4h3.5a2.6 2.6 0 0 1 0 5.2H-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+</svg>

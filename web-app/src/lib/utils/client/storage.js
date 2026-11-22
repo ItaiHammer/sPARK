@@ -2,17 +2,17 @@ import { validateSortType, validateSortBuilding } from "@/lib/constants/sort";
 
 export const setLocalSortType = (sortType, building) => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("SORT_TYPE", sortType);
-
-    if (building) {
-      localStorage.setItem("SORT_BUILDING", JSON.stringify(building));
-    }
+    try {
+      localStorage.setItem("SORT_TYPE", sortType);
+      if (building) localStorage.setItem("SORT_BUILDING", JSON.stringify(building));
+    } catch { /* Sorting still works when browser storage is unavailable. */ }
   }
 };
 
 export const getLocalSortType = () => {
   if (typeof window !== "undefined") {
-    const localSortType = localStorage.getItem("SORT_TYPE");
+    let localSortType;
+    try { localSortType = localStorage.getItem("SORT_TYPE"); } catch { return null; }
     if (!validateSortType(localSortType)) {
       return null;
     }
@@ -23,7 +23,8 @@ export const getLocalSortType = () => {
 
 export const getLocalSortBuilding = () => {
   if (typeof window !== "undefined") {
-    const localSortBuilding = JSON.parse(localStorage.getItem("SORT_BUILDING"));
+    let localSortBuilding;
+    try { localSortBuilding = JSON.parse(localStorage.getItem("SORT_BUILDING")); } catch { return null; }
     if (!validateSortBuilding(localSortBuilding)) {
       return null;
     }

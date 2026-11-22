@@ -1,0 +1,18 @@
+{
+  "experiment": "flint_v0.3",
+  "status": "experimental",
+  "parent": "flint_v0.2",
+  "additional_features": ["recent_same_regime_slot", "lag_7"],
+  "forecast_adjustment": "opening_week",
+  "training_start": "2025-10-21",
+  "reference_snapshot_sha256": "f24b78292f1da94c3722871dc9822f202911ea5e56ecefef3dccae1bd04d55a3",
+  "reference_terms_sha256": "d892c48231fcaab307faeb3392d81c71cdf243fb6af54bfb2bd666cb6a5c5ee2",
+  "reference_fit": "2026-09-20",
+  "replay": {
+    "first_issue": "2025-12-14",
+    "last_issue": "2026-10-01",
+    "excluded_issue_range": ["2026-06-22", "2026-06-27"],
+    "daytime_pacific": ["07:00", "21:30"],
+    "refit_day": "Sunday"
+  }
+}

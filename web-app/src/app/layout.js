@@ -1,6 +1,5 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
 
 // Contexts
 import ContextProvider from "@/contexts/Context.provider";
@@ -14,6 +13,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], display: "swap" });
 
 export const metadata = {
   metadataBase: new URL(
@@ -28,25 +28,25 @@ export const metadata = {
   openGraph: {
     title: "sPARK - Parking Made Simple",
     description:
-      "Real-time parking availability, forecasting, and smart navigation",
+      "Parking forecasts for SJSU parking lots. Built and maintained by a student, independent of San Jose State University.",
     images: [
       {
-        url: "/icons/logos/spark-logo-1200x630.png",
-        width: 1200,
-        height: 630,
-        alt: "sPARK",
+        url: "/icons/logos/spark-wordmark-preview.png",
+        width: 512,
+        height: 512,
+        alt: "sPARK logo",
       },
     ],
   },
   icons: {
     icon: [
       {
-        url: "/icons/logos/spark-logo-192.png",
+        url: "/icons/logos/spark-logo-192.png?v=open-spark",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        url: "/icons/logos/spark-logo-512.png",
+        url: "/icons/logos/spark-logo-512.png?v=open-spark",
         sizes: "512x512",
         type: "image/png",
       },
@@ -55,7 +55,7 @@ export const metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "sPARK",
   },
 };
@@ -71,11 +71,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} antialiased`}
       >
         <ContextProvider>
           {children}
-          <Toaster position="top-center" />
         </ContextProvider>
       </body>
     </html>

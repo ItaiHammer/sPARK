@@ -1,61 +1,53 @@
 "use client";
 
-import { useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-
-// Contexts
 import { useUI } from "@/contexts/UI/UI.context";
+import ParkingLoading from "@/components/pages/home/StatusView/ParkingLoading";
+import styles from "@/components/pages/home/StatusView/StatusViewPage.module.css";
 
-// Components
-import AppHeader from "@/components/layout/header/AppHeader";
-import StatusView from "@/components/pages/home/StatusView/StatusView";
-import ArrivalTimeView from "@/components/pages/home/ArrivalTimeView/ArrivalTimeView";
-import ForecastFilterMenu from "@/components/layout/menus/ForecastFilterMenu/ForecastFilterMenu";
-import SortMenu from "@/components/layout/menus/SortMenu/SortMenu";
+const StatusView = dynamic(() => import("@/components/pages/home/StatusView/StatusView"), {
+  ssr: false,
+  loading: () => (
+    <div className={styles.pageContent}>
+      <main className={styles.main}><ParkingLoading /></main>
+    </div>
+  ),
+});
 
-export default function SimpleForecastPage() {
-  const { location_id } = useParams();
-  const tabs = [
-    { id: "status", name: "Status View", component: StatusView },
-    {
-      id: "arrival",
-      name: "Plan Your Arrival",
-      component: ArrivalTimeView,
-    },
-  ];
+function ParkingPageContent({ locationId }) {
+  const { isInitialPageLoading, completeInitialPageLoading } = useUI();
+  const [showStartupLoader] = useState(isInitialPageLoading);
+  const [ready, setReady] = useState(false);
+  const pageReady = ready || !isInitialPageLoading;
+  const onReady = useCallback(() => {
+    setReady(true);
+    completeInitialPageLoading();
+  }, [completeInitialPageLoading]);
 
-  const { activeTab, setActiveTab, setLocationID } = useUI();
-  const active = tabs.find((p) => p.id === activeTab) || tabs[0];
-
-  // Set Initial Tab
-  useEffect(() => {
-    setActiveTab(tabs[0].id);
-    setLocationID(location_id?.toLowerCase());
-  }, [location_id]);
-
+  // Only a direct visit uses the startup overlay. Client navigation and later
+  // refreshes keep the page visible and use the existing content loading state.
   return (
-    <div>
-      <AppHeader tabs={tabs} />
-
-      <main>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={active.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-          >
-            {active.component ? (
-              <active.component locationId={location_id} />
-            ) : null}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-
-      <ForecastFilterMenu />
-      <SortMenu />
+    <div className={styles.initialPage} data-ready={pageReady}>
+      <div className={styles.initialContent} inert={!pageReady} aria-hidden={!pageReady}>
+        <StatusView locationId={locationId} onReady={onReady} />
+      </div>
+      {showStartupLoader ? (
+        <div className={styles.initialLoading} aria-hidden={pageReady}>
+          <ParkingLoading fullPage />
+        </div>
+      ) : null}
     </div>
   );
+}
+
+export default function MainParkingPage() {
+  const { location_id } = useParams();
+  const { setLocationID } = useUI();
+  const locationId = typeof location_id === "string" ? location_id.toLowerCase() : null;
+
+  useEffect(() => { setLocationID(locationId); }, [locationId, setLocationID]);
+
+  return <ParkingPageContent key={locationId} locationId={locationId} />;
 }
