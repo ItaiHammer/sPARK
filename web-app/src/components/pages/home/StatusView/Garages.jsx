@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import useSWR from "swr";
 import Lottie from "lottie-react";
@@ -56,6 +54,7 @@ function Garages({ locationId, lots }) {
 
   // Sorting Lots
   const sortedLots = getSortedLots(formattedLots, type);
+
   return (
     <div className="GarageCardsContainer flex flex-col md:flex-row md:flex-wrap gap-8">
       {sortedLots.map((garage, i) => (

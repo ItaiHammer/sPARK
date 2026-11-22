@@ -19,8 +19,6 @@ const locationAPI = {
   getLocationBuildings: (locationId) => request(locationId, "buildings"),
   getBuildingDistances: (locationId, buildingId) =>
     request(locationId, "buildings/" + encodeURIComponent(buildingId) + "/calculate"),
-  getLotForecastPoints: (locationId, lotId, date) =>
-    parkingRequest(getAPIURL(locationId, "lots/forecast"), getInternalAuthHeader("POST", { lot_id: lotId, date })),
 };
 
 export function LocationAPIProvider({ children }) {
