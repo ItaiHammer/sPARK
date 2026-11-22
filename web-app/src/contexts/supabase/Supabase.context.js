@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect } from "react";
-import { mutate as globalMutate } from "swr";
+import { useSWRConfig } from "swr";
+import { getLiveOccupancy } from "@/lib/utils/client/liveOccupancy";
 
 // Utils
 import { getSupabase } from "../../lib/utils/client/supabase";
@@ -21,6 +22,7 @@ export const SupabaseContextProvider = ({ children }) => {
     timeFilterMenu: { type },
   } = useUI();
   const supabase = getSupabase();
+  const { mutate } = useSWRConfig();
 
   useEffect(() => {
     // Subscribing only in Live mode prevents incoming events from changing a
@@ -29,6 +31,8 @@ export const SupabaseContextProvider = ({ children }) => {
     if (!supabase || !locationID || type !== FILTER_TYPES.LIVE.value) return;
     let active = true;
     let refetchTimeout = null;
+    const occupancy = getLiveOccupancy(locationID);
+    const key = [LIVE_OCCUPANCY_KEY, locationID];
 
     const channel = supabase
       .channel("parking-realtime")
@@ -40,23 +44,12 @@ export const SupabaseContextProvider = ({ children }) => {
           table: "lot_occupancy",
           filter: `location_id=eq.${locationID.toLowerCase()}`,
         },
-        () => {
-          if (!active) return;
-
-          // Clear previous timeout if exists
+        ({ new: reading }) => {
+          if (!active || !occupancy.update(reading)) return;
+          // Keep the existing debounce, but update SWR rather than re-fetching.
           if (refetchTimeout) clearTimeout(refetchTimeout);
-
-          // Schedule SWR mutate after 100ms
           refetchTimeout = setTimeout(() => {
-            if (!active) return;
-            if (process.env.NODE_ENV === "development") {
-              console.log("[ParkingRealtime]", "refetching");
-            }
-
-            // Calling mutate with only the shared key revalidates the fetcher.
-            // An object in the second position would replace occupancy data.
-            globalMutate([LIVE_OCCUPANCY_KEY, locationID]);
-
+            if (active) void mutate(key, occupancy.getData(), { revalidate: false });
             refetchTimeout = null;
           }, 100);
         }
@@ -68,6 +61,10 @@ export const SupabaseContextProvider = ({ children }) => {
 
         switch (status) {
           case "SUBSCRIBED":
+            if (!active) break;
+            // The shared reader merges in-flight reads and limits recovery
+            // requests to once per minute, including failed requests.
+            void mutate(key).catch(() => {});
             break;
 
           case "TIMED_OUT":
@@ -86,7 +83,7 @@ export const SupabaseContextProvider = ({ children }) => {
       if (refetchTimeout) clearTimeout(refetchTimeout);
       supabase.removeChannel(channel);
     };
-  }, [supabase, locationID, type]);
+  }, [supabase, locationID, type, mutate]);
 
   return (
     <SupabaseContext.Provider value={{ supabase }}>

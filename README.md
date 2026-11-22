@@ -71,27 +71,27 @@ I built sPARK as an independent project because finding parking was a problem fo
 ## ✨ Features
 
 - **Live Parking & Forecasts**
-  - See live space counts for all 4 SJSU garages
-  - Check forecasts for all garages up to six days ahead
+    - See live space counts for all 4 SJSU garages
+    - Check forecasts for all garages up to six days ahead
 
 - **Find the Right Garage**
-  - Sort by spaces left or how full garages are
-  - Find the garage with the shortest walk to your building and open walking directions in Google Maps
-  - Compare accessible, employee, 20-minute, motorcycle, and EV spaces across garages
+    - Sort by spaces left or how full garages are
+    - Find the garage with the shortest walk to your building and open walking directions in Google Maps
+    - Compare accessible, employee, 20-minute, motorcycle, and EV spaces across garages
 
 - **Garage Details**
-  - Explore each garage’s daily forecast on an interactive chart
-  - Check hours, permits, and payment options
-  - Get driving directions to the garage in Google Maps
+    - Explore each garage’s daily forecast on an interactive chart
+    - Check hours, permits, and payment options
+    - Get driving directions to the garage in Google Maps
 
 - **Design**
-  - Clean, simple interface
-  - Switch dates and times quickly to compare forecasts
-  - Responsive (ish 😭) UI
-  - Learn how to use the app with a short interactive onboarding guide
+    - Clean, simple interface
+    - Switch dates and times quickly to compare forecasts
+    - Responsive (ish 😭) UI
+    - Learn how to use the app with a short interactive onboarding guide
 
 - **Beta Feedback**
-  - Send feedback right from the app
+    - Send feedback right from the app
 
 ---
 
@@ -108,17 +108,17 @@ I trained [Flint v0.3](lab/models/flint_v0.3/README.md) using scikit-learn’s `
 The model uses 9 features across three groups.
 
 - **Garage and time**
-  - `lot_id`: Which garage
-  - `weekday`: Day of the week
-  - `minute_of_day`: Minutes since midnight Pacific time
+    - `lot_id`: Which garage
+    - `weekday`: Day of the week
+    - `minute_of_day`: Minutes since midnight Pacific time
 - **Calendar**
-  - `calendar`: Academic term type or break
-  - `days_into_calendar`: Days since the term started
-  - `days_until_term_end`: Days until the term ends
-  - `is_us_holiday`: Whether it’s a federal holiday
+    - `calendar`: Academic term type or break
+    - `days_into_calendar`: Days since the term started
+    - `days_until_term_end`: Days until the term ends
+    - `is_us_holiday`: Whether it’s a federal holiday
 - **Occupancy history**
-  - `recent_same_regime_slot`: Average occupancy at the same time on comparable days in the past two weeks
-  - `lag_7`: Occupancy at the same time last week
+    - `recent_same_regime_slot`: Average occupancy at the same time on comparable days in the past two weeks
+    - `lag_7`: Occupancy at the same time last week
 
 I added an opening curve based on past opening weeks to help Flint account for the jump in demand when classes start. It applies on class weekdays in the first 7 days of instruction and helped the model a lot in the fall replay.
 
@@ -174,20 +174,69 @@ flowchart TD
     Forecasts --> App
 ```
 
+### Live updates and caching
+
+sPARK checks the school’s parking page **every 30 minutes** and saves the readings in Supabase. Open instances of sPARK receive new readings through Supabase Realtime and update their local SWR cache, which is then used to show the data on screen.
+
+```mermaid
+flowchart TB
+    School["School parking page"]
+
+    subgraph WebBackend["Web backend"]
+        subgraph NextJS["Next.js"]
+            Scraper["Scraper"]
+            API["API"]
+        end
+        Redis[("Redis cache")]
+        API -->|"Look up cached data"| Redis
+        Redis -->|"Return cached data"| API
+    end
+
+    subgraph Supabase["Supabase"]
+        DB[("Database")]
+        Realtime["Realtime"]
+        DB -->|"New readings"| Realtime
+    end
+
+    subgraph Client["Web Client: One open instance of sPARK"]
+        SWR["SWR cache"]
+        UI["Parking information on screen"]
+        SWR -->|"Display data"| UI
+    end
+
+    School -->|"Scrape every 30 minutes"| Scraper
+    Scraper -->|"Save readings"| DB
+
+    Realtime -->|"Push new readings"| SWR
+    UI -->|"Request: initial load or recovery"| API
+    API -->|"Cache miss: query database"| DB
+    DB -->|"Return data"| API
+    API -->|"Response updates browser cache"| SWR
+```
+
+I use two caches that serve different purposes:
+
+- **SWR cache:** Stores temporary data in each browser so the UI can reuse it.
+- **Redis cache:** Stores shared data on the backend so requests from different clients can reuse it, reducing repeated database queries for occupancy, forecasts, garage details and walking distances.
+
+<p>&nbsp;</p>
+
+**Forecasts and Other Features**
+
 - **Forecasts**
-  - A scheduled job asks Flint for forecasts for the rest of today and the next six days
-  - Flint predicts how full each garage will be in 30 minute increments
-  - The job saves those predictions in a Supabase table
-  - The app reads the saved forecasts from the supabase table so we don’t have to recompute them each time someone asks for them
+    - A scheduled job asks Flint for forecasts for the rest of today and the next six days
+    - Flint predicts how full each garage will be in 30 minute increments
+    - The job saves those predictions in a Supabase table
+    - The app reads the saved forecasts from the supabase table so we don’t have to recompute them each time someone asks for them
 
 - **Walking Distances & Trip Planning**
-  - When you pick a building, sPARK uses OpenRouteService to calculate the walk from each garage
-  - The API saves those walking distances in Supabase so it can reuse them when someone picks the same building/garage combo
-  - The trip recommendation API ranks garages by travel time and predicted occupancy
+    - When you pick a building, sPARK uses OpenRouteService to calculate the walk from each garage
+    - The API saves those walking distances in Supabase so it can reuse them when someone picks the same building/garage combo
+    - The trip recommendation API ranks garages by travel time and predicted occupancy
 
 - **Analytics & Feedback**
-  - PostHog tracks when people sort garages, change the forecast time, or open directions
-  - The beta feedback form sends messages through an API that checks each submission
+    - PostHog tracks when people sort garages, change the forecast time, or open directions
+    - The beta feedback form sends messages through an API that checks each submission
 
 ---
 
@@ -196,27 +245,27 @@ flowchart TD
 ## 🧩 Roadmap
 
 - 🚧 **In Progress**
-  - **UI Redesign**
-    - Redesign parts of the app to make them look better and easier to use
+    - **UI Redesign**
+        - Redesign parts of the app to make them look better and easier to use
 
 - 💡 **Potential Features**
-  - **Parking Forecast MCP Server**
-    - Let AI agents look up sPARK forecasts so students can ask, “How full will the SJSU garages be tomorrow at 10 a.m.?”
+    - **Parking Forecast MCP Server**
+        - Let AI agents look up sPARK forecasts so students can ask, “How full will the SJSU garages be tomorrow at 10 a.m.?”
 
-  - **Plan Your Trip**
-    - Enter where you’re leaving from, your campus building, and when you need to arrive
-    - Get a garage recommendation based on expected availability when you get there
-    - See when to leave so you have time to park and walk to class
+    - **Plan Your Trip**
+        - Enter where you’re leaving from, your campus building, and when you need to arrive
+        - Get a garage recommendation based on expected availability when you get there
+        - See when to leave so you have time to park and walk to class
 
-  - **Notifications**
-    - Get a reminder when it’s time to leave
-    - Get an alert when your garage is expected to fill up
+    - **Notifications**
+        - Get a reminder when it’s time to leave
+        - Get an alert when your garage is expected to fill up
 
-  - **Saved Schedules**
-    - Save and edit your class times and buildings for future trips
+    - **Saved Schedules**
+        - Save and edit your class times and buildings for future trips
 
-  - **AI Schedule Planner**
-    - Upload a schedule screenshot to fill in your saved schedule and plan trips from it
+    - **AI Schedule Planner**
+        - Upload a schedule screenshot to fill in your saved schedule and plan trips from it
 
 ---
 
@@ -225,46 +274,46 @@ flowchart TD
 ## 🛠️ Technologies Used
 
 - **Frontend**
-  - **Next.js**
-    - **React**
-      - Builds the garage cards and time picker
-    - **Tailwind CSS**
-      - Provides utility styles for the app
-    - **Framer Motion**
-      - Animates the time picker and onboarding
+    - **Next.js**
+        - **React**
+            - Builds the garage cards and time picker
+        - **Tailwind CSS**
+            - Provides utility styles for the app
+        - **Framer Motion**
+            - Animates the time picker and onboarding
 
 - **Backend & Database**
-  - **Node.js**
-    - **Cheerio**
-      - Extracts garage occupancy from the SJSU parking page
-  - **Supabase**
-    - **Postgres**
-      - Stores garage readings, forecasts, and walking distances
-    - **Realtime**
-      - Refreshes live counts when new readings arrive
+    - **Node.js**
+        - **Cheerio**
+            - Extracts garage occupancy from the SJSU parking page
+    - **Supabase**
+        - **Postgres**
+            - Stores garage readings, forecasts, and walking distances
+        - **Realtime**
+            - Refreshes live counts when new readings arrive
 
 - **Machine Learning**
-  - **Python**
-    - **pandas**
-      - Cleans and prepares historical garage readings
-    - **scikit-learn**
-      - Trains and evaluates Flint’s gradient-boosted trees
-    - **Flask**
-      - Serves predictions to the scheduled forecast job
+    - **Python**
+        - **pandas**
+            - Cleans and prepares historical garage readings
+        - **scikit-learn**
+            - Trains and evaluates Flint’s gradient-boosted trees
+        - **Flask**
+            - Serves predictions to the scheduled forecast job
 
 - **Maps & Routing**
-  - **Google Maps**
-    - Shows garage maps and opens driving and walking directions
-  - **OpenRouteService**
-    - Calculates walking distances to campus buildings
+    - **Google Maps**
+        - Shows garage maps and opens driving and walking directions
+    - **OpenRouteService**
+        - Calculates walking distances to campus buildings
 
 - **Hosting**
-  - **Vercel**
-    - Hosts the web app and Flint’s forecast service
+    - **Vercel**
+        - Hosts the web app and Flint’s forecast service
 
 - **Analytics**
-  - **PostHog**
-    - Tracks feature usage and collects beta feedback
+    - **PostHog**
+        - Tracks feature usage and collects beta feedback
 
 ---
 

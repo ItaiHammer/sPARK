@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import useSWR from "swr";
+import { getLiveOccupancy } from "@/lib/utils/client/liveOccupancy";
 import { useLocationAPI } from "@/contexts/API/LocationAPI.context";
 import { DEFAULT_SWR_OPTIONS, getInternalAuthHeader } from "@/lib/constants/api.constants";
 import { LIVE_OCCUPANCY_KEY, BUILDINGS_KEY, BUILDING_DISTANCES_KEY } from "@/lib/constants/SWR.keys";
@@ -28,8 +29,10 @@ async function fetchForecastDay(locationId, date) {
 const cachedOptions = { ...DEFAULT_SWR_OPTIONS, dedupingInterval: 5 * 60 * 1000, errorRetryCount: 1 };
 const forecastOptions = {
   ...cachedOptions,
-  // Keep cached curves visible while refreshing; never wait on a clock change.
-  refreshInterval: 15 * 60 * 1000,
+  // Read saved forecasts hourly; changing the selected day still changes keys.
+  refreshInterval: 60 * 60 * 1000,
+  revalidateOnFocus: true,
+  focusThrottleInterval: 5 * 60 * 1000,
   revalidateOnReconnect: true,
 };
 
@@ -56,11 +59,14 @@ export default function useParkingData({ locationId, selection, buildingId = nul
   const frozen = selection?.mode === "paused" && Array.isArray(frozenLots);
   const live = selection?.mode === "live";
   const occupancyRequest = useSWR(locationId && live ? [LIVE_OCCUPANCY_KEY, locationId] : null,
-    ([, id]) => getLatestOccupancy(id).then(apiData), {
+    ([, id]) => getLiveOccupancy(id).read(() => getLatestOccupancy(id).then(apiData)), {
     ...DEFAULT_SWR_OPTIONS,
     dedupingInterval: 5000,
     errorRetryCount: 1,
-    refreshInterval: live ? 60000 : 0,
+    // Realtime supplies counts; polling only recovers missed updates.
+    refreshInterval: live ? 5 * 60 * 1000 : 0,
+    revalidateOnFocus: live,
+    focusThrottleInterval: 60 * 1000,
     revalidateOnReconnect: live,
   });
 
