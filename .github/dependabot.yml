@@ -1,7 +1,5 @@
-# Routine updates run weekly; major upgrades are reviewed manually.
-# allow.update-types restricts version updates without restricting security fixes.
-# Security-update grouping is managed in the repository's GitHub settings.
-version: 2
+# Weekly routine updates; security updates are managed in GitHub settings.
+version: 2 # Dependabot's config format version.
 updates:
   - package-ecosystem: "npm"
     directory: "/web-app"
@@ -10,17 +8,17 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/Los_Angeles"
-    open-pull-requests-limit: 1
-    allow:
+    open-pull-requests-limit: 1 # One open routine PR for this entry.
+    allow: # Minor/patch releases only; major upgrades stay manual.
       - dependency-name: "*"
         update-types:
           - "version-update:semver-minor"
           - "version-update:semver-patch"
-    groups:
+    groups: # Bundle matching updates into one PR.
       web-app-dependencies:
         patterns: ["*"]
         update-types: ["minor", "patch"]
-    commit-message:
+    commit-message: # Use chore(deps): in commit messages.
       prefix: "chore"
       include: "scope"
 
@@ -45,8 +43,7 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  # Group each shared library's training and serving pins into one PR.
-  # Validate saved Flint model loading and predictions before merging updates.
+  # Test saved Flint model compatibility before merging library updates.
   - package-ecosystem: "pip"
     directories:
       - "/lab"
@@ -64,7 +61,7 @@ updates:
           - "version-update:semver-patch"
     groups:
       flint-and-lab-dependencies:
-        group-by: "dependency-name"
+        group-by: "dependency-name" # One PR per library across both folders.
         patterns: ["*"]
         update-types: ["minor", "patch"]
     commit-message:
