@@ -162,20 +162,6 @@ Links: [sPARK Lab](lab/README.md), [Full results and training steps](lab/experim
 
 ## 🔄 How It Works
 
-```mermaid
-flowchart TD
-    Feed["SJSU parking feed"] --> Scraper["Next.js scraper"]
-    Scraper --> Readings["Garage readings in Supabase"]
-    Readings --> Live["Live garage counts"]
-    Readings --> Flint["Flint on Vercel"]
-    Calendar["SJSU academic calendar"] --> Flint
-    Flint --> Forecasts["Half-hour forecasts in Supabase"]
-    Live --> App["sPARK garage view"]
-    Forecasts --> App
-```
-
-### Live updates and caching
-
 sPARK checks the school’s parking page **every 30 minutes** and saves the readings in Supabase. Open instances of sPARK receive new readings through Supabase Realtime and update their local SWR cache, which is then used to show the data on screen.
 
 ```mermaid
@@ -186,7 +172,9 @@ flowchart TB
         subgraph NextJS["Next.js"]
             Scraper["Scraper"]
             API["API"]
+            ForecastJob["Scheduled forecast job"]
         end
+        Flint["Flint on Vercel"]
         Redis[("Redis cache")]
         API -->|"Look up cached data"| Redis
         Redis -->|"Return cached data"| API
@@ -206,6 +194,10 @@ flowchart TB
 
     School -->|"Scrape every 30 minutes"| Scraper
     Scraper -->|"Save readings"| DB
+
+    DB <-->|"Read history and calendar; save forecasts"| ForecastJob
+    ForecastJob -->|"Request predictions"| Flint
+    Flint -->|"Return predictions"| ForecastJob
 
     Realtime -->|"Push new readings"| SWR
     UI -->|"Request: initial load or recovery"| API
