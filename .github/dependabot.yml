@@ -1,0 +1,75 @@
+# weekly routine updates
+# group minor/patch releases; review major upgrades in separate PRs
+version: 2
+updates:
+    - package-ecosystem: 'npm'
+      directory: '/web-app'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+          timezone: 'America/Los_Angeles'
+      open-pull-requests-limit: 2 # up to two routine PRs for this entry
+      groups: # Bundle matching updates into one PR.
+          web-app-dependencies:
+              patterns: ['*']
+              update-types: ['minor', 'patch']
+      commit-message: # Use chore(deps): in commit messages.
+          prefix: 'chore'
+          include: 'scope'
+
+    - package-ecosystem: 'npm'
+      directory: '/extra/scraper-js'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+          timezone: 'America/Los_Angeles'
+      open-pull-requests-limit: 2
+      groups:
+          scraper-js-dependencies:
+              patterns: ['*']
+              update-types: ['minor', 'patch']
+      commit-message:
+          prefix: 'chore'
+          include: 'scope'
+
+    # test saved Flint model compatibility before merging library updates.
+    - package-ecosystem: 'pip'
+      directories:
+          - '/lab'
+          - '/web-app/flint'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+          timezone: 'America/Los_Angeles'
+      open-pull-requests-limit: 2
+      groups:
+          flint-and-lab-dependencies:
+              group-by: 'dependency-name' # one PR per library across both folders
+              patterns: ['*']
+              update-types: ['minor', 'patch']
+          flint-and-lab-major-dependencies:
+              group-by: 'dependency-name' # one major library upgrade across both folders
+              patterns: ['*']
+              update-types: ['major']
+      commit-message:
+          prefix: 'chore'
+          include: 'scope'
+
+    - package-ecosystem: 'pip'
+      directory: '/extra/scraper-py'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+          timezone: 'America/Los_Angeles'
+      open-pull-requests-limit: 2
+      groups:
+          scraper-py-dependencies:
+              patterns: ['*']
+              update-types: ['minor', 'patch']
+      commit-message:
+          prefix: 'chore'
+          include: 'scope'
